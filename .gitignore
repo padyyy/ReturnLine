@@ -1,0 +1,122 @@
+cat > .gitignore <<'EOF'
+# ==========================================
+# macOS
+# ==========================================
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ==========================================
+# Windows
+# ==========================================
+
+# Windows Explorer
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+
+# Windows shortcuts
+*.lnk
+
+# Windows Recycle Bin
+$RECYCLE.BIN/
+
+# Windows Installer
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Windows temporary files
+~$*
+*.temp
+
+# Visual Studio / Windows IDE
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+_ReSharper*/
+*.DotSettings.user
+
+# ==========================================
+# IDEs / Editors
+# ==========================================
+.idea/
+.vscode/
+.vs/
+*.swp
+*.swo
+
+# ==========================================
+# JavaScript / Node.js
+# ==========================================
+node_modules/
+dist/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==========================================
+# Python
+# ==========================================
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# ==========================================
+# C# / .NET
+# ==========================================
+[Bb]in/
+[Oo]bj/
+TestResults/
+*.user
+*.suo
+*.pdb
+*.cache
+
+# ==========================================
+# Environment variables / Secrets
+# ==========================================
+.env
+.env.*
+!.env.example
+*.local
+
+# ==========================================
+# Large NASA / GIS data files
+# ==========================================
+*.tif
+*.tiff
+*.jp2
+*.img
+*.h5
+*.hdf
+*.nc
+
+# Raw datasets
+data/raw/*
+!data/raw/.gitkeep
+
+# Generated map assets
+frontend/public/maps/*
+!frontend/public/maps/.gitkeep
+
+# ==========================================
+# Temporary files
+# ==========================================
+*.tmp
+*.log
+.cache/
+tmp/
+EOF
