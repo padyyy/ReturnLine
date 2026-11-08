@@ -21,3 +21,18 @@
 - Submit changes through branches and pull requests.
 - Test implemented features and report issues early.
 - Keep task statuses up to date on the Kanban board.
+
+## Developer Responsibilities
+
+### Alex
+- Frontend Development – JavaScript
+- Presentation
+### Michael
+- A* Pathfinding Algorithm – C#
+- Data Analysis & Preparation – Python
+### Paul
+- A* Pathfinding Algorithm – C#
+- Flexible Support Across Development Tasks
+### Magnus
+- Frontend Development – JavaScript
+- Data Analysis & Preparation – Python
