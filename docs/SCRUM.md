@@ -4,7 +4,7 @@
 
 ## 1. Sprint Structure
 
-- **Sprint Duration:** 90 minutes.
+- **Sprint Duration:** 120 minutes.
 - Each sprint has a clearly defined goal.
 - Tasks are selected from the Product Backlog.
 - Breaks are taken between sprints as needed.
