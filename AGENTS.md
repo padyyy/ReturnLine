@@ -66,3 +66,9 @@
 - Clearly report what was changed and what was tested.
 - Explicitly mention incomplete tasks, assumptions, or uncertainties.
 - Prioritize working functionality over unnecessary complexity.
+
+## 8. Team State and Documentation Sync
+- At the start and end of each project task, apply the workflow in [.agents/skills/team-state-sync/SKILL.md](.agents/skills/team-state-sync/SKILL.md).
+- Read this main file and applicable module instructions as the source of project rules; the skill does not replace them.
+- Compare Git state and local functionality with the relevant documentation. Update verified gaps within the task scope; for review-only requests, report findings without edits.
+- Codex team members can use `$team-state-sync` when the repository skill is discovered. Other AI tools must load this main file and the linked skill instructions through their own project-instruction mechanism.

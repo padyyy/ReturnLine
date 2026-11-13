@@ -1,0 +1,4 @@
+interface:
+  display_name: "Team-Stand abgleichen"
+  short_description: "Git, lokale Funktionen und AGENTS.md abgleichen"
+  default_prompt: "Nutze $team-state-sync, prüfe den Git- und lokalen Stand nach der Haupt-AGENTS.md und ergänze belegte Dokumentationslücken."
