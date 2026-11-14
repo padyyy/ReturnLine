@@ -14,8 +14,8 @@
   "zone_warn_m"
  ],
  "habitat": [
-  137.38281,
-  -4.814885
+  137.384902,
+  -4.812105
  ],
  "scenario_station": 1,
  "drift_zone": "A",
@@ -30,7 +30,7 @@
  "injury_factor": 0.5,
  "caution_margin_min": 15,
  "dose_rate_msv_per_day": 0.64,
- "zone_buffer_m": 40,
+ "zone_buffer_m": 80,
  "zone_clearance_m": 30,
  "zone_warn_m": 10,
  "slope_comfort_deg": 10,

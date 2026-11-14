@@ -15,7 +15,7 @@ const SPEED = 1500 / 60;                   // m per minute, 1.5 km/h on level gr
 const CELL = 10;                            // m, projected
 const HALF = 1700;                          // m around the habitat, so the 60-minute line (1.5 km) fits
 const ZONE_PENALTY = 20;                    // cost factor inside protected zones (penalized variant)
-const BUFFER = 40;                          // m, zone buffer (placeholder value)
+const BUFFER = 80;                          // m, zone buffer (placeholder value; 40 m was too small to carry beat 5 on real terrain, see below)
 const CLEARANCE = 30;                       // m outside the buffer where routes are mildly penalized, so they keep distance (assumption)
 const CLEARANCE_PENALTY = 3;                // cost factor in that ring (soft: a route may still pass when the detour is long)
 const WARN = 10;                            // m to the buffer edge below which the console warns (assumption, as in the design sketch)
@@ -35,16 +35,13 @@ const write = (name, obj) => writeFileSync(new URL(name, OUT), JSON.stringify(ob
 const writeBin = (name, arr) => writeFileSync(new URL(name, OUT), Buffer.from(arr.buffer)); // little-endian on x86/ARM
 
 // ---------- layout (placeholder choices on real waypoints) ----------
-// Station 1 is the scenario station: its way home passes drill site B, so the ABORT in beat 5-6 has a zone to cross.
-const stationSols = [4591, 4647, 4673, 4820];
-const zoneSols = [4623, 4839];
-const S1 = at(stationSols[0]);
-const ZB = at(zoneSols[1]);
-// habitat 300 m beyond drill site B, on the line from station 1 through the zone
-const lat0 = Math.cos(S1[1] * Math.PI / 180);
-const vx = (ZB[0] - S1[0]) * M_PER_DEG * lat0, vy = (ZB[1] - S1[1]) * M_PER_DEG, vl = Math.hypot(vx, vy);
-const k = (vl + 300) / vl;
-const habitat = [+(S1[0] + (ZB[0] - S1[0]) * k).toFixed(6), +(S1[1] + (ZB[1] - S1[1]) * k).toFixed(6)];
+// Chosen by the data checks on the real time-to-base grid (scripts/find-scenario.mjs, 2026-11-14,
+// BUFFER=80): station 1 (sol 4596) is the scenario station; the crew drifts toward drill site A
+// (sol 4633) in beat 4; after the injury the protected way home is too long and the way through
+// drill site B (sol 4818) fits. Run pipeline/time_grid.py after changing anything here.
+const stationSols = [4596, 4609, 4667, 4839];
+const zoneSols = [4633, 4818];
+const habitat = [137.384902, -4.812105];
 
 const ring = (c, r) => {                   // polygon around [lon, lat], r metres, 32 vertices
   const la = c[1] * Math.PI / 180, pts = [];
