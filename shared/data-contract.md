@@ -66,7 +66,7 @@ The grid spec is the one page that lets engine, pipeline and frontend read the s
 | Order | row 0 = north, columns west to east, index = row × nx + col |
 | Types | times float32 little-endian in minutes, unreachable +Inf; elevation and slope float32 |
 | Pointers | int32 index of the next cell towards the habitat, −1 at the habitat and where unreachable (alternative: uint8 direction code, 4× smaller) |
-| Meaning of time | walking time from the cell to the habitat at 1.5 km/h with the named slope penalty. In the zones-penalized variant the route avoids zones, but the stored value is the real walking time along that route, not the penalized cost |
+| Meaning of time | walking time from the cell to the habitat at 1.5 km/h on level ground, slowed or sped up by slope with Tobler's hiking function (Tobler 1993, normalised; decided 2026-11-14; reference values in `shared/walking-model-vectors.json`). Uphill and downhill differ, so times are towards the habitat and the way out is timed outbound. In the zones-penalized variant the route avoids zones, but the stored value is the real walking time along that route, not the penalized cost |
 | Moves | 16 neighbours (8 give octagonal areas on open ground), no corner cutting past blocked cells |
 | Blocked | 1 m ridge mask aggregated to 10 m, and 10 m slope over 20° |
 | Zone clearance | in the zones-penalized variant, cells within `zone_clearance_m` outside the buffer cost a small extra factor (the placeholder uses 3, zones themselves 20), so planned routes keep distance and the 10 m warning fires only on a real deviation |

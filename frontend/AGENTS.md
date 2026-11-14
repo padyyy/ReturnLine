@@ -41,3 +41,12 @@
 - Berücksichtige Ladezustände, leere Ergebnisse, Fehler und verständliche Eingaben.
 - Lege keine Geheimnisse im Browser-Code ab.
 - Wortlaut auf dem Bildschirm: „Habitat control“, klare Worte wie „Head home now“, nie „validated“, sondern „compared with Curiosity“.
+
+## Offline-Vergleich der Gehzeiten (keine Konsolenintegration)
+- `src/route-duration.js`: unabhängiger Kern `estimateDuration(segments, options)`, normierte Tobler-Kurve und Ereignisse. Nicht in `main.js` importieren; Engine-Zeiten bleiben einzige Zeitquelle der Konsole.
+- `src/route-duration-input.js`: `sectionsFromTrack(track)` für bestehende `vertices` mit `d_m` und `elev_m`. Positive Distanzdifferenzen bilden Abschnitte, gerichtete Steigung aus Höhendifferenz; fehlende Höhen brechen ab. Keine Rasterannahme oder eigenes Knotenformat; `parseRoute` entfernt.
+- `scripts/check-route-times.mjs`: liest echte Routen und Szenarioparameter (nur Szenario mit Platzhalter-Fallback), vergleicht alle Tracks und Verletzung ab halber Rückwegstrecke. Tabelle bzw. `--json` nach stdout; schreibt keine Daten. Engine-Referenz auch in Verletzungszeilen unverletzt.
+- `roughnessM = 0` ist eine Annahme mangels Daten. Rauigkeitsfaktor und Mars-/Anzugskalierung bleiben unkalibriert. Keine Änderungen am Engine-Modell oder unter `public/data/` durch dieses Modul.
+- `route-duration.md`: Format, Formeln, Quellen, Ereignisse, Prüfbefehle und Grenzen. `examples/route-duration.mjs`: Beispiel auf echten Routen mit Szenario-Grundgeschwindigkeit.
+- `../shared/walking-model-vectors.json`: 18 Modellreferenzen für 10 m und 22,36 m; keine beschlossene Engine-Umstellung.
+- `npm test`: Kern-, Track-Adapter-, Offline-Prüfskript- und Referenzvektortests mit Node-Testläufer, ohne neue Abhängigkeiten.
