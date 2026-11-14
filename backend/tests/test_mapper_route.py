@@ -11,6 +11,10 @@ from backend.mapper_route import cell_grid, grid_for_dem, read_layers, route_fro
 from backend.science_routes import calculate_routes, export_routes
 import json
 from backend.terrain_costs import CostConfig, build_cost_grid
+from backend.radiation import DoseConfig, write_background_map
+from backend.mapper_route import load_layer_specs
+import subprocess
+import sys
 
 
 class MapperRouteTests(unittest.TestCase):
@@ -92,3 +96,57 @@ class MapperRouteTests(unittest.TestCase):
             self.assertEqual(path[0], [1, 3])
             self.assertEqual(path[-1], expected)
             self.assertEqual(path, json.loads((self.root/'output'/route['id']/'path_xy.json').read_text()))
+
+    def test_radiation_weight_changes_route_and_matches_objective(self):
+        radiation = np.full((7, 7), .64); radiation[3, 3] = 1000
+        source = self.root / 'radiation.tif'; self.write(source, radiation)
+        specs = {'radiation_msv_per_day': {'path': str(source)}}
+        start, goal = self.grid.lonlat_center(1, 3), self.grid.lonlat_center(5, 3)
+        direct, *_ = route_from_maps(self.dem, start, goal, grid=self.grid, layer_specs=specs, derive=False)
+        self.assertIn([3, 3], direct)
+        path, _, _, _, summary = route_from_maps(
+            self.dem, start, goal, grid=self.grid, layer_specs=specs, derive=False,
+            dose_config=DoseConfig(radiation_weight=1000, goal_dwell_seconds=60))
+        self.assertNotIn([3, 3], path)
+        dose = summary['radiation']
+        self.assertAlmostEqual(summary['total_cost'], summary['length_m'] + 1000 * dose['moving_dose_msv'])
+        self.assertAlmostEqual(dose['duration_seconds'], summary['length_m'] + 60)
+        self.assertGreater(dose['total_dose_msv'], dose['moving_dose_msv'])
+
+    def test_missing_radiation_and_unreachable_dose(self):
+        start, goal = self.grid.lonlat_center(1, 3), self.grid.lonlat_center(5, 3)
+        path, _, _, _, summary = route_from_maps(self.dem, start, goal, grid=self.grid, derive=False)
+        self.assertTrue(path)
+        self.assertEqual(summary['radiation']['status'], 'incomplete')
+        self.assertIsNone(summary['radiation']['total_dose_msv'])
+        path, _, _, _, summary = route_from_maps(
+            self.dem, start, goal, grid=self.grid, derive=False, dose_config=DoseConfig(radiation_weight=1))
+        self.assertIsNone(path)
+        self.assertEqual(summary['radiation']['status'], 'unreachable')
+
+    def test_single_and_batch_cli_with_generated_tiff(self):
+        background = self.root / 'background'
+        write_background_map(self.grid, background)
+        start, goal = self.grid.lonlat_center(1, 3), self.grid.lonlat_center(5, 3)
+        common = [str(self.dem), '--grid', str(background / 'grid.json'),
+                  '--layers', str(background / 'layers.json'), '--walking-speed-m-s', '.5',
+                  '--goal-dwell-seconds', '60', '--radiation-weight', '100', '--no-derive']
+        out = self.root / 'single'
+        result = subprocess.run([
+            sys.executable, '-m', 'backend.mapper_route', *common,
+            '--start', *map(str, start), '--goal', *map(str, goal), '--output-dir', str(out)],
+            capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        summary = json.loads((out / 'summary.json').read_text())
+        self.assertEqual(summary['radiation']['status'], 'complete')
+        self.assertAlmostEqual(summary['radiation']['total_dose_msv'], .64 * 68 / 86400)
+        mission = self.root / 'targets.json'
+        mission.write_text(json.dumps({'base': {'lon': start[0], 'lat': start[1]},
+            'targets': [{'id': 'test', 'name': 'Test', 'lon': goal[0], 'lat': goal[1]}]}))
+        batch = self.root / 'batch'
+        result = subprocess.run([
+            sys.executable, '-m', 'backend.science_routes', *common,
+            '--targets', str(mission), '--output-dir', str(batch)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        saved = json.loads((batch / 'test/summary.json').read_text())['summary']
+        self.assertEqual(saved['radiation'], summary['radiation'])

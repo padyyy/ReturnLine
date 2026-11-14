@@ -18,11 +18,45 @@ from backend.geoMapper.mars_mapping import (
 from backend.astar import astar
 from backend.terrain_features import derive_features
 from backend.terrain_costs import TerrainCell, CostConfig, build_cost_grid
+from backend.radiation import DoseConfig, add_radiation_costs, integrate_route_dose
 
 FIELDS = ('slope_deg', 'roughness_m', 'blocked', 'protected_zone',
           'radiation_msv_per_day', 'scientifically_relevant')
 FLAGS = {'blocked', 'protected_zone', 'scientifically_relevant'}
 DEFAULT_CONFIG = CostConfig(20, 0.5, 0.8, 1, 2, 2, 1)
+
+
+def load_layer_specs(filename):
+    """Resolve paths relative to a layer-binding JSON for both routing CLIs."""
+    if filename is None:
+        return {}
+    filename = Path(filename).resolve()
+    specs = json.loads(filename.read_text(encoding='utf-8'))
+    for spec in specs.values():
+        if spec and not Path(spec['path']).is_absolute():
+            spec['path'] = str((filename.parent / spec['path']).resolve())
+    return specs
+
+
+def add_map_arguments(parser):
+    parser.add_argument('--grid', type=Path, help='Optional agreed local-metric grid JSON')
+    parser.add_argument('--layers', type=Path, help='JSON bindings for optional raster/CSV maps')
+    parser.add_argument('--protected-penalty', type=float, default=0)
+    parser.add_argument('--no-derive', action='store_true', help='Use only provided feature maps')
+    parser.add_argument('--walking-speed-m-s', type=float, default=1.0,
+                        help='Constant assumed walking speed for dose, default 1 m/s')
+    parser.add_argument('--goal-dwell-seconds', type=float, default=0,
+                        help='Stationary exposure at each route goal')
+    parser.add_argument('--radiation-weight', type=float, default=0,
+                        help='Movement dose penalty in demo cost units per mSv; default 0')
+
+
+def prepare_maps_from_args(args):
+    return prepare_maps(
+        args.dem, grid=FixedGrid.load(args.grid) if args.grid else None,
+        layer_specs=load_layer_specs(args.layers), protected_penalty=args.protected_penalty,
+        derive=not args.no_derive,
+        dose_config=DoseConfig(args.walking_speed_m_s, args.goal_dwell_seconds, args.radiation_weight))
 
 
 def grid_for_dem(dem):
@@ -104,10 +138,11 @@ class PreparedMaps:
     config: CostConfig
     layer_specs: dict
     protected_penalty: float
+    dose_config: DoseConfig = DoseConfig()
 
 
 def prepare_maps(dem_path, *, grid=None, layer_specs=None, config=DEFAULT_CONFIG,
-                 protected_penalty=0.0, derive=True):
+                 protected_penalty=0.0, derive=True, dose_config=DoseConfig()):
     """Map and normalize terrain once for any number of independent routes."""
     if not math.isfinite(protected_penalty) or protected_penalty < 0:
         raise ValueError('protected_penalty must be finite and nonnegative')
@@ -138,8 +173,9 @@ def prepare_maps(dem_path, *, grid=None, layer_specs=None, config=DEFAULT_CONFIG
                 if value is not None and layers['protected_zone'][r, c] == 1:
                     row[c] *= 1 + protected_penalty
     arrays = {'elevation_m': elevation, **{key: layers.get(key, np.full(elevation.shape, np.nan)) for key in FIELDS}}
+    costs = add_radiation_costs(costs, arrays['radiation_msv_per_day'], dose_config)
     arrays['costs'] = np.array([[np.nan if v is None else v for v in row] for row in costs], dtype=np.float32)
-    return PreparedMaps(grid, costs, arrays, provenance, config, layer_specs or {}, protected_penalty)
+    return PreparedMaps(grid, costs, arrays, provenance, config, layer_specs or {}, protected_penalty, dose_config)
 
 
 def route_prepared(prepared, start_lonlat, goal_lonlat):
@@ -157,6 +193,8 @@ def route_prepared(prepared, start_lonlat, goal_lonlat):
     result = astar(costs, (start[1], start[0]), (goal[1], goal[0]),
                    cell_size_m=grid.cell_size_m, on_expand=observe)
     path_xy = [[c, r] for r, c in result.path] if result else None
+    dose = integrate_route_dose(path_xy, prepared.arrays['radiation_msv_per_day'],
+                                grid.cell_size_m, prepared.dose_config)
     return path_xy, grid, prepared.arrays, expanded, {
         'status': 'found' if result else 'unreachable', 'start_lonlat': list(start_lonlat),
         'goal_lonlat': list(goal_lonlat), 'start_xy': start, 'goal_xy': goal,
@@ -165,16 +203,21 @@ def route_prepared(prepared, start_lonlat, goal_lonlat):
         'total_cost': result.total_cost if result else None, 'cost_units': 'demo units, not seconds',
         'grid': grid.to_dict(), 'config': asdict(config), 'layer_specs': layer_specs or {},
         'provenance': provenance, 'missing_policy': 'unknown -> None, no penalty or restriction; known constraints still apply',
-        'protected_penalty': protected_penalty, 'radiation_and_science': 'information only',
+        'protected_penalty': protected_penalty,
+        'dose_config': asdict(prepared.dose_config), 'radiation': dose,
+        'radiation_weight_units': 'demo cost units per mSv; movement only, excludes goal dwell',
+        'radiation_missing_policy': 'blocked when radiation_weight > 0; incomplete dose otherwise',
+        'radiation_and_science': 'radiation dose integrated; science information only',
     }
 
 
 
 def route_from_maps(dem_path, start_lonlat, goal_lonlat, *, grid=None, layer_specs=None,
-                    config=DEFAULT_CONFIG, protected_penalty=0.0, derive=True):
+                    config=DEFAULT_CONFIG, protected_penalty=0.0, derive=True,
+                    dose_config=DoseConfig()):
     """Convenience API: prepare maps, then find a single ordered XY route."""
     prepared = prepare_maps(dem_path, grid=grid, layer_specs=layer_specs, config=config,
-                            protected_penalty=protected_penalty, derive=derive)
+                            protected_penalty=protected_penalty, derive=derive, dose_config=dose_config)
     return route_prepared(prepared, start_lonlat, goal_lonlat)
 
 
@@ -183,21 +226,12 @@ def main():
     parser.add_argument('dem', type=Path)
     parser.add_argument('--start', nargs=2, type=float, required=True, metavar=('LON', 'LAT'))
     parser.add_argument('--goal', nargs=2, type=float, required=True, metavar=('LON', 'LAT'))
-    parser.add_argument('--grid', type=Path, help='Optional agreed local-metric grid JSON')
-    parser.add_argument('--layers', type=Path, help='JSON bindings for optional raster/CSV maps')
-    parser.add_argument('--protected-penalty', type=float, default=0)
-    parser.add_argument('--no-derive', action='store_true', help='Use only provided feature maps')
+    add_map_arguments(parser)
     parser.add_argument('--plot', action='store_true')
     parser.add_argument('--output-dir', type=Path, default=Path(__file__).resolve().parent / 'routes/mapper_route')
     args = parser.parse_args()
-    specs = json.loads(args.layers.read_text()) if args.layers else {}
-    if args.layers:
-        for spec in specs.values():
-            if spec and not Path(spec['path']).is_absolute():
-                spec['path'] = str((args.layers.resolve().parent / spec['path']).resolve())
-    path, grid, arrays, expanded, summary = route_from_maps(
-        args.dem, args.start, args.goal, grid=FixedGrid.load(args.grid) if args.grid else None,
-        layer_specs=specs, protected_penalty=args.protected_penalty, derive=not args.no_derive)
+    prepared = prepare_maps_from_args(args)
+    path, grid, arrays, expanded, summary = route_prepared(prepared, args.start, args.goal)
     out = args.output_dir
     out.mkdir(parents=True, exist_ok=True)
     (out/'path_xy.json').write_text(json.dumps(path, indent=2, allow_nan=False))
@@ -220,6 +254,8 @@ def main():
         ax.set(title='GeoMapper → Geländekosten → A*', xlabel='x (nach rechts)', ylabel='y (nach unten)')
         ax.legend(); fig.savefig(out/'route.png', dpi=160); plt.close(fig)
     print(json.dumps({key: summary[key] for key in ['status', 'start_xy', 'goal_xy', 'node_count', 'length_m']}, indent=2))
+    print(f"Dose equivalent: {summary['radiation']['total_dose_msv']} mSv "
+          f"({summary['radiation']['status']})")
     print(f'Path array: {(out/"path_xy.json").resolve()}')
 
 

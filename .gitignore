@@ -117,4 +117,4 @@ frontend/public/maps/*
 *.tmp
 *.log
 .cache/
-tmp/
+backend/routes/**/*.npz

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import re
 
-from backend.mapper_route import prepare_maps, route_prepared
+from backend.mapper_route import add_map_arguments, prepare_maps_from_args, route_prepared
 from backend.geoMapper.mars_mapping import save_npz
 
 DEFAULT_MISSION = Path(__file__).parent / 'config/science_targets.json'
@@ -81,11 +81,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('dem', type=Path)
     parser.add_argument('--targets', type=Path, default=DEFAULT_MISSION)
+    add_map_arguments(parser)
     parser.add_argument('--output-dir', type=Path, default=Path(__file__).resolve().parent / 'routes/science_routes')
     parser.add_argument('--plot', action='store_true')
     args = parser.parse_args()
     mission = json.loads(args.targets.read_text(encoding='utf-8'))
-    prepared = prepare_maps(args.dem)
+    prepared = prepare_maps_from_args(args)
     routes = calculate_routes(prepared, mission)
     export_routes(args.output_dir, prepared, mission, routes)
     if args.plot:
@@ -93,7 +94,8 @@ def main():
     for route in routes:
         s = route['summary']
         print(f"{route['id']}: {s['status']}, XY {s['start_xy']} -> {s['goal_xy']}, "
-              f"{s['node_count']} Knoten, {s['length_m']} m")
+              f"{s['node_count']} Knoten, {s['length_m']} m, "
+              f"Dosis {s['radiation']['total_dose_msv']} mSv ({s['radiation']['status']})")
     print(f'Outputs: {args.output_dir.resolve()}')
 
 

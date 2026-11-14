@@ -1,0 +1,61 @@
+{
+  "id": "sol_4818",
+  "name": "Östlicher Boxwork-Bereich",
+  "sol": 4818,
+  "summary": {
+    "status": "found",
+    "start_lonlat": [
+      137.3807,
+      -4.8106
+    ],
+    "goal_lonlat": [
+      137.382562,
+      -4.807904
+    ],
+    "start_xy": [
+      500,
+      500
+    ],
+    "goal_xy": [
+      609,
+      340
+    ],
+    "node_count": 270,
+    "length_m": 268.9999999999909,
+    "total_cost": 599.3022749827667,
+    "cost_units": "demo units, not seconds",
+    "grid": {
+      "mode": "local_metric",
+      "reference_latitude": -4.8106,
+      "reference_longitude": 137.3807,
+      "reference_position": "center",
+      "cell_size_m": 0.9999999999999661,
+      "columns": 1000,
+      "rows": 1000,
+      "mars_radius_m": 3396190.0,
+      "origin": "upper-left",
+      "index_order": "(x=column, y=row)",
+      "latitude_definition": "planetocentric",
+      "longitude_definition": "east-positive",
+      "projection": "local_equirectangular",
+      "reference_role": "Geografischer Projektionsanker, unabhängig von der Hintergrundkarte"
+    },
+    "config": {
+      "max_slope_deg": 20,
+      "max_roughness_m": 0.5,
+      "min_valid_fraction": 0.8,
+      "base_cost_per_m": 1,
+      "slope_weight": 2,
+      "roughness_weight": 2,
+      "uncertainty_weight": 1
+    },
+    "layer_specs": {},
+    "provenance": {
+      "slope_deg": "derived from mapped DEM: local 11x11 plane",
+      "roughness_m": "derived from mapped DEM: local 11x11 plane"
+    },
+    "missing_policy": "unknown -> None, no penalty or restriction; known constraints still apply",
+    "protected_penalty": 0.0,
+    "radiation_and_science": "information only"
+  }
+}
