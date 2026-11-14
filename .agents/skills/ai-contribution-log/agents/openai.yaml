@@ -1,0 +1,4 @@
+interface:
+  display_name: "KI-Beiträge protokollieren"
+  short_description: "KI-Änderungen, Einwände und Prüfungen im Team-Log"
+  default_prompt: "Nutze $ai-contribution-log und protokolliere meine Projektaufgabe mit allen wesentlichen KI-Beiträgen im Team-Log."
