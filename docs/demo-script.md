@@ -63,7 +63,7 @@ If check 5 fails for every station, the options in order: move the habitat, move
 
 ## Open
 
-- Return stages in the HUD and on the cuff: exact rule (needs time-from grids) or the simple rule; see `../shared/data-contract.md`, decision 1.
+- Return stages: decided 2026-11-14, simple rule until the feature freeze, exact rule afterwards if time allows (`../shared/data-contract.md`).
 - Navigation sketch: the return area does not shrink yet (Alex).
 - Habitat coordinate (needed for all grids).
 - EVA start time in local solar time, and the sol shown (must lie in the future).
