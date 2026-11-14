@@ -16,6 +16,8 @@ Team "Houston, we have a map" · NASA Space Apps Challenge 2026, challenge "Inte
 | `shared/` | Data contracts, e.g. the grid spec |
 | `docs/` | Architecture, mission scenario, data sources, roles, Scrum, Git workflow |
 | `docs/preparation/` | Pre-kickoff research and team decision papers (record) |
+| `docs/ai-log/` | Shared log of AI contributions, one file per event |
+| `.agents/skills/` | Team skills for AI agents: state sync, contribution log |
 
 Start with `AGENTS.md` (rules for developers and AI agents), then `docs/mission-scenario.md` and `docs/architecture.md`.
 
