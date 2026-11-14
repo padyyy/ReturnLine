@@ -215,6 +215,8 @@ A field-book colour code on survey paper: one warm cover colour, one graphite ne
 
 **The Yellow Is The Cover Rule.** Cover yellow marks the book, the current beat and the clock jump. It never means caution or status.
 
+*Exception, team decision of 2026-11-14:* the navigation view and the helmet HUD use a separate amber (`#D9A300`) for the "under 15 min to spare" return stage, always with its word. Kept for now; revisit if time allows.
+
 ## Typography
 
 **Display Font:** Atkinson Hyperlegible Next (with Segoe UI, system-ui)

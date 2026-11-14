@@ -2,6 +2,8 @@
 
 Draft of 2026-11-14 for Alex and Patrick to check; Paul derives the Kanban issues from it. Story and rules: `mission-scenario.md`. Look, wording and every state on screen: `design/habitat-console-sketch.html` (synthetic numbers, so none of them may be reused here).
 
+**Team decisions of 2026-11-14:** every action is a click of habitat control; the crew displays (console skin, cuff skin, navigation view, helmet HUD) are read-only and are built. Where navigation view and HUD appear in the beats is still to place (see Open).
+
 **Rule:** what is not in this script is not built. Every number on screen comes from a committed data file or is labeled as an assumption. Until the real files exist, the numbers below stay "from data".
 
 ## Beats
@@ -50,6 +52,8 @@ If check 5 fails on the real terrain, the options in order: move the habitat, mo
 
 ## Open
 
+- Place the navigation view and the helmet HUD in the beats, for example as a "Crew view" panel mirroring what the crew sees while habitat control acts in the console. Starting the route (beat 1) and the return (beat 3) become habitat-control clicks.
+- Navigation sketch: the return area does not shrink yet (Alex).
 - Habitat coordinate (needed for all grids).
 - EVA start time in local solar time, and the sol shown (must lie in the future).
 - Zone buffer radius and slope penalty: labeled assumptions, values set by the team.

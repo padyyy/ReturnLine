@@ -4,7 +4,7 @@
 - Vorgesehener Bereich für Benutzeroberfläche und Darstellung.
 - Statische Web-App mit Vite 7.3.7 und Leaflet 1.9.4, kein UI-Framework, GitHub Pages. Sprache: JavaScript (Entscheidung des Tech Leads am 14.11.2026).
 - Eine Seite: die Habitat-Konsole mit eingebettetem, schreibgeschütztem Crew-Display. Inhalt und Demo-Drehbuch: `../docs/mission-scenario.md`, Design: `../docs/preparation/design-brief.md`.
-- Design-Sketch (14.11.2026, alle sechs Beats, synthetische Daten): `../docs/design/habitat-console-sketch.html`, Erläuterung und übertragbare Tokens in `../docs/design/README.md`. Vorlage für Layout, Zustände und Wortlaut, kein Code zum Übernehmen.
+- Design-Sketch (14.11.2026, alle sechs Beats, synthetische Daten): `../docs/design/habitat-console-sketch.html`, Erläuterung und übertragbare Tokens in `../docs/design/README.md`. Vorlage für Layout, Zustände und Wortlaut. Markup und CSS dürfen übernommen werden, der synthetische Datengenerator und die Routensuche im Browser nicht.
 - Stand 14.11.2026 (Meilenstein „Der Punkt wandert über das echte Orthofoto“): Karte mit Mars-CRS, Orthofoto-Overlay und einem Punkt, der Curiositys Wegpunkte der Boxwork-Kampagne abfährt (1,5 km/h, Zeitraffer ×60). Noch keine Konsole.
 
 ## Einstiegspunkte und Befehle
