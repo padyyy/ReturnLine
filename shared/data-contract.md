@@ -1,6 +1,6 @@
 # Data contract: what the frontend reads
 
-Draft of 2026-11-14, derived from what the console sketch (`docs/design/habitat-console-sketch.html`) and Alex's navigation and HUD sketch (`docs/design/navigation-hud-sketch.html`, branch `navigation-view-/-hud`) actually use. Proposal for Paul, Michael, Magnus and Alex; nothing here is decided until the grid spec fixes it. The grid layout itself (bbox, cell size, row order) belongs to Paul's grid spec in this folder.
+Draft of 2026-11-14, with the team decisions of the same day; derived from what the console sketch (`docs/design/habitat-console-sketch.html`) and Alex's navigation and HUD sketch (`docs/design/navigation-hud-sketch.html`, branch `navigation-view-/-hud`) actually use. Proposal for Paul, Michael, Magnus and Alex; file names and grid layout are open until the grid spec fixes them. The grid layout itself (bbox, cell size, row order) belongs to Paul's grid spec in this folder.
 
 **Ground rule:** the browser reads and interpolates. It never searches for a route. Following return pointers, drawing contours of a loaded grid and interpolating along a precomputed track are fine.
 
@@ -38,16 +38,38 @@ Folder `frontend/public/data/` unless noted.
 |---|---|---|
 | Route habitat → station by Dijkstra (`navLeg`) | no | `routes.json` `out` |
 | Route station → habitat by following pointers (`navReturn`) | yes | `routes.json` `ret`, or follow `ptr_penalized` |
-| Return stages: a Dijkstra **from the crew position**, every sim minute (`spareField`) | no | see decision 1 below |
+| Return stages: a Dijkstra **from the crew position**, every sim minute (`spareField`) | no | rule B from `ttb_penalized` (decided, see below); rule A later from precomputed grids |
 | Return area and 60-minute line as contours of the time grid | yes | contours of `ttb_*` × walking factor |
 | Terrain and slope rendered from a synthetic grid | no (synthetic) | orthophoto and slope images |
 | Heading, remaining distance and time, elevation profile, max stay | yes | interpolation along `routes.json` |
 
-## Decisions needed
+## Decided on 2026-11-14
 
-1. **Return stages.** Alex's rule is spare(X) = min(60 − home(X), B − walk(here → X) − home(X)); it needs the walking time from the crew's current position to every cell.
-   - **A (exact):** the engine also writes "time from" grids at sample points along each leg, for example every 5 minutes of walking (about 80 grids; as 1-byte minutes on a 20 m grid about 4–5 MB). The browser uses the nearest sample.
-   - **B (simple):** drop the walk-there term: spare(X) = min(60, B) − home(X), "if the crew were here now". Needs only `ttb_penalized`, and matches the console's return area plus the 15-minute caution band.
-   - Proposal: B for the feature freeze at 22:30, A afterwards if time allows. Alex decides with the engine team.
-2. **Demo target.** The team decided that the demo starts after habitat control picks a target and presses Start. The scripted story (beats 4–6) only works for a station whose return leg passes a protected zone that blocks a real shortcut home (`docs/demo-script.md`, data check 5). Proposal: the picker lists all stations with walk time, back-to-base and max stay; the six beats play for the scenario station; other stations navigate without scripted events.
-3. **File names and grid layout:** fixed by the grid spec; the names above are placeholders.
+1. **No route search in the browser.** Routes to and from each station come from the engine (`routes.json`). The sketches' in-browser Dijkstra (`navLeg`, `spareField`) does not go into the build.
+2. **Return stages: the simple rule (B) until the feature freeze; the exact rule (A) afterwards if time allows.** Rule B, needing only `ttb_penalized` and `scenario.json`:
+   - B(t) = min(life support left, time to sunset) at EVA time t; L(t) = min(60, B(t)).
+   - For every cell X: spare(X) = L(t) − f × T(X), with T from `ttb_penalized` and f the walking factor (1, or 2 for the injured crew member).
+   - Stage: green if spare ≥ 15 min (caution margin, assumption), amber if 0 ≤ spare < 15, red if spare < 0 or the cell cannot reach home. The HUD ring and the warnings use spare at the crew's own cell.
+   - Rule B leaves out the walk from the crew to X, so the map label says what it shows: "home in time from here, now". Rule A adds that walk from precomputed "time from" grids along each leg (engine), still without any search in the browser.
+   - Max stay at a station s, arriving at EVA time a: none if T(s) > 60, otherwise min(life support, sunset) − a − T(s).
+3. **Demo target:** the picker lists all stations with walk time, back-to-base and max stay; the six beats play for the scenario station (`docs/demo-script.md`, data check 5); other stations navigate without scripted events.
+
+## Grid spec checklist (Paul)
+
+The grid spec is the one page that lets engine, pipeline and frontend read the same grids. Proposed defaults, to confirm or change:
+
+| Item | Proposal |
+|---|---|
+| Extent | the map extent 137.34–137.42° E, 4.77–4.85° S, snapped outward to whole cells |
+| Cell | 10 m in the source projection (Mars equirectangular, `+proj=eqc +R=3396190`), about 474 × 474 cells |
+| Alignment | on the DEM's 1 m pixels, so each cell is exactly 10 × 10 DEM pixels (the orthophoto grid is offset by about 0.49 m; see `../pipeline/README.md`) |
+| Order | row 0 = north, columns west to east, index = row × nx + col |
+| Types | times float32 little-endian in minutes, unreachable +Inf; elevation and slope float32 |
+| Pointers | int32 index of the next cell towards the habitat, −1 at the habitat and where unreachable (alternative: uint8 direction code, 4× smaller) |
+| Meaning of time | walking time from the cell to the habitat at 1.5 km/h with the named slope penalty. In the zones-penalized variant the route avoids zones, but the stored value is the real walking time along that route, not the penalized cost |
+| Moves | 16 neighbours (8 give octagonal areas on open ground), no corner cutting past blocked cells |
+| Blocked | 1 m ridge mask aggregated to 10 m, and 10 m slope over 20° |
+| Header | `grid.json`: bbox in degrees, origin in metres, cell size, nx, ny, CRS, file names, dtype, nodata, source, generator, date |
+| Folder | `frontend/public/data/` |
+
+Team inputs the spec needs: the habitat coordinate, the slope penalty and the zone buffer radius (both labeled assumptions).
