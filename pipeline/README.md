@@ -112,7 +112,7 @@ Dasselbe Muster trägt die DEM-Arbeit. Die Funktionen `gdal_path`, `pick_overvie
 
 ## Stolperstellen
 
-- **Deployment:** `frontend/public/maps/*` ist in der `.gitignore`. Für GitHub Pages (Meilenstein 18:00) braucht es eine Entscheidung, wie das Overlay mitkommt, etwa das Bild gezielt freigeben oder im Build-Schritt erzeugen.
+- **Deployment:** Entschieden am 14.11.: Das 1-m-Overlay (`ortho_gale_1m.jpg` und `.json`) ist in der `.gitignore` freigegeben und liegt im Repo, damit GitHub Pages und die Offline-Demo nicht vom USGS-Server abhängen. Andere erzeugte Dateien in `frontend/public/maps/` bleiben ignoriert; wer ein neues Overlay ausliefern will, gibt es dort gezielt frei.
 - **Dateigröße:** 6,3 MB bei 1 m. Für schwache Verbindungen zusätzlich eine 2-m-Version erzeugen.
 - **Netz:** Auf Patricks Rechner fängt ein Proxy oder Virenscanner TLS für einige NASA-Seiten ab. Der USGS-Bucket auf S3 und `mars.nasa.gov` (MMGIS) gingen am 14.11. ohne Probleme. Zertifikatsprüfungen nie abschalten.
 - **Quellenangabe:** Das Orthofoto auf der Projektseite mit dem USGS-Datensatz zitieren (Link oben).

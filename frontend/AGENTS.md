@@ -10,7 +10,8 @@
 ## Einstiegspunkte und Befehle
 - `index.html` (Kopfband, Kartenfläche), `src/main.js` (Mars-CRS, Overlay, Animation), `src/boxwork-path.js` (Demo-Pfad, Platzhalter bis zur Route aus der Engine), `src/style.css` (Tokens aus `../DESIGN.md`), `vite.config.js` (`base: './'` für GitHub Pages).
 - `npm install`, dann `npm run dev` (Entwicklung), `npm run build` (nach `dist/`), `npm run preview` (Build ansehen, Port 4173).
-- Das Orthofoto kommt nicht aus Git: `public/maps/ortho_gale_1m.jpg` und `.json` erzeugt `../pipeline/ortho_overlay.py` (siehe `../pipeline/README.md`). Fehlt es, zeigt die Karte einen Hinweis statt eines Fehlers.
+- Das Orthofoto liegt im Repo (`public/maps/ortho_gale_1m.jpg` und `.json`, Entscheidung vom 14.11.2026). Neu erzeugen nur bei geändertem Ausschnitt mit `../pipeline/ortho_overlay.py` (siehe `../pipeline/README.md`). Fehlt es, zeigt die Karte einen Hinweis statt eines Fehlers.
+- Deployment: Jeder Push auf `main` baut und veröffentlicht die App auf GitHub Pages (`../.github/workflows/deploy-pages.yml`, Node 22, `npm ci`, `npm run build`).
 
 ## Umsetzung
 - Lies vor der Implementierung `../docs/architecture.md` und die vereinbarten Schnittstellen in `../shared/`, soweit vorhanden.
