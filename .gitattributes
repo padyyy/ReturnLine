@@ -1,0 +1,6 @@
+# Binary grids from the pipeline and the routing engine (shared/data-contract.md):
+# never convert line endings, never diff as text.
+*.f32 binary
+*.i32 binary
+*.u8 binary
+*.tif binary

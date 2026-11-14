@@ -27,7 +27,7 @@ export function numCell(v, unit = '', cap = '') {
 }
 
 export function srcChip(label, text, assumption = false) {
-  return `<button type="button" class="src${assumption ? ' is-assume' : ''}" data-tip="${text.replace(/"/g, '&quot;')}">${label}</button>`;
+  return `<button type="button" class="src${assumption ? ' is-assume' : ''}" data-tip-label="${esc(label)}" data-tip="${esc(text)}" aria-label="${esc(`${label}: ${text}`)}">${esc(label)}</button>`;
 }
 
 export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
