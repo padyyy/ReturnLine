@@ -13,6 +13,7 @@ const SRC = {
   LOO: ['LOO', 'Leave-one-out comparison with Curiosity\'s drives (routing engine).'],
   ROUTE: ['routes', 'Precomputed routes from the routing engine (shared/data-contract.md).'],
   ASSUME: ['assum.', 'Labeled assumption, set by the team and listed in the Assumptions panel.'],
+  TOBLER: ['Tobler', 'Tobler 1993, NCGIA Technical Report 93-1: hiking speed against slope, normalised so level ground gives the base speed; uphill and downhill differ. A terrestrial function, not validated for suited crews on Mars.'],
   EWT: ['EWT', 'About 2 km/h in NASA lunar planning (xEVA); 1.5 km/h on Mars is a labeled slowdown after Norcross et al., NASA TP-2009-214796.'],
   PP: ['COSPAR', 'COSPAR policy for human missions to Mars and NASA NID 8715.129 (2020): the reason for protected zones. Still to be checked against the primary texts.'],
 };
@@ -255,10 +256,10 @@ export function renderLegendNote(model) {
 export function renderAssume(model) {
   const sc = model.sc;
   const ph = new Set(sc.placeholder_fields || []);
-  const slope = sc.slope_penalty ?? (model.grid?.placeholder ? 'none yet' : model.grid ? 'from the engine' : 'open');
+  const slope = sc.slope_penalty ?? (model.grid?.placeholder ? 'none (flat placeholder)' : model.grid ? 'Tobler 1993' : 'open');
   const rows = [
     { l: 'Walking speed, level ground', v: `${sc.walk_speed_kmh} km/h`, s: ['EWT'], note: 'Sets the return area and the 60-minute line (routing engine).', f: 'walk_speed_kmh' },
-    { l: 'Slope penalty on walking speed', v: slope, s: ['ASSUME'], note: 'No sourced function yet; a team input. The placeholder grid uses flat ground.', f: 'slope_penalty' },
+    { l: 'Slope penalty on walking speed', v: slope, s: ['TOBLER', 'ASSUME'], note: 'Tobler hiking function, normalised to the level-ground speed; fastest slightly downhill. Applying it to suited crews is an assumption (team decision 2026-11-14).', f: 'slope_penalty' },
     { l: 'Slope blocked above', v: `${sc.slope_block_deg}°`, s: ['xEVA'], note: `Suit design limit. Comfortable walking up to ${sc.slope_comfort_deg ?? 10}°.`, f: 'slope_block_deg' },
     { l: 'Walking speed when injured', v: `×${Number(sc.injury_factor).toFixed(2)}`, s: ['ASSUME'], note: 'Halves the speed in beat 5 and doubles every time home.', f: 'injury_factor' },
     { l: 'Protected-zone buffer radius', v: `${sc.zone_buffer_m} m`, s: ['ASSUME', 'PP'], note: 'Zones follow planetary protection policy; the radius itself is ours.', f: 'zone_buffer_m' },

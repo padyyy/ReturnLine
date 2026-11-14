@@ -9,10 +9,14 @@ How it works
   averaged onto 10 m cells that sit on the DEM's 1 m pixel grid. Slope in degrees from that grid
   (central differences). The 1 m ridge mask cannot be built from the 4 m level; that is a known gap.
 - Blocked: no data, or slope above the suit limit (scenario.json slope_block_deg, 20 degrees).
-- Walking time: level-ground speed (scenario.json walk_speed_kmh, 1.5 km/h) slowed on slopes by a
-  Tobler-type factor exp(-3.5 |dz/d|), the same symmetric shape as both design sketches. It is a
-  labeled assumption: no sourced slope function exists yet. Being symmetric, the time from A to B
-  equals the time from B to A, so one search from the habitat gives the time home from every cell.
+- Walking time: Tobler's hiking function (Tobler 1993, NCGIA Technical Report 93-1), normalised so
+  that level ground gives the base speed (scenario.json walk_speed_kmh, 1.5 km/h):
+  speed = base * exp(-3.5 * (|g + 0.05| - 0.05)), g = dz / horizontal distance in walking direction.
+  Uphill and downhill differ (fastest at -5 %). Same formula and reference values as
+  shared/walking-model-vectors.json and frontend/src/route-duration.js (team decision 2026-11-14).
+  Applying a terrestrial walking function to suited crews on Mars is an assumption, not validated.
+  The search runs from the habitat over reversed edges: the time home from cell j is the time of
+  walking j -> i plus the time home from i, so the stored values are times *towards* the habitat.
 - Search: Dijkstra from the habitat over 16 neighbours, no corner cutting past blocked cells. Two
   variants: "penalized" (zone cells cost x20 and a clearance ring of zone_clearance_m costs x3, so
   routes keep away from zones while they can) and "allowed" (zones are ordinary ground, for ABORT).
@@ -108,6 +112,12 @@ def read_elevation(src_url: str, x0: float, y0: float, nx: int, ny: int) -> tupl
     return z, {"source": src_url, "level_m": pix, "nodata": nodata}
 
 
+def tobler_factor(dz: float, d: float) -> float:
+    """Speed relative to level ground for a step of horizontal length d (m) and rise dz (m)."""
+    g = dz / d
+    return math.exp(-3.5 * (abs(g + 0.05) - 0.05))
+
+
 def search(z, blocked, cost_mult, start, cos_lat, speed_mpm):
     """Dijkstra from the habitat cell. Returns (time to habitat in minutes, pointer to the next cell)."""
     ny, nx = z.shape
@@ -140,8 +150,8 @@ def search(z, blocked, cost_mult, start, cos_lat, speed_mpm):
                 continue
             if via and any(bl[(r + vr) * nx + (col + vc)] for vr, vc in via):
                 continue
-            # walking from j towards i (home); the speed factor is symmetric in the slope
-            t = d / (speed_mpm * math.exp(-3.5 * abs(zf[j] - zi) / d))
+            # walking from j towards i (home): grade in that direction, Tobler factor
+            t = d / (speed_mpm * tobler_factor(zi - zf[j], d))
             nc = c + t * max(cm[i], cm[j])
             if nc < cost[j]:
                 cost[j] = nc
@@ -244,7 +254,7 @@ def main(argv: list[str] | None = None) -> int:
                   "ptr": "int32 little-endian, index of the next cell towards the habitat, -1 at the habitat and where unreachable",
                   "elev": "float32 little-endian, metres, NaN without data", "slope": "float32 little-endian, degrees"},
         "habitat_cell": hc, "walk_speed_kmh": sc.get("walk_speed_kmh", 1.5),
-        "slope_penalty": "assumption: speed x exp(-3.5 |dz/d|), symmetric, Tobler-type shape as in the design sketches",
+        "slope_penalty": "Tobler 1993, normalised to the base speed on level ground: speed = base * exp(-3.5 * (|g + 0.05| - 0.05)), g = dz/d in walking direction; not validated for suited crews on Mars",
         "blocked": f"no data or slope above {slope_block} degrees; 1 m ridge mask not included (needs the 1 m DEM)",
         "zone_penalty_factor": ZONE_PENALTY, "zone_clearance_m": clearance, "zone_clearance_factor": CLEARANCE_PENALTY,
         "neighbours": 16, "source": src_info, "date": date.today().isoformat(),
@@ -272,9 +282,17 @@ def main(argv: list[str] | None = None) -> int:
         while ptr_pen[cells[-1]] != -1:
             cells.append(int(ptr_pen[cells[-1]]))
         pts = [s_lonlat] + [centre(i) for i in cells[1:-1]] + [tuple(hab)]
-        T0 = float(tflat[sc_i])
-        times = [0.0] + [T0 - float(tflat[i]) for i in cells[1:-1]] + [T0]
         cell_seq = [sc_i] + cells[1:-1] + [hc]
+
+        # walking minutes along a point sequence in its own direction (Tobler is not symmetric,
+        # so the way out is timed outbound, not as the reversed way home)
+        def walk_times(points, cs):
+            ts = [0.0]
+            for k in range(1, len(points)):
+                seg = dist_m(points[k - 1], points[k])
+                dz = float(zflat[cs[k]]) - float(zflat[cs[k - 1]])
+                ts.append(ts[-1] + (seg / (speed * tobler_factor(dz, seg)) if seg > 0 else 0.0))
+            return ts
 
         def track(points, ts, cs):
             d, verts, zone_m = 0.0, [], 0.0
@@ -293,9 +311,9 @@ def main(argv: list[str] | None = None) -> int:
                     "max_slope_deg": round(max(v["slope_deg"] for v in verts), 1),
                     "max_ttb_min": round(max(float(tflat[c]) for c in cs), 1)}
 
-        ret = track(pts, times, cell_seq)
+        ret = track(pts, walk_times(pts, cell_seq), cell_seq)
         rpts, rcs = pts[::-1], cell_seq[::-1]
-        out_t = track(rpts, [T0 - t for t in times[::-1]], rcs)
+        out_t = track(rpts, walk_times(rpts, rcs), rcs)
         route_list.append({"station": n, "out": out_t, "ret": ret})
         a_all = float(ttb_all[sc_i])
         report.append(f"station {n}: {ret['length_m']:.0f} m, {ret['minutes']:.1f} min (zones allowed {a_all:.1f} min), "

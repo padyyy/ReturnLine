@@ -5,7 +5,7 @@
 //   beat 4: the crew can drift to 10 m from the drift zone on the way home;
 //   beat 5: after the injury (speed x0.5) the protected way home is too long and the way through the
 //           ABORT zone fits, and that way really enters the zone.
-// Same walking model as pipeline/time_grid.py (edge time d / (v * exp(-3.5 |dz/d|)), 16 neighbours,
+// Same walking model as pipeline/time_grid.py (Tobler 1993, normalised; shared/walking-model-vectors.json), 16 neighbours,
 // no corner cutting, slope > 20 deg blocked, zones x20, clearance ring x3). Inputs: frontend/public/data/
 // grid.json, elev_10m.f32, slope_10m.f32 (from pipeline/time_grid.py). A design tool: it picks
 // placeholder positions; the grid the console shows is still written by pipeline/time_grid.py.
@@ -65,7 +65,8 @@ function search(start, mult) {
       let ok = true;
       for (const [vr, vc] of mv.via) if (blocked[(r + vr) * NX + (col + vc)]) { ok = false; break; }
       if (!ok) continue;
-      const t = mv.d / (SPEED * Math.exp(-3.5 * Math.abs(z[j] - z[i]) / mv.d));
+      const g = (z[i] - z[j]) / mv.d; // walking j -> i (towards home), Tobler 1993 normalised to SPEED on level ground
+      const t = mv.d / (SPEED * Math.exp(-3.5 * (Math.abs(g + 0.05) - 0.05)));
       const nc = c + t * (mult ? Math.max(mult[i], mult[j]) : 1);
       if (nc < cost[j]) { cost[j] = nc; ptr[j] = i; tim[j] = tim[i] + t; push(nc, j); }
     }

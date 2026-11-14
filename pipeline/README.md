@@ -127,7 +127,8 @@ Stand 14.11.2026, abends. Das ist der geplante Python-Fallback für die Engine. 
 - **Höhe:** 4-m-Übersicht des DEM, gemittelt auf 10-m-Zellen. Die Zellen liegen auf dem 1-m-Pixelraster des DEM. Die Hangneigung kommt aus diesem Raster.
 - **Gesperrt:** keine Daten oder Hang über 20° (`slope_block_deg`).
   - Lücke: Die 1-m-Grat-Maske fehlt. Sie braucht das 1-m-DEM; schmale Boxwork-Rücken sind bei 4 m nicht sichtbar.
-- **Gehzeit:** 1,5 km/h auf ebenem Boden, am Hang verlangsamt mit `exp(−3,5 · |Δh/Strecke|)`. Das ist dieselbe symmetrische Tobler-Form wie in beiden Design-Sketches und eine gekennzeichnete Annahme, keine belegte Funktion. Weil sie symmetrisch ist, ist der Weg A→B so lang wie B→A. Deshalb reicht eine Suche vom Habitat aus.
+- **Gehzeit (seit 14.11. abends, Teamentscheidung):** Tobler-Wanderfunktion (Tobler 1993), normiert auf 1,5 km/h auf ebenem Boden: Geschwindigkeit = Grundgeschwindigkeit · exp(−3,5 · (|g + 0,05| − 0,05)), g = Höhenänderung / Strecke in Gehrichtung. Bergauf und bergab unterscheiden sich, am schnellsten ist leichtes Gefälle (−5 %). Dieselbe Formel wie Michaels Modul (`frontend/src/route-duration.js`) und die Testvektoren `shared/walking-model-vectors.json`. Die Suche läuft vom Habitat über umgekehrte Kanten, gespeichert ist also die Zeit *zum* Habitat. Der Hinweg in `routes.json` wird in seiner eigenen Richtung gerechnet. Für Raumanzüge auf dem Mars ist das eine Annahme, keine Validierung.
+- **Kontrolle:** `cd frontend && node scripts/check-route-times.mjs` vergleicht die Engine-Zeiten mit Michaels Modell (erwartet: unter 0,5 % Abweichung, nur durch Rundung).
 - **Suche:** Dijkstra vom Habitat, 16 Nachbarn, keine Ecken über gesperrte Zellen.
   - „penalized“: Zonen ×20, Ring von `zone_clearance_m` um jede Zone ×3.
   - „allowed“: Zonen sind normaler Boden (für ABORT).
