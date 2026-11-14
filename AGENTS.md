@@ -1,5 +1,10 @@
 # AI Agent Instructions
 
+## 0. Project Context
+- Product and scope: `PRODUCT.md`, `docs/mission-scenario.md`, `docs/architecture.md`, `docs/data-sources.md`.
+- Pre-kickoff research and team decision papers: `docs/preparation/` (record only; no code, design or number from there goes into the product without being redone at the event).
+- Claude Code also loads `CLAUDE.md` with the project history and decisions.
+
 ## 1. General Rules
 - Read this file before starting any task.
 - Follow the existing project architecture and conventions.

@@ -1,6 +1,6 @@
 # Scrum Lite – Hackathon Workflow
 
-**Goal:** Efficient development during the 48-hour hackathon with short meetings, continuous integration and clear responsibilities.
+**Goal:** Efficient development during the hackathon with short meetings, continuous integration and clear responsibilities. In Heilbronn we have about 19–20 working hours: Saturday 10:30 to the final deadline on Sunday 15:45. Milestones are in `docs/mission-scenario.md`.
 
 ## 1. Sprint Structure
 
