@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from backend.dem_demo import derive_features, nearest_open, largest_component
+from backend.terrain_features import derive_features
 
 
 class DemFeatureTests(unittest.TestCase):
@@ -28,12 +28,3 @@ class DemFeatureTests(unittest.TestCase):
         self.assertTrue(np.isnan(roughness[10, 10]))
         self.assertAlmostEqual(quality[10, 10], 120/121)
 
-    def test_endpoint_selection(self):
-        self.assertEqual(nearest_open(np.array([[np.nan, 1.], [np.nan, np.nan]]), (0, 0)), (0, 1))
-        with self.assertRaises(ValueError):
-            nearest_open(np.full((2, 2), np.nan), (0, 0))
-
-    def test_largest_component_does_not_bridge_obstacles(self):
-        costs = np.array([[1., np.nan, 1.], [np.nan, np.nan, 1.]])
-        np.testing.assert_array_equal(largest_component(costs),
-                                      [[False, False, True], [False, False, True]])

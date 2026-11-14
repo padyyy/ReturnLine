@@ -12,7 +12,10 @@ class TerrainCell:
     slope_deg: float | None
     roughness_m: float | None
     valid_fraction: float | None
-    blocked: bool = False
+    blocked: bool | None = False
+    protected_zone: bool | None = None
+    radiation_msv_per_day: float | None = None
+    scientifically_relevant: bool | None = None
 
 
 @dataclass(frozen=True)
@@ -39,12 +42,17 @@ class CostConfig:
 
 
 def build_cost_grid(
-    terrain: Sequence[Sequence[TerrainCell]], config: CostConfig
+    terrain: Sequence[Sequence[TerrainCell]], config: CostConfig, *, ignore_missing: bool = False
 ) -> list[list[float | None]]:
     """Normalize features with fixed reference limits and apply weighted penalties.
 
     cost = base * (1 + ws*slope/max_slope + wr*roughness/max_roughness
                    + wu*(1-valid_fraction)).
+
+    With ignore_missing=True, unavailable slope/roughness/quality and unknown
+    blocked status are ignored. Missing elevation also adds no restriction;
+    this permissive mode does not certify that unknown terrain is traversable.
+    Protected/science/radiation fields are metadata here, not travel-time costs.
 
     Limits are inclusive: values ABOVE slope/roughness limits or BELOW minimum
     valid fraction are blocked. Explicitly blocked cells and cells containing
@@ -66,7 +74,7 @@ def build_cost_grid(
         for cell in row:
             if not isinstance(cell, TerrainCell):
                 raise ValueError("each cell must be a TerrainCell")
-            if not isinstance(cell.blocked, bool):
+            if not isinstance(cell.blocked, bool) and not (ignore_missing and cell.blocked is None):
                 raise ValueError("blocked must be a boolean")
             if cell.blocked:
                 costs.append(None)
@@ -74,10 +82,13 @@ def build_cost_grid(
             values = (cell.elevation_m, cell.slope_deg, cell.roughness_m, cell.valid_fraction)
             if any(v is not None and not isinstance(v, Real) for v in values):
                 raise ValueError("terrain features must be numeric or None")
-            if any(v is None or not isfinite(v) for v in values):
+            if not ignore_missing and any(v is None or not isfinite(v) for v in values):
                 costs.append(None)
                 continue
-            slope, roughness, quality = cell.slope_deg, cell.roughness_m, cell.valid_fraction
+            # Neutral terms for unavailable optional inputs; the cell retains None.
+            slope = cell.slope_deg if cell.slope_deg is not None and isfinite(cell.slope_deg) else 0.0
+            roughness = cell.roughness_m if cell.roughness_m is not None and isfinite(cell.roughness_m) else 0.0
+            quality = cell.valid_fraction if cell.valid_fraction is not None and isfinite(cell.valid_fraction) else 1.0
             if not 0 <= slope <= 90 or roughness < 0 or not 0 <= quality <= 1:
                 raise ValueError("invalid slope, roughness or valid fraction")
             if (slope > config.max_slope_deg or roughness > config.max_roughness_m

@@ -1,41 +1,28 @@
-# Backend
+# Offline-Routing
 
-## Stand und Zweck
-- **Es gibt keinen Server und keine API.** Entschieden am 13.11.2026 beim Konzeptabgleich (siehe `../docs/architecture.md`). Die Web-App ist statisch und läuft auf GitHub Pages.
-- Die C#-Arbeit ist eine **Offline-Routing-Engine** (Dijkstra vom Habitat, Rückweg-Zeiger, zwei Varianten, Routen, Vergleich mit Curiosity). Sie schreibt Dateien, die das Frontend nur liest.
-- Ob dieser Ordner dafür umbenannt (etwa in `routing/`) oder entfernt wird, entscheidet der Tech Lead beim Kickoff.
+## Einstieg und Struktur
+- Kein Server. Python bereitet Daten auf und berechnet Offline-Pfade; Frontend-Integration ist separat. Die C#-Abschnitte in älteren Konzeptunterlagen sind frühere Planung.
+- `astar.py`: A* auf positiven Kosten pro Meter oder `None` für gesperrte Zellen, intern `(row,column)`, optional Diagonalen ohne Eckdurchquerung und `on_expand`-Callback. `PathResult` oder `None`, ungültige Endpunkte erzeugen `ValueError`.
+- `terrain_features.py`: lokale Ebenenanpassung, Neigung und RMS-Rauigkeit, standardmäßig 11×11 Zellen. Unvollständige Fenster ergeben NaN; Routingpolicy entscheidet deren Behandlung.
+- `terrain_costs.py`: `TerrainCell`, `CostConfig`, Normalisierung. Der strikte Standard sperrt fehlende Daten; Mapper nutzt explizit `ignore_missing=True`, fehlende Merkmale einschließlich Höhe erzeugen dort keine Einschränkung. Bekannte Sperren und überschrittene Grenzen bleiben wirksam.
+- `geoMapper/mars_mapping/`: Bibliothek für Mars-CRS und GeoTIFF-/CSV-Zuordnung. Eigene Regeln in `geoMapper/AGENTS.md`.
+- `mapper_route.py`: `prepare_maps` bereitet gemeinsame Karten einmal vor; `route_prepared` berechnet einzelne Routen darauf. `route_from_maps` bleibt die Komfortfunktion für einen Weg. CLI für einzelne Wege; öffentliche Parameter und Ausgabe in `MAPPER_ROUTING.md`.
+- `science_routes.py`: mehrere unabhängige Wege von einer Basis; Eingaben in `config/science_targets.json`. Dieselbe Karte und dasselbe Kostenraster für alle Ziele, kein Rundweg. Start/Ziel werden nicht verschoben.
+- `tests/`: nur Tests der beibehaltenen Kernfunktionen, Kartenintegration und XY-Exporte. Abgelöste `grid_demo.py`/`dem_demo.py` und zugehörige reine Demo-Tests entfernt; Alte Berechnungen wurden auf Nutzerauftrag entfernt; aktuelle Basisrouten liegen unter `backend/tmp/science_routes/`.
 
-## Python-A* (implementiert, noch nicht integriert)
-- Auf ausdrücklichen Nutzerauftrag liegt eine eigenständige Offline-Implementierung in `astar.py`. Die C#-Angaben oben beschreiben die frühere Planung.
-- `astar(costs, start, goal, *, cell_size_m=1.0, allow_diagonal=False)` benötigt nur die Standardbibliothek und Python >= 3.10.
-- Eingabe: rechteckiges Raster mit endlichen positiven Kosten pro Meter; `None` sperrt Zellen. NoData vorher in `None` umwandeln. Höhenwerte allein sind kein Kostenraster.
-- Koordinaten sind nullbasierte `(Zeile, Spalte)` in Eingabereihenfolge; quadratische Zellen, keine geografische Transformation.
-- Ausgabe: `PathResult(path, total_cost)` mit Start und Ziel; `None` bei gesperrten Endpunkten oder fehlendem Weg. Ungültige Eingaben lösen `ValueError` aus.
-- Schrittkosten: Länge in Metern mal Kosten der Zielzelle; Start ohne Eintrittskosten. Diagonalen sind optional und durchqueren keine gesperrten Ecken.
-- Tests aus dem Repository-Stamm: `python -m unittest discover -s backend -v`.
-- Keine Anbindung an Datenpipeline, Frontend oder Exportverträge; keine Erzeugung des geplanten Rückweg-Zeiger-Rasters.
+## Koordinaten und Merkmale
+- Geoeingaben `(lon,lat)`, ostpositive Länge und Mars-CRS. Zellobjekte/Arrays `[row,column]`; exportierter Pfad `[[x=column,y=row],...]`, Start bis Ziel. Ursprung oben links, x nach rechts, y nach unten.
+- Merkmale: Höhe (m), Neigung (Grad), Rauigkeit (m), Sperrstatus, Protected Zone, Strahlung (mSv/Tag), wissenschaftliche Relevanz; zusätzlich Anteil gültiger Höhen im Ableitungsfenster.
+- TIFF: Nearest Neighbor, keine automatische Flächenmittelung oder Einheitenkonvertierung. CSV: nächster Messpunkt in explizitem Radius, keine räumliche Interpolation oder Zeitaggregation. Fehlende Felder None, in numerischen NPZ-Dateien NaN.
+- Ohne Zusatzkarten Neigung/Rauigkeit aus DEM abgeleitet; Zusatzkarten laut expliziter semantischer JSON-Bindung. Strahlung/Wissenschaft nur Metadaten. Protected-Zuschlag optional und nichtnegativ.
+- Default-Testgrid ist lokal metrisch aus DEM-Mittelpunkt und Auflösung abgeleitet. Nicht automatisch das vereinbarte Frontend-Produktionsgrid.
 
-## Umsetzung
-- `grid_demo.py`: reproduzierbares synthetisches 100×100-Grid als Liste von Zeilen mit je 100 `TerrainCell`-Datensätzen. Aufruf aus dem Repository-Stamm: `uv run --extra plot python -m backend.grid_demo`.
-- Ausgabe standardmäßig im ignorierten `tmp/grid_demo/` (änderbar mit `--output-dir`): `01_normalized_costs.png`, `02_astar_nodes.png` und `grid_example.json` mit Rohmerkmalen, Konfiguration, Kosten, ausgewerteten Knoten und Pfad. 1 m pro Zelle (100×100 m Fläche), Demo-Kosteneinheiten ohne Zeitkalibrierung. Steiler Grat mit Durchgang, raue Fläche und unzureichende Daten dienen nur dem Test.
-- A* akzeptiert optional `on_expand`, einen Callback für ausgewertete Zellen nach dem Entfernen veralteter Heap-Einträge einschließlich Start/Ziel. Die Demo unterscheidet diese Suchknoten vom Ergebnispfad; noch offene Frontier-Knoten sind nicht markiert.
-- Matplotlib ist ausschließlich über das optionale `plot`-Extra in `pyproject.toml` nötig. `test_grid_demo.py` prüft Form, Reproduzierbarkeit, Suchbeobachtung, begehbaren Pfad und aufsummierte Kosten.
-- `terrain_costs.py` schaltet `build_cost_grid(terrain, config)` vor A*: `TerrainCell(elevation_m, slope_deg, roughness_m, valid_fraction, blocked=False)` je Zelle; Originaldaten bleiben erhalten.
-- `CostConfig` verlangt `max_slope_deg`, `max_roughness_m`, `min_valid_fraction`, `base_cost_per_m`. Gewichte für Neigung, Rauigkeit und Unsicherheit sind nichtnegative konfigurierbare Zahlen (Standard jeweils 1). Konkrete Grenzwerte muss das Team festlegen.
-- Kostenformel: `base * (1 + slope_weight*slope/max_slope + roughness_weight*roughness/max_roughness + uncertainty_weight*(1-valid_fraction))`. Feste Referenzen halten die Normalisierung unabhängig vom Kartenausschnitt. Kosten sind mindestens `base`; keine kalibrierte Reisezeit ohne entsprechendes Modell.
-- Überschrittene Neigungs-/Rauigkeitsgrenzen, unterschrittener Mindestanteil gültiger Daten, explizite Sperren sowie fehlende/nichtendliche Merkmale erzeugen `None`. Exakt erreichte Grenzen bleiben erlaubt. Physikalisch ungültige endliche Werte lösen `ValueError` aus.
-- Absolute Höhe wird nicht bestraft. Richtungsabhängige Bergauf-/Bergabkosten sind noch nicht implementiert. Strahlung und Temperatur gehen derzeit nicht in die Kosten ein.
-- `test_terrain_costs.py` prüft Normalisierung, Sperren, Konfiguration, Unabhängigkeit vom Ausschnitt und Integration mit A*. CSV-Anbindung fehlt; separater DEM-Test siehe unten.
-- Ausgaben der Engine folgen der Grid-Spezifikation in `../shared/` (Ausschnitt, 10-m-Zellen, Zeilenordnung, float32 little-endian, Kodierung der Rückweg-Zeiger, Dateinamen).
-- Keine Laufzeit-Abhängigkeit des Frontends von diesem Code; der Browser rechnet keine Routen.
-- Ergänze bei Implementierungen relevante Tests und dokumentiere Build, Aufruf und Prüfungen.
-- Halte diese Datei mit tatsächlichen Einstiegspunkten und Abhängigkeiten aktuell.
+## Ausführen und prüfen
+- Einzelweg: `uv run --extra plot python -m backend.mapper_route /pfad/dem.tif --start LON LAT --goal LON LAT --plot`.
+- Vier Wissenschaftsorte: `uv run --extra plot python -m backend.science_routes /pfad/dem.tif --plot`.
+- Tests: `uv run python -m unittest discover -s backend/tests -v`.
+- Ausgaben nur nach ignoriertem `backend/tmp/` (CLI `--output-dir`). Batch: pro Ziel `path_xy.json`/`summary.json`, gemeinsam `paths_xy.json`, `routes_summary.json`, `grid.json`, `mapped_layers.npz` mit Metadaten sowie `routes.png` bei `--plot`.
+- Ergebniswerte sind Demo-Kosten, keine kalibrierten Gehzeiten. Aktuelle Grenzen 20° Neigung/0,5 m Rauigkeit und Gewichte sind Testannahmen. Kein Fahrzeug-/Astronauten-Footprint oder vollständiges Hindernismodell.
+- Vor Frontend-Export mit `../shared/data-contract.md` abstimmen; lokale NPZ-/XY-Ausgaben sind kein neuer Browservertrag. Kein Commit/Push ohne Auftrag.
 
-## DEM-Test mit echten Höhenwerten
-- `dem_demo.py`: `uv run --extra plot python -m backend.dem_demo /pfad/zum/dem.tif`. Optionale Argumente `--output-dir`, `--start ZEILE SPALTE`, `--goal ZEILE SPALTE`. Benötigt Rasterio, NumPy (über Rasterio installiert) und Matplotlib.
-- Erwartet nordorientierte quadratische Pixel in projiziertem Meter-CRS; Höhen in Metern (Annahme im Ergebnis dokumentiert, falls die Band-Einheit fehlt). Liest NoData maskiert, keine Veränderung der Quelldatei und keine Erd-Reprojektion.
-- Neigung aus lokaler Ausgleichsebene; Rauigkeit als RMS-Höhenrest zu dieser Ebene. 11×11-Fenster = 10 m zwischen äußeren Pixelzentren bei 1-m-Pixeln. Unvollständige Fenster am Rand oder nahe NoData konservativ gesperrt. `valid_fraction` bedeutet gültiger Fensteranteil, keine vermessene Genauigkeit. Kein vollständiges Hindernis-/Fahrzeugmodell.
-- Kosten über bestehendes `build_cost_grid`; Testgrenzen 20° und 0,5 m Rauigkeit, Mindestanteil 0,8, Basis 1 und Gewichte 2/2/1 sind keine kalibrierten Missionsparameter. Kosten bleiben Demo-Einheiten pro Meter, keine Sekunden.
-- Automatische Start-/Zielwahl nahe 10%/90% der Rasterindizes im größten vierfach zusammenhängenden begehbaren Bereich. Explizite Endpunkte werden nicht verschoben. A* nutzt vier Nachbarn. Ergebnis darf keinen Weg enthalten; Grenzen werden deshalb nicht gelockert.
-- Ausgabe nach `tmp/dem_demo/`: Höhenplot, Kostenplot, Such-/Pfadplot, `route_summary.json` mit Rastermetadaten und Route sowie `terrain_arrays.npz` mit Höhen, Merkmalen, Kosten und Suchmaske. Neue Läufe überschreiben diese Dateien. Keine Frontend-Anbindung.
-- `test_dem_demo.py`: analytische Ebene, Auflösungsskalierung, RMS-Rauigkeit, NoData/Ränder sowie zusammenhängende automatische Endpunktwahl.
+- `config/base.json` und `config/science_locations.json`: einfache Koordinatenexporte (lon/lat in Grad sowie x/y im aktuellen Grid aus `backend/routes/science_routes/grid.json`). Snapshots aus `science_targets.json` und berechneten Routen, nicht separate Routing-Eingaben; bei Geometrieänderung neu ableiten.
