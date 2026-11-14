@@ -118,3 +118,8 @@ frontend/public/maps/*
 *.log
 .cache/
 tmp/
+
+# ==========================================
+# Local design tool state (Impeccable)
+# ==========================================
+.impeccable/
