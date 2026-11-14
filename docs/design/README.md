@@ -34,3 +34,18 @@ Replace before anyone shows a screenshot as a result: orthophoto overlay, time-t
 - **Mars distances:** the sketch draws in metres on a flat grid. In Leaflet use only `map.distance()`; `latlng.distanceTo()` and `L.circle` use Earth's radius.
 
 The direction contract for this surface is in `.impeccable/surfaces/docs-design-habitat-console-sketch-html.md`.
+
+## Navigation and HUD sketch (work in progress)
+
+`navigation-hud-sketch.html` is a copy of the console sketch with a navigation mode added (branch `navigation-view-/-hud`). The console sketch above stays unchanged.
+
+- **Planning:** the right column gets a "Navigate" list of the four stations with walk time and the time back to base. Picking one previews the route on the map; "Start route" switches the page to navigation and starts the EVA clock at 09:00 LMST.
+- **Navigation, left (about 3/4):** the forearm tablet. The map is heading-up with the crew arrow fixed. Four hardware keys sit in the corners, also on keys `1` to `4`: 1 data (data and map swap places), 2 zoom in, 3 zoom out, 4 base map (orthophoto, slope, plain).
+- **Return stages:** green up to 15 min before the return limit, yellow up to the limit, red beyond it (ABORT). The limit is the tightest of the 60-minute rule, life support and sunset. The 15 min margin is a sketch assumption.
+- **Navigation, top right:** helmet HUD. The compass rose turns with the heading (sketch: heading = walking direction). Base and target sit on the rim at their bearing and move inside once within 250 m. The ring takes the stage colour and word. Corners show EVA time, time to sunset, radiation dose and life support; up to three warnings sit below.
+- **Navigation, bottom right:** the data sheet, or the small map after key 1.
+- After the target, the sketch adds 10 min of station work, then routes home.
+
+URL parameters: `?pick=2` preselects a station; `?nav=2` starts navigation to it, with `&t=<EVA minutes>`, `&pause=1`, `&swap=1`, `&zoom=0`…`4` and `&navbase=slope|plain`.
+
+The yellow stage breaks DESIGN.md's rule that yellow is never a status colour. It is a separate amber (`#D9A300`), and every stage also carries its words.
