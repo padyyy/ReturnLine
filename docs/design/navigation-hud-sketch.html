@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ReturnLine Navigation and HUD</title>
-<meta name="description" content="Design sketch of ReturnLine navigation: plan on the habitat console, pick a station, start the route, then follow it on the forearm tablet with a helmet HUD. Terrain, routes and numbers are synthetic.">
+<meta name="description" content="Design sketch of ReturnLine navigation: plan on the habitat console, pick a station and the stay, start the route, then follow it on the forearm tablet with a helmet HUD. Terrain, routes and numbers are synthetic.">
 <style>
 @font-face { font-family: "Atkinson Hyperlegible Next"; src: url("fonts/AtkinsonHyperlegibleNext-wght.ttf") format("truetype"); font-weight: 200 800; font-display: swap; }
 @font-face { font-family: "Atkinson Hyperlegible Mono"; src: url("fonts/AtkinsonHyperlegibleMono-wght.ttf") format("truetype"); font-weight: 200 800; font-display: swap; }
@@ -136,7 +136,7 @@ svg.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none;
 
 /* ---------- console layout ---------- */
 .console { display: grid; grid-template-columns: minmax(0, 1fr) clamp(400px, 31vw, 600px); min-height: 0; }
-.mapcol { display: grid; grid-template-rows: minmax(0, 1fr) auto auto; min-width: 0; min-height: 0; border-right: 1.5px solid var(--graphite); }
+.mapcol { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; min-height: 0; border-right: 1.5px solid var(--graphite); }
 .mapwrap { position: relative; min-height: 0; overflow: hidden; background: #8E918B; }
 .stage { position: absolute; inset: 0; }
 .stage canvas, .stage svg.ov { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
@@ -145,64 +145,6 @@ svg.ov text { font-family: var(--f-text); }
 svg.ov .lbl { font-size: 13px; font-weight: 700; paint-order: stroke; stroke: var(--paper); stroke-width: 3.5px; stroke-linejoin: round; }
 svg.ov .lbl-num { font-family: var(--f-num); font-size: 12.5px; font-weight: 600; paint-order: stroke; stroke: var(--paper); stroke-width: 3.5px; stroke-linejoin: round; }
 svg.ov .tick { font-family: var(--f-num); font-size: 10.5px; fill: var(--graphite); paint-order: stroke; stroke: var(--paper); stroke-width: 4.5px; stroke-linejoin: round; }
-.ring { fill: none; stroke: var(--red); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-.ring.draw { animation: ringdraw .55s var(--ease) both; }
-.ring-hit { fill: transparent; stroke: none; cursor: pointer; pointer-events: all; }
-g.finding.is-hl .ring { stroke-width: 3.4; }
-g.finding.old .ring { opacity: .4; }
-g.finding.old.is-hl .ring { opacity: 1; }
-@keyframes ringdraw { from { stroke-dashoffset: var(--len); } to { stroke-dashoffset: 0; } }
-
-/* crew display */
-.crew {
-  position: absolute; bottom: 16px; left: 16px; z-index: 6; width: 318px;
-  background: var(--paper); border: 1.5px solid var(--graphite);
-}
-.crew-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px 8px 12px; border-bottom: 1px solid var(--rule-2); }
-.crew-title { font-weight: 700; font-size: 13.5px; white-space: nowrap; }
-.crew-title .ro { font-weight: 400; color: var(--graphite-2); font-size: var(--t-cap); margin-left: 4px; }
-.cd-state { display: flex; align-items: center; gap: 8px; padding: 9px 12px; font-weight: 800; font-size: 15px; letter-spacing: .02em; border-bottom: 1px solid var(--rule); }
-.cd-state .num { margin-left: auto; font-size: 15px; }
-.cd-state.ok { color: var(--green); }
-.cd-state.due { background: var(--graphite); color: var(--cover); }
-.cd-state.home { background: var(--green); color: var(--paper); }
-.cd-warn { display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--red-tint); color: var(--red); font-weight: 700; font-size: 13.5px; border-bottom: 1px solid var(--rule); }
-.cd-vals { margin: 0; padding: 4px 12px 8px; }
-.cd-vals > div { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 10px; padding: 6px 0; border-bottom: 1px solid var(--rule); }
-.cd-vals > div:last-child { border-bottom: 0; }
-.cd-vals dt { font-size: 13.5px; font-weight: 600; }
-.cd-vals dt .cap { display: block; font-weight: 400; }
-.cd-vals dd { margin: 0; text-align: right; font-family: var(--f-num); font-size: var(--t-big); font-weight: 600; line-height: 1.1; }
-.cd-fill { padding: 14px 12px 12px; background: var(--red); color: var(--paper); }
-.cd-fill .instr { font-size: 26px; font-weight: 800; line-height: 1.08; letter-spacing: -.005em; }
-.cd-fill .route { margin-top: 10px; font-size: 14px; font-weight: 600; }
-.cd-compact { display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px 12px 10px; gap: 6px; }
-.cd-compact div { font-size: 11.5px; color: var(--graphite-2); line-height: 1.2; }
-.cd-compact b { display: block; font: 600 18px/1.15 var(--f-num); color: var(--graphite); }
-
-/* cuff skin */
-.crew[data-skin="cuff"] { background: transparent; border: 0; box-shadow: none; width: 300px; }
-.crew[data-skin="cuff"] .crew-head { background: var(--paper); border: 1.5px solid var(--graphite); margin-bottom: 10px; }
-.cuff { position: relative; padding: 0 18px; }
-.cuff-strap { height: 18px; margin: 0 34px; background: transparent; border: 1.5px solid var(--graphite); }
-.cuff-strap.top { border-bottom: 0; }
-.cuff-strap.bottom { border-top: 0; }
-.cuff-body { position: relative; background: var(--graphite); padding: 14px 40px; }
-.cuff-keys { position: absolute; top: 18px; bottom: 18px; display: flex; flex-direction: column; justify-content: space-between; }
-.cuff-keys.l { left: 7px; } .cuff-keys.r { right: 7px; }
-.cuff-key { width: 26px; height: 40px; background: var(--graphite); border: 1.5px solid #C9CDC2; display: grid; place-items: center; }
-.cuff-key span { writing-mode: vertical-rl; transform: rotate(180deg); font: 700 8.5px/1 var(--f-num); letter-spacing: .08em; color: #C9CDC2; }
-.cuff-screen { background: var(--paper); color: var(--graphite); padding: 8px 10px 6px; }
-.cuff-state { font: 800 15px/1.1 var(--f-num); letter-spacing: .04em; padding-bottom: 6px; border-bottom: 2px solid #161718; display: flex; justify-content: space-between; }
-.cuff-state.abort { background: var(--red); color: var(--paper); margin: -8px -10px 0; padding: 8px 10px 7px; border: 0; flex-direction: column; gap: 3px; }
-.cuff-state.abort .sub { font-size: 11.5px; letter-spacing: .03em; }
-.cuff-row.pending span { font-size: 10.5px; }
-.cuff-row.pending { padding: 8px 0; flex-direction: column; align-items: flex-start; gap: 4px; }
-.cuff-row { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0; border-bottom: 1px solid rgba(22,23,24,.25); }
-.cuff-row:last-child { border-bottom: 0; }
-.cuff-row span { font: 700 11px/1 var(--f-num); letter-spacing: .06em; }
-.cuff-row b { font: 700 25px/1 var(--f-num); }
-.cuff-note { margin-top: 8px; color: var(--paper); background: rgba(43,45,47,.82); font-size: 11.5px; padding: 6px 8px; }
 
 /* legend */
 .legend {
@@ -216,51 +158,13 @@ g.finding.old.is-hl .ring { opacity: 1; }
 .legend li { display: grid; grid-template-columns: 34px 1fr; align-items: center; gap: 8px; font-size: 12.5px; line-height: 1.25; padding: 3px 0; }
 .legend svg { width: 34px; height: 18px; overflow: visible; }
 
-.mapfoot { position: absolute; left: 350px; right: 16px; bottom: 12px; z-index: 5; display: flex; align-items: flex-end; gap: 14px; pointer-events: none; }
+.mapfoot { position: absolute; left: 16px; right: 16px; bottom: 12px; z-index: 5; display: flex; align-items: flex-end; gap: 14px; pointer-events: none; }
 .readout { font: 600 12px/1.3 var(--f-num); background: rgba(237,240,230,.94); border: 1px solid var(--rule-2); padding: 5px 8px; min-height: 26px; }
 .readout:empty { display: none; }
 .scale { display: flex; flex-direction: column; gap: 3px; }
 .scale .bar { height: 7px; border: 1.5px solid var(--graphite); border-top: 0; background: linear-gradient(90deg, var(--graphite) 0 50%, var(--paper) 50% 100%); }
 .scale span { font: 600 11.5px/1 var(--f-num); background: rgba(237,240,230,.9); padding: 2px 4px; align-self: flex-start; }
 .attrib { margin-left: auto; font-size: 11.5px; background: rgba(237,240,230,.9); padding: 4px 7px; color: var(--graphite); max-width: 52%; text-align: right; }
-.banner {
-  position: absolute; z-index: 7; top: 16px; left: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 16px; font-weight: 700; font-size: 16px; white-space: nowrap;
-  background: var(--graphite); color: var(--paper);
-}
-.banner .num { color: var(--cover); }
-.banner.event { background: var(--red); }
-.banner.event .num { color: var(--paper); }
-.summary {
-  position: absolute; z-index: 8; right: 16px; top: 16px;
-  width: min(430px, calc(100% - 32px)); background: var(--paper); border: 1.5px solid var(--graphite);
-}
-.summary header { background: var(--green); color: var(--paper); padding: 14px 18px; }
-.summary header h2 { margin: 0; font-size: var(--t-big); font-weight: 800; }
-.summary header p { margin: 3px 0 0; font-size: 14px; }
-.summary dl { margin: 0; padding: 6px 18px 4px; }
-.summary dl > div { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--rule); }
-.summary dt { font-weight: 600; }
-.summary dt .cap { display: block; font-weight: 400; }
-.summary dd { margin: 0; font: 600 18px/1.2 var(--f-num); text-align: right; }
-.summary dd.red { color: var(--red); }
-.summary dd.txt { font: 700 15px/1.3 var(--f-text); }
-.summary .slogan { margin: 0; padding: 14px 18px 16px; font-size: 18px; font-weight: 800; letter-spacing: -.005em; }
-.summary .slogan span { display: block; font-size: var(--t-cap); font-weight: 400; color: var(--graphite-2); margin-top: 4px; letter-spacing: 0; }
-
-/* subtitles */
-.subs { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px; background: var(--graphite); color: var(--paper); padding: 10px var(--pad); min-height: 62px; }
-.subs-beat { font: 700 15px/1.2 var(--f-text); color: var(--paper); white-space: nowrap; }
-.subs-beat span { color: var(--cover); }
-.subs-text { font-size: 20px; font-weight: 600; line-height: 1.3; text-wrap: balance; }
-.transport { display: flex; align-items: center; gap: 6px; }
-.transport button { width: 34px; height: 34px; display: grid; place-items: center; border: 1.5px solid rgba(237,240,230,.55); background: transparent; color: var(--paper); border-radius: 2px; cursor: pointer; }
-.transport button:hover { border-color: var(--paper); background: rgba(237,240,230,.08); }
-.transport .dots { display: flex; gap: 4px; margin: 0 6px; }
-.transport .dots button { width: 24px; height: 24px; font: 700 12px/1 var(--f-num); }
-.transport .dots button[aria-current="step"] { background: var(--cover); border-color: var(--cover); color: var(--graphite); }
-
 /* time budget */
 .budget { display: grid; grid-template-columns: 230px minmax(0, 1fr) 270px; gap: 20px; align-items: center; padding: 12px var(--pad) 12px; background: var(--paper); border-top: 1.5px solid var(--graphite); }
 .clock .row1 { display: flex; align-items: baseline; gap: 10px; }
@@ -277,7 +181,8 @@ g.finding.old.is-hl .ring { opacity: 1; }
 .budget-sum .k { font-family: var(--f-text); }
 
 /* ---------- right column ---------- */
-.logcol { position: relative; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.logcol { position: relative; min-height: 0; overflow: hidden; }
+.logscroll { height: 100%; overflow-y: auto; }
 .verdict { padding: 16px var(--pad) 18px; border-bottom: 1.5px solid var(--graphite); }
 .v-label { font-size: var(--t-cap); color: var(--graphite-2); }
 .v-label b { color: var(--graphite); font-weight: 700; }
@@ -288,6 +193,7 @@ g.finding.old.is-hl .ring { opacity: 1; }
 .v-word.nodata { color: var(--graphite-2); }
 .v-count { font-weight: 800; font-size: var(--t-big); letter-spacing: .01em; }
 .v-sub { margin: 10px 0 0; font-size: 17px; font-weight: 600; line-height: 1.35; }
+.v-sub.v-empty { color: var(--graphite-2); }
 .v-facts { margin: 10px 0 0; padding: 0; list-style: none; }
 .v-facts li { display: grid; grid-template-columns: 20px 1fr auto; gap: 8px; align-items: baseline; padding: 5px 0; border-top: 1px solid var(--rule); font-size: 14px; }
 .v-facts li .num { font-weight: 700; }
@@ -326,26 +232,19 @@ g.finding.old.is-hl .ring { opacity: 1; }
 .stat.fail { color: var(--red); }
 .stat.info { color: var(--graphite-2); }
 
-.log { flex: 1; min-height: 0; display: flex; flex-direction: column; border-top: 1.5px solid var(--graphite); }
-.log ol { flex: 1; min-height: 0; overflow-y: auto; list-style: none; margin: 0; padding: 0 var(--pad) 14px; }
-.lg { position: relative; }
-.lg .a { font: 600 13px/1.3 var(--f-num); color: var(--graphite); padding-top: 2px; }
-.lg .a small { display: block; font: 400 10.5px/1.3 var(--f-text); color: var(--graphite-2); }
-.lg.is-planned .l, .lg.is-planned .a, .lg.is-planned .v { color: var(--graphite-2); }
-.lg-title { display: flex; align-items: center; gap: 7px; }
+.rows-empty { padding: 8px 0; border-top: 1px solid var(--rule); }
 .badge { display: inline-grid; place-items: center; width: 21px; height: 21px; border-radius: 50%; border: 1.5px solid var(--blue); color: var(--blue); font: 700 11.5px/1 var(--f-num); flex: none; background: var(--paper); }
 .badge.done { background: var(--blue); color: var(--paper); }
-.lg-media { display: flex; gap: 10px; align-items: center; margin-top: 7px; }
+.target { border-top: 1.5px solid var(--graphite); padding-bottom: 18px; }
+.tg-head { display: flex; gap: 10px; align-items: flex-start; padding: 0 var(--pad); }
+.tg-head b { font-size: 16px; }
+.tg-empty { margin: 0; padding: 0 var(--pad); }
+.lg-media { display: flex; gap: 10px; align-items: center; margin: 8px var(--pad) 6px; }
 .lg-media .cap { margin: 0; }
-.lg-media canvas { width: 84px; height: 54px; border: 1px solid var(--rule-2); flex: none; background: var(--paper-3); }
-.lg.finding .l { color: var(--red); }
-.lg.finding { cursor: pointer; }
-.lg.finding .ring-wrap { position: absolute; left: -8px; top: 0; width: calc(var(--col-a) + 10px); height: 34px; pointer-events: none; overflow: visible; }
-.lg.finding.is-hl { background: var(--red-tint); }
-.lg.decision .l::before { content: ""; }
-.lg.decision .l { color: var(--graphite); }
-.lg.is-new { animation: rowin .5s var(--ease) both; }
-@keyframes rowin { from { background: rgba(227,178,27,.35); } to { background: transparent; } }
+.lg-media canvas { width: 112px; height: 72px; border: 1px solid var(--rule-2); flex: none; background: var(--paper-3); }
+svg.ov .stn { cursor: pointer; }
+svg.ov .stn:focus-visible { outline: none; }
+svg.ov .stn:focus-visible circle, svg.ov .stn:hover circle { stroke-width: 3.2; }
 
 /* assumptions panel */
 .assume {
@@ -460,26 +359,16 @@ body.nav .console, body.nav #plan-controls { display: none; }
 .nd-prof svg { display: block; width: 100%; height: auto; }
 .nd-prof text { font: 600 11px var(--f-num); fill: var(--graphite-2); }
 .screen .nd-prof-h { font-size: 17px; } .screen .nd-prof svg { max-height: 190px; }
-.nv-return { position: absolute; top: 96px; left: 50%; transform: translateX(-50%); height: 46px; font-size: 16px; padding: 0 18px; }
-.nv-return:active { transform: translateX(-50%) translateY(1px); }
-.mini .nv-return { top: 58px; height: 34px; font-size: 13px; }
 .nv-legend b { display: block; margin-bottom: 3px; }
 .nv-legend .cap { display: block; margin-top: 3px; }
-.np-t0 { display: flex; align-items: center; gap: 10px; padding: 8px var(--pad) 0; flex-wrap: wrap; }
+.np-opt { display: flex; align-items: center; gap: 10px; padding: 8px var(--pad) 0; flex-wrap: wrap; }
+.np-k { font-weight: 600; font-size: 13.5px; min-width: 150px; }
 
 @media (max-width: 1500px) {
   :root { --pad: 16px; --col-a: 48px; --col-v: 98px; --col-s: 64px; }
-  .mapfoot { left: 314px; }
   .meta-item.site { display: none; }
   .budget { grid-template-columns: 200px minmax(0, 1fr) 240px; }
-  .subs-text { font-size: 18px; }
   .legend { width: 214px; }
-  .crew { width: 282px; bottom: 12px; left: 12px; }
-  .crew[data-skin="cuff"] { width: 270px; }
-  .cd-vals > div { padding: 4px 0; }
-  .cd-vals dd { font-size: 19px; }
-  .cd-state { padding: 7px 12px; }
-  .cuff-row b { font-size: 21px; }
 }
 @media (max-width: 1180px) {
   .tag-sketch { display: none; }
@@ -495,15 +384,14 @@ body.nav .console, body.nav #plan-controls { display: none; }
   .mapcol { border-right: 0; }
   .mapwrap { height: 72vh; min-height: 420px; }
   .logcol { overflow: visible; border-top: 1.5px solid var(--graphite); }
-  .log ol { max-height: none; overflow: visible; }
+  .logscroll { height: auto; overflow: visible; }
   .assume { position: fixed; inset: 0; z-index: 60; }
 }
 @media (max-width: 700px) {
   :root { --t-big: 19px; --col-a: 44px; --col-v: 92px; --col-s: 56px; }
   .console { display: flex; flex-direction: column; }
-  .mapcol, .logcol, .mapwrap { display: contents; }
-  .stage { order: 1; } .subs { order: 2; } .verdict { order: 3; border-top: 1.5px solid var(--graphite); } .crew { order: 4; } .budget { order: 5; }
-  .logcol > .sect-h { order: 6; } #rules { order: 7; } #info { order: 8; } .legend { order: 9; } .log { order: 10; }
+  .mapcol, .mapwrap { display: contents; }
+  .stage { order: 1; } .legend { order: 2; } .budget { order: 3; } .logcol { order: 4; border-top: 1.5px solid var(--graphite); }
   .mapfoot { left: 16px; }
   .meta-item.site { display: inline; }
   .controls { width: 100%; margin-left: 0; justify-content: space-between; order: 2; flex-wrap: wrap; gap: 8px; }
@@ -511,24 +399,15 @@ body.nav .console, body.nav #plan-controls { display: none; }
   .controls .switch { font-size: 13px; }
   .mapwrap { display: contents; }
   .stage { position: relative; inset: auto; height: 62vh; min-height: 360px; overflow: hidden; background: #8E918B; }
-  .crew { position: static; width: auto; margin: 12px 16px 0; box-shadow: none; }
-  .crew[data-skin="cuff"] { width: auto; max-width: 340px; }
   .legend { position: static; width: auto; margin: 12px 16px; }
   .legend ul { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
   .attrib { display: none; }
-  .banner { white-space: normal; width: calc(100% - 32px); font-size: 14px; }
-  .summary { position: static; width: auto; margin: 0; box-shadow: none; border-width: 1.5px 0 0; }
-  .subs { grid-template-columns: 1fr; gap: 8px; }
-  .subs-text { font-size: 17px; }
   .budget { grid-template-columns: 1fr; gap: 10px; }
   .row4 .l { font-size: 14px; }
-  .lg-media canvas { width: 68px; height: 44px; }
-  .row4 .lg-media .cap { display: none; }
   .stat .w { display: none; }
   .stat svg.i { width: 18px; height: 18px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ring.draw, .lg.is-new { animation: none; }
   .switch .track::after, .btn { transition: none; }
 }
 </style>
@@ -592,90 +471,64 @@ body.nav .console, body.nav #plan-controls { display: none; }
       </div>
     </div>
     <button class="btn" id="btn-assume" aria-expanded="false" aria-controls="assume"><svg class="i"><use href="#i-sliders"/></svg><span class="t">Assumptions</span></button>
-    <button class="btn btn-dark" id="btn-demo"><svg class="i"><use href="#i-play"/></svg><span>Play demo</span></button>
   </div>
 </header>
 
 <main class="console">
-  <section class="mapcol" aria-label="Map and timeline">
+  <section class="mapcol" aria-label="Map and EVA plan">
     <div class="mapwrap" id="mapwrap">
       <div class="stage" id="stage">
         <canvas id="cv-terrain" aria-hidden="true"></canvas>
         <canvas id="cv-slope" aria-hidden="true" hidden></canvas>
         <canvas id="cv-ridges" class="ridges" aria-hidden="true" hidden></canvas>
-        <svg class="ov" id="ov" role="img" aria-label="Map of the EVA site with return area, protected zones, route and stations"></svg>
+        <svg class="ov" id="ov" role="img" aria-label="Map of the EVA site with return area, protected zones, stations and the planned route"></svg>
         <div class="loading" id="loading">Building synthetic terrain…</div>
-        <div class="banner" id="banner" hidden></div>
-        <div class="summary" id="summary" hidden></div>
         <div class="mapfoot">
           <div class="scale" id="scale"><div class="bar"></div><span>500 m</span></div>
           <div class="readout" id="readout" aria-live="off"></div>
           <div class="attrib">Terrain, routes and numbers are synthetic stand-ins. The build uses the USGS Gale orthophoto (25 cm) and DEM (1 m).</div>
         </div>
       </div>
-      <aside class="crew" id="crew" data-skin="console" aria-label="Crew display, read-only">
-        <div class="crew-head">
-          <span class="crew-title">Crew display<span class="ro">read-only</span></span>
-          <div class="seg" role="group" aria-label="Crew display skin">
-            <button type="button" data-skin="console" aria-pressed="true">Console</button>
-            <button type="button" data-skin="cuff" aria-pressed="false">Cuff</button>
-          </div>
-        </div>
-        <div id="crew-body"></div>
-      </aside>
       <aside class="legend" aria-label="Map key">
         <h2>Map key</h2>
         <ul>
-          <li><svg viewBox="0 0 34 18"><rect x="1" y="2" width="32" height="14" fill="rgba(31,107,69,.16)" stroke="#1F6B45" stroke-width="2.2"/></svg>Return area: home in time</li>
+          <li><svg viewBox="0 0 34 18"><rect x="1" y="2" width="32" height="14" fill="rgba(31,107,69,.16)" stroke="#1F6B45" stroke-width="2.2"/></svg>Return area: there and home in time (straight line, placeholder)</li>
           <li><svg viewBox="0 0 34 18"><path d="M1 9h32" stroke="#2B2D2F" stroke-width="2" stroke-dasharray="6 4"/></svg>60-minute line, fixed</li>
           <li><svg viewBox="0 0 34 18"><rect x="1" y="2" width="32" height="14" fill="#C9CEC3" stroke="#2B2D2F" stroke-width="1" stroke-dasharray="3 2"/></svg>Pale band: ground lost to life support</li>
           <li><svg viewBox="0 0 34 18"><defs><pattern id="lg-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0v6" stroke="#2459A8" stroke-width="1.6"/></pattern></defs><rect x="1" y="2" width="32" height="14" fill="url(#lg-hatch)" stroke="#2459A8" stroke-width="1.4"/></svg>Protected zone, drill site</li>
-          <li><svg viewBox="0 0 34 18"><path d="M1 9h32" stroke="#EDF0E6" stroke-width="6"/><path d="M1 9h32" stroke="#2B2D2F" stroke-width="3"/></svg>Planned route</li>
-          <li><svg viewBox="0 0 34 18"><path d="M1 9h32" stroke="#EDF0E6" stroke-width="7"/><path d="M1 9h32" stroke="#C8361F" stroke-width="3.6"/></svg>ABORT route</li>
+          <li><svg viewBox="0 0 34 18"><path d="M1 9h32" stroke="#EDF0E6" stroke-width="7"/><path d="M1 9h32" stroke="#2B2D2F" stroke-width="4"/></svg>Planned route</li>
           <li><svg viewBox="0 0 34 18"><path d="M1 9h32" stroke="#2B2D2F" stroke-width="1.6" stroke-dasharray="1.5 4" stroke-linecap="round"/></svg>Curiosity traverse</li>
-          <li><svg viewBox="0 0 34 18"><circle cx="17" cy="9" r="7.5" fill="#EDF0E6" stroke="#2459A8" stroke-width="1.6"/><text x="17" y="12.4" text-anchor="middle" font-size="9.5" font-weight="700" fill="#2459A8" font-family="Atkinson Hyperlegible Mono, monospace">1</text></svg>Science station</li>
-          <li><svg viewBox="0 0 34 18"><path d="M5 10.5c0-5 5-8 12-8s12 3 12 7.5-5 7-12 7c-6 0-11-2.5-11.5-6.5 0-1 .5-2.5 1.5-3.5" fill="none" stroke="#C8361F" stroke-width="2" stroke-linecap="round"/></svg>Finding, logged</li>
+          <li><svg viewBox="0 0 34 18"><circle cx="17" cy="9" r="7.5" fill="#EDF0E6" stroke="#2459A8" stroke-width="1.6"/><text x="17" y="12.4" text-anchor="middle" font-size="9.5" font-weight="700" fill="#2459A8" font-family="Atkinson Hyperlegible Mono, monospace">1</text></svg>Science station, click to pick</li>
         </ul>
       </aside>
     </div>
-    <div class="subs" id="subs" aria-live="polite">
-      <div class="subs-beat" id="subs-beat"></div>
-      <div class="subs-text" id="subs-text"></div>
-      <div class="transport">
-        <button type="button" id="tp-prev" aria-label="Previous beat"><svg class="i"><use href="#i-prev"/></svg></button>
-        <div class="dots" id="tp-dots"></div>
-        <button type="button" id="tp-next" aria-label="Next beat"><svg class="i"><use href="#i-next"/></svg></button>
-      </div>
-    </div>
-    <section class="budget" id="budget" aria-label="Time budget">
+    <section class="budget" id="budget" aria-label="EVA plan">
       <div class="clock">
-        <div class="row1"><span class="lbl">EVA</span><span class="eva" id="clk-eva">0:00</span></div>
-        <div class="cap" id="clk-cap">09:00 LMST · simulation clock</div>
-        <div class="seg" role="group" aria-label="Time compression">
-          <button type="button" data-x="1" aria-pressed="false">×1</button>
-          <button type="button" data-x="60" aria-pressed="true">×60</button>
-          <button type="button" data-x="240" aria-pressed="false">×240</button>
-        </div>
+        <div class="row1"><span class="lbl">EVA start</span><span class="eva" id="clk-eva">0:00</span></div>
+        <div class="cap" id="clk-cap">09:00 LMST</div>
       </div>
       <div class="budget-bar" id="bbar"></div>
       <div class="budget-sum" id="bsum"></div>
     </section>
   </section>
 
-  <section class="logcol" aria-label="Verdict, rules and station log">
-    <div class="verdict" id="verdict" aria-live="polite"></div>
-    <section class="navpick" id="navpick" aria-label="Navigation target">
-      <h2 class="sect-h">Navigate <span class="cap">pick a station, then start the route</span></h2>
-      <ul class="np-list" id="navpick-list"></ul>
-      <div class="np-t0"><span class="cap">Test: start at EVA hour</span><div class="seg" id="np-t0" role="group" aria-label="EVA hour at the start"><button type="button" data-t0="0" aria-pressed="true">0:00</button><button type="button" data-t0="180" aria-pressed="false">3:00</button><button type="button" data-t0="270" aria-pressed="false">4:30</button></div><span class="cap">less life support left</span></div>
-      <div class="np-act"><button class="btn btn-go" id="btn-start" disabled><svg class="i"><use href="#i-arrow"/></svg>Start route</button><span class="cap" id="np-note">Choose a station first</span></div>
-    </section>
-    <h2 class="sect-h">Safety rules <span class="cap" id="rules-count"></span></h2>
-    <ul class="rows" id="rules"></ul>
-    <ul class="rows" id="info"></ul>
-    <div class="log">
-      <h2 class="sect-h">Station log <span class="cap">newest at the bottom</span></h2>
-      <ol id="log"></ol>
+  <section class="logcol" aria-label="Route planning and station details">
+    <div class="logscroll">
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <section class="navpick" id="navpick" aria-label="Route planning">
+        <h2 class="sect-h">Plan the route <span class="cap">pick a station, plan the stay, then start</span></h2>
+        <ul class="np-list" id="navpick-list"></ul>
+        <div class="np-opt"><span class="np-k">Stay at the station</span><div class="seg" id="np-stay" role="group" aria-label="Planned stay at the station"><button type="button" data-stay="15" aria-pressed="false">0:15</button><button type="button" data-stay="30" aria-pressed="true">0:30</button><button type="button" data-stay="60" aria-pressed="false">1:00</button><button type="button" data-stay="90" aria-pressed="false">1:30</button><button type="button" data-stay="-1" aria-pressed="false">Max</button></div></div>
+        <div class="np-opt"><span class="np-k">Test: start at EVA hour</span><div class="seg" id="np-t0" role="group" aria-label="EVA hour at the start"><button type="button" data-t0="0" aria-pressed="true">0:00</button><button type="button" data-t0="180" aria-pressed="false">3:00</button><button type="button" data-t0="270" aria-pressed="false">4:30</button></div><span class="cap">less life support left</span></div>
+        <div class="np-act"><button class="btn btn-go" id="btn-start" disabled><svg class="i"><use href="#i-arrow"/></svg>Start route</button><span class="cap" id="np-note">Choose a station first</span></div>
+      </section>
+      <h2 class="sect-h">Safety rules <span class="cap" id="rules-count"></span></h2>
+      <ul class="rows" id="rules"></ul>
+      <ul class="rows" id="info"></ul>
+      <section class="target" aria-label="Station details">
+        <h2 class="sect-h">Station details <span class="cap" id="target-cap"></span></h2>
+        <div id="target"></div>
+      </section>
     </div>
     <aside class="assume" id="assume" hidden aria-label="Assumptions">
       <div class="assume-h"><h2>Assumptions</h2><button class="btn" id="assume-close"><svg class="i"><use href="#i-close"/></svg>Close</button></div>
@@ -694,7 +547,6 @@ body.nav .console, body.nav #plan-controls { display: none; }
         <div class="nvmap" id="nav-map">
           <canvas id="nav-cv" aria-label="Navigation map, heading up" role="img"></canvas>
           <div class="nv-turn" id="nv-turn"></div>
-          <button class="btn btn-go nv-return" id="nv-return" hidden><svg class="i"><use href="#i-arrow"/></svg><span>Start return</span></button>
           <svg class="nv-north" id="nv-north" viewBox="0 0 44 44" aria-label="North"></svg>
           <div class="nv-mapname" id="nv-mapname"></div>
           <div class="nv-legend" id="nv-legend"></div>
@@ -715,7 +567,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
       <h2 class="panel-h" id="mini-h">Data sheet</h2>
       <div class="mini-body" id="nav-mini">
         <div class="nvdata" id="nav-data">
-          <div class="nd-act"><button class="btn btn-go" id="nd-return" hidden><svg class="i"><use href="#i-arrow"/></svg><span>Start return</span></button><button class="btn btn-dark" id="nd-end" hidden><svg class="i"><use href="#i-close"/></svg><span>End navigation</span></button></div>
+          <div class="nd-act"><button class="btn btn-dark" id="nd-end" hidden><svg class="i"><use href="#i-close"/></svg><span>End navigation</span></button></div>
           <div id="nd-body"></div>
         </div>
       </div>
@@ -726,9 +578,10 @@ body.nav .console, body.nav #plan-controls { display: none; }
 
 <script id="rl-gen">
 /* Synthetic data generator for the ReturnLine design sketch.
-   Sketch only: terrain, ridges, zones and every number here are invented so the
-   six beats can be shown. The product loads the precomputed time-to-base grid
-   from the offline C# engine; the browser never computes a route. */
+   Sketch only: terrain, ridges, zones and every number here are invented.
+   The Dijkstra below only draws the sketch routes to the stations. The return
+   area does not use it: the time-to-base grid comes from the offline C# routing
+   engine, which is still in development. The browser build never computes a route. */
 (function (root) {
   'use strict';
   var R_MARS = 3396190;
@@ -993,93 +846,8 @@ body.nav .console, body.nav #plan-controls { display: none; }
   }
 
   var hIdx = idxOf(F.habitat);
-  var homePen = dijkstra(hIdx, ZONE_PENALTY, -1);
-  var homeAllow = dijkstra(hIdx, 1, -1);
 
-  // planned legs: habitat -> S1 -> S2 -> S3 -> S4 -> habitat (zones penalised)
-  var stops = [F.habitat].concat(F.stations.map(function (s) { return s.c; })).concat([F.habitat]);
-  var legs = [];
-  for (var li = 0; li < stops.length - 1; li++) {
-    var from = idxOf(stops[li]), to = idxOf(stops[li + 1]);
-    var fld = (to === hIdx) ? homePen : dijkstra(to, ZONE_PENALTY, from);
-    var cells = pathFrom(fld, from);
-    var st = pathStats(cells);
-    legs.push({ cells: cells, minutes: fld.time[from], maxSlope: st.maxSlope, length: st.length, zoneMetres: st.zoneMetres });
-  }
-
-  // ---------- marching squares with chaining ----------
-  function contour(field, factor, limit, minPts) {
-    // values: time * factor; blocked cells take their best neighbour so ridges do not punch holes
-    var val = new Float32Array(N);
-    for (var i = 0; i < N; i++) val[i] = field.time[i] * factor;
-    for (var pass = 0; pass < 2; pass++) {
-      for (var y = 0; y < NY; y++) for (var x = 0; x < NX; x++) {
-        var i2 = y * NX + x;
-        if (!blocked[i2] && isFinite(val[i2])) continue;
-        var best = Infinity;
-        for (var d = 0; d < 8; d++) {
-          var xx = x + DX[d], yy = y + DY[d];
-          if (xx < 0 || yy < 0 || xx >= NX || yy >= NY) continue;
-          var j = yy * NX + xx;
-          if (!blocked[j] && val[j] < best) best = val[j];
-        }
-        if (best < Infinity) val[i2] = best + 0.4 * factor;
-      }
-    }
-    function V(x, y) { if (x < 0 || y < 0 || x >= NX || y >= NY) return 1e9; var v = val[y * NX + x]; return isFinite(v) ? v : 1e9; }
-    // grid corners are cell centres; cells of the marching grid span (x,y)-(x+1,y+1), x,y from -1..NX-1
-    var segs = [], adj = new Map();
-    function ekey(x, y, vert) { return ((y + 1) * (NX + 2) + (x + 1)) * 2 + (vert ? 1 : 0); }
-    function epos(x, y, vert) {
-      var a = V(x, y), b = vert ? V(x, y + 1) : V(x + 1, y);
-      var t = (limit - a) / (b - a); t = Math.max(0, Math.min(1, t));
-      return vert ? [(x + 0.5) * CELL, (y + t + 0.5) * CELL] : [(x + t + 0.5) * CELL, (y + 0.5) * CELL];
-    }
-    function add(k1, k2) {
-      var s = segs.length; segs.push([k1, k2]);
-      [k1, k2].forEach(function (k) { var l = adj.get(k); if (l) l.push(s); else adj.set(k, [s]); });
-    }
-    var pos = new Map();
-    function P(x, y, vert) { var k = ekey(x, y, vert); if (!pos.has(k)) pos.set(k, epos(x, y, vert)); return k; }
-    for (var gy2 = -1; gy2 < NY; gy2++) for (var gx2 = -1; gx2 < NX; gx2++) {
-      var a = V(gx2, gy2) <= limit, b = V(gx2 + 1, gy2) <= limit, c = V(gx2 + 1, gy2 + 1) <= limit, d2 = V(gx2, gy2 + 1) <= limit;
-      var code = (a ? 8 : 0) | (b ? 4 : 0) | (c ? 2 : 0) | (d2 ? 1 : 0);
-      if (code === 0 || code === 15) continue;
-      var T = function () { return P(gx2, gy2, false); }, Rr = function () { return P(gx2 + 1, gy2, true); };
-      var Bb = function () { return P(gx2, gy2 + 1, false); }, Ll = function () { return P(gx2, gy2, true); };
-      switch (code) {
-        case 1: case 14: add(Ll(), Bb()); break;
-        case 2: case 13: add(Bb(), Rr()); break;
-        case 3: case 12: add(Ll(), Rr()); break;
-        case 4: case 11: add(T(), Rr()); break;
-        case 6: case 9: add(T(), Bb()); break;
-        case 7: case 8: add(Ll(), T()); break;
-        case 5: case 10: {
-          var centre = (V(gx2, gy2) + V(gx2 + 1, gy2) + V(gx2 + 1, gy2 + 1) + V(gx2, gy2 + 1)) / 4 <= limit;
-          if ((code === 5) === centre) { add(Ll(), T()); add(Bb(), Rr()); } else { add(Ll(), Bb()); add(T(), Rr()); }
-          break;
-        }
-      }
-    }
-    var used = new Uint8Array(segs.length), rings = [];
-    for (var s0 = 0; s0 < segs.length; s0++) {
-      if (used[s0]) continue;
-      used[s0] = 1;
-      var ring = [segs[s0][0], segs[s0][1]], cur = segs[s0][1], guard = 0;
-      while (guard++ < 200000) {
-        var list = adj.get(cur), nxt = -1;
-        for (var q = 0; q < list.length; q++) if (!used[list[q]]) { nxt = list[q]; break; }
-        if (nxt < 0) break;
-        used[nxt] = 1;
-        cur = segs[nxt][0] === cur ? segs[nxt][1] : segs[nxt][0];
-        ring.push(cur);
-      }
-      if (ring.length >= (minPts || 3)) rings.push(ring.map(function (k) { return pos.get(k); }));
-    }
-    return rings;
-  }
-
-  // ---------- the six-beat scenario, derived from the grid ----------
+  // ---------- timed tracks along the route cells ----------
   function moveTime(u, v) { return dist(ctr(u), ctr(v)) / speed((slope[u] + slope[v]) / 2); }
   function chaikin(pts, it) {
     for (var k = 0; k < it; k++) {
@@ -1105,57 +873,6 @@ body.nav .console, body.nav #plan-controls { display: none; }
     }
     return tr.pts[tr.pts.length - 1].slice();
   }
-  function scenario() {
-    var dwell = [50, 55, 60];
-    var sched = [], t = 0, tracks = [];
-    for (var i = 0; i < 4; i++) {
-      var tr = track(legs[i].cells, 1, t);
-      tracks.push(tr);
-      t = tr.t1;
-      var arrive = t, leave = i < 3 ? t + dwell[i] : 300;
-      sched.push({ n: i + 1, arrive: arrive, leave: leave });
-      t = leave;
-    }
-    var ret = track(legs[4].cells, 1, 300);
-    var home = ret.t1;
-    // drift: the point of the return leg nearest to Drill site B
-    var zb = F.zones[1].c, best = 0;
-    for (var k = 0; k < ret.pts.length; k++) if (dist(ret.pts[k], zb) < dist(ret.pts[best], zb)) best = k;
-    var tQ = ret.ts[best], tQa = tQ - 2;
-    var qa = posOn(ret, tQa), q = ret.pts[best];
-    var dd = dist(q, zb), rD = F.zoneR + 10;
-    var D = [zb[0] + (q[0] - zb[0]) * rD / dd, zb[1] + (q[1] - zb[1]) * rD / dd];
-    var drift = { t0: tQa, t1: tQ + 1, pts: [] };
-    for (var s2 = 0; s2 <= 16; s2++) {
-      var u = s2 / 16, a1 = 1 - u;
-      drift.pts.push([a1 * a1 * qa[0] + 2 * a1 * u * q[0] + u * u * D[0], a1 * a1 * qa[1] + 2 * a1 * u * q[1] + u * u * D[1]]);
-    }
-    var tD = drift.t1, dIdx = idxOf(D);
-    var reroute = track(pathFrom(homePen, dIdx), 1, tD);
-    var detour = reroute.t1 - home;
-    var tP = tD + 2, P = posOn(reroute, tP), pIdx = idxOf(P);
-    var lsAtP = 360 - tP;
-    var protectedTr = track(pathFrom(homePen, pIdx), 2, tP);
-    var abortTr = track(pathFrom(homeAllow, pIdx), 2, tP);
-    var zoneIn = -1, zoneOut = -1, zoneM = 0;
-    for (var c = 1; c < abortTr.cells.length; c++) {
-      if (zoneOf[abortTr.cells[c]] >= 0) {
-        if (zoneIn < 0) zoneIn = abortTr.ts[c];
-        zoneOut = abortTr.ts[c];
-        zoneM += dist(abortTr.pts[c - 1], abortTr.pts[c]);
-      }
-    }
-    var entryIdx = abortTr.cells.findIndex(function (cc) { return zoneOf[cc] >= 0; });
-    var maxTTB = 0, maxSlope = 0, routeLen = 0;
-    legs.forEach(function (l) { l.cells.forEach(function (cc) { maxTTB = Math.max(maxTTB, homePen.time[cc]); }); maxSlope = Math.max(maxSlope, l.maxSlope); routeLen += l.length; });
-    return {
-      sched: sched, tracks: tracks, ret: ret, home: home, tQa: tQa, tQ: tQ, drift: drift, D: D, tD: tD,
-      reroute: reroute, detour: detour, tP: tP, P: P, lsAtP: lsAtP, protectedTr: protectedTr, abortTr: abortTr,
-      zoneIn: zoneIn, zoneOut: zoneOut, zoneM: zoneM, entry: entryIdx >= 0 ? abortTr.pts[entryIdx] : P,
-      maxTTB: maxTTB, maxSlope: maxSlope, routeLen: routeLen, abortMaxSlope: pathStats(abortTr.cells).maxSlope
-    };
-  }
-
   function toLonLat(p) { return [CENTER.lon + (p[0] - W / 2) / M_PER_DEG, CENTER.lat - (p[1] - H / 2) / M_PER_DEG]; }
 
   root.RLGEN = {
@@ -1164,8 +881,8 @@ body.nav .console, body.nav #plan-controls { display: none; }
     F: F, z: z, slope: slope, shade: shade, ridge: ridge, blocked: blocked, zoneOf: zoneOf, zoneNear: zoneNear, insideRim: insideRim,
     nearest2: nearest2, edgeDists: edgeDists, edgeOpen: edgeOpen, wallEdge: wallEdge, boxworkActive: boxworkActive, fbm: fbm, hash2: hash2, segInfo: segInfo,
     idxOf: idxOf, ctr: ctr, dist: dist, dijkstra: dijkstra, pathFrom: pathFrom, pathStats: pathStats,
-    homePen: homePen, homeAllow: homeAllow, legs: legs, contour: contour, toLonLat: toLonLat, hIdx: hIdx,
-    speed: speed, moveTime: moveTime, chaikin: chaikin, track: track, posOn: posOn, scenario: scenario
+    toLonLat: toLonLat, hIdx: hIdx,
+    speed: speed, moveTime: moveTime, chaikin: chaikin, track: track, posOn: posOn
   };
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -1173,8 +890,8 @@ body.nav .console, body.nav #plan-controls { display: none; }
 <script id="rl-app">
 (function () {
   'use strict';
-  var G = window.RLGEN, SC = G.scenario();
-  var LMST0 = 540, SUNSET = 17 * 60 + 41 - LMST0, LS = 360, T45 = 285, BACKUP = 60;
+  var G = window.RLGEN;
+  var LMST0 = 540, SUNSET = 17 * 60 + 41 - LMST0, LS = 360;
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var R = Math.round;
@@ -1187,12 +904,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     return '<span class="nc"><span class="ni">' + ip + '</span><span class="nf">' + fp + u + '</span></span>' + (cap ? '<small>' + cap + '</small>' : '');
   }
   function icon(id, cls) { return '<svg class="i' + (cls ? ' ' + cls : '') + '" aria-hidden="true"><use href="#i-' + id + '"/></svg>'; }
-
-  var DETOUR = Math.max(1, R(SC.detour));
-  var PROT = SC.protectedTr.t1 - SC.tP, ABRT = SC.abortTr.t1 - SC.tP;
-  var ZONE_M = R(SC.zoneM / 10) * 10, HOME_ABORT = SC.abortTr.t1;
-  var TURN_LATEST = LS - G.homePen.time[G.idxOf(G.F.stations[3].c)];
-  var RADIO = '1.6 min';
+  var RADIO = '1.6';
 
   var SRC = {
     xEVA: ['NASA EVA', 'NASA, Exploration EVA System Concept of Operations, Rev B, 2020: 60-minute safe-haven rule, suit slope requirement up to 20°, radio-loss procedure.'],
@@ -1200,37 +912,15 @@ body.nav .console, body.nav #plan-controls { display: none; }
     REMS: ['REMS', 'Curiosity REMS weather feed, sunrise and sunset per sol; last reading sol 4995 (2026-08-25). The sunset time here is a sketch value.'],
     RAD: ['Hassler', 'Hassler et al. 2014, Science 343: 0.64 ± 0.12 mSv per day at Gale, measured 2012–13 about 13 km away. Shown as information, never a gate.'],
     LOO: ['LOO', 'Leave-one-out: for each Curiosity drive over 50 m, route between its endpoints and measure the mean deviation from the real drive, next to a straight line. Sketch values.'],
-    GRID: ['grid', 'Time-to-base grid, 10 m cells, Dijkstra from the habitat with return pointers (offline C# engine). In this sketch: computed on synthetic terrain.'],
+    GRID: ['grid', 'Time-to-base grid from the offline C# routing engine, still in development. Until it is in, this sketch uses the straight line to the habitat at walking speed as a placeholder.'],
+    ROUTE: ['route', 'Sketch route on the synthetic terrain, protected zones avoided. The build loads its routes from the routing engine.'],
     EWT: ['EWT', 'About 2 km/h in NASA lunar planning (xEVA); 1.5 km/h on Mars is a labeled slowdown after Norcross et al., NASA TP-2009-214796.'],
     ASSUME: ['assum.', 'Labeled assumption, set at kickoff and adjustable in the Assumptions panel.'],
     PP: ['COSPAR', 'COSPAR policy for human missions to Mars and NASA NID 8715.129 (2020). Still to be checked against the primary texts.']
   };
   function src(k) { return '<button type="button" class="src' + (k === 'ASSUME' ? ' is-assume' : '') + '" data-src="' + k + '">' + SRC[k][0] + '</button>'; }
 
-  var BEATS = [
-    { n: 1, title: 'Plan', sub: 'Habitat control plans the Marswalk. The route avoids every protected drill site, and all four safety rules pass.', t0: 0, t1: 0 },
-    { n: 2, title: 'Time jump', sub: 'Time jump to EVA hour 4:45 at Station 4. The return area still matches the fixed 60-minute line.', t0: T45, t1: T45 },
-    { n: 3, title: 'The area pulls away', sub: 'Life support now sets the limit. The return area shrinks along the terrain and pulls away from the 60-minute line.', t0: T45, t1: SC.tQa },
-    { n: 4, title: 'Deviation caught', sub: 'The crew drifts toward a protected drill site. The console warns, and habitat control reroutes: ' + DETOUR + ' minute extra.', t0: SC.tQa, t1: SC.tP },
-    { n: 5, title: 'Crew member injured', sub: 'A crew member is injured and walking speed halves. Only the way through the protected zone gets them home in time.', t0: SC.tP, t1: SC.tP },
-    { n: 6, title: 'Override, logged', sub: 'Habitat control overrides on purpose. The zone entry is logged: safety first, and the record shows it.', t0: SC.tP, t1: HOME_ABORT }
-  ];
-
-  var st = {
-    beat: 1, t: 0, go: false, reroute: false, abort: false, done: false, keepNote: false,
-    playing: false, skin: 'console', grid: false, base: 'ortho', ridges: false,
-    showArea: true, showZones: true, showTrav: true, speedX: 60, walk: 1.5, sel: null
-  };
-
-  function setBeat(n, atEnd) {
-    var b = BEATS[n - 1];
-    st.beat = n; st.t = atEnd ? b.t1 : b.t0;
-    st.go = n > 1 || !!atEnd;
-    st.reroute = n > 4 || (n === 4 && !!atEnd);
-    st.abort = n === 6 && !!atEnd;
-    st.done = n === 6 && !!atEnd;
-    st.keepNote = false;
-  }
+  var st = { grid: false, base: 'ortho', ridges: false, showArea: true, showZones: true, showTrav: true, walk: 1.5 };
 
   // ---------- view ----------
   var stage = $('#stage'), ov = $('#ov');
@@ -1318,113 +1008,81 @@ body.nav .console, body.nav #plan-controls { display: none; }
     cv.style.right = 'auto'; cv.style.bottom = 'auto';
   }
 
-  // ---------- derived state ----------
-  function walkK() { return 1.5 / st.walk; }
-  function areaSpec() {
-    var lim = Math.min(60, Math.floor(LS - st.t));
-    if (st.beat >= 6 && st.abort) return { field: G.homeAllow, factor: 2 * walkK(), limit: lim, key: 'a' };
-    if (st.beat >= 5) return { field: G.homePen, factor: 2 * walkK(), limit: lim, key: 'p' };
-    return { field: G.homePen, factor: walkK(), limit: lim, key: 'p' };
-  }
-  var cCache = new Map();
-  function contourOf(field, key, factor, limit) {
-    var k = key + factor.toFixed(3) + '|' + limit;
-    var r = cCache.get(k);
-    if (!r) {
-      r = G.contour(field, factor, limit, 24);
-      cCache.set(k, r);
-      if (cCache.size > 120) cCache.delete(cCache.keys().next().value);
+  // ---------- walking model and the return area ----------
+  // Placeholder until the routing engine delivers the time-to-base grid: the time home from any
+  // point is the straight line to the habitat at level-ground walking speed. No Dijkstra here.
+  function walkK() { return 1.5 / st.walk; }               // time factor against 1.5 km/h
+  function vWalk() { return G.SPEED_FLAT / walkK(); }       // metres per minute
+  function slHome(p) { return G.dist(p, G.F.habitat) / vWalk(); }
+  // Area the crew can walk to from P and still get home with `m` minutes to spare, given B minutes of
+  // life support (or daylight) left: home(X) <= 60 - m and walk(P -> X) + home(X) <= B - m.
+  // Straight lines make this a circle round the habitat cut by an ellipse with foci P and habitat.
+  // Returns the outline seen from the habitat, or null when the area is empty.
+  function returnPts(P, B, m) {
+    var v = vWalk(), Hb = G.F.habitat, S = (B - m) * v, Rr = (60 - m) * v;
+    var Dx = P[0] - Hb[0], Dy = P[1] - Hb[1], D = Math.hypot(Dx, Dy), pts = [];
+    if (Rr <= 0 || S <= D) return null;
+    for (var k = 0; k < 180; k++) {
+      var a = k * Math.PI / 90, ux = Math.cos(a), uy = Math.sin(a);
+      var rE = (S * S - D * D) / (2 * (S - (ux * Dx + uy * Dy))), r = Math.min(Rr, rE);
+      pts.push([Hb[0] + r * ux, Hb[1] + r * uy]);
     }
-    return r;
+    return pts;
   }
-  function onDrift(t) {
-    var p = SC.drift.pts, f = (t - SC.drift.t0) / (SC.drift.t1 - SC.drift.t0) * (p.length - 1);
-    f = Math.max(0, Math.min(p.length - 1, f));
-    var i = Math.floor(f), j = Math.min(p.length - 1, i + 1), u = f - i;
-    return [p[i][0] + (p[j][0] - p[i][0]) * u, p[i][1] + (p[j][1] - p[i][1]) * u];
-  }
-  function crewPos() {
-    var t = st.t, b = st.beat;
-    if (b >= 6 && st.abort) return G.posOn(SC.abortTr, t);
-    if (b >= 5) return SC.P.slice();
-    if (t <= 300) {
-      for (var i = 0; i < 4; i++) {
-        var tr = SC.tracks[i];
-        if (t <= tr.t1) return G.posOn(tr, t);
-        if (t <= SC.sched[i].leave) return G.F.stations[i].c.slice();
-      }
+
+  // ---------- plan ----------
+  var NAVSEL = null;                            // picked station index
+  var NAVT0 = 0;                                // test: EVA minute at the start, i.e. less life support left
+  var STAY = 30;                                // planned minutes at the station; -1 = as long as possible
+  var CAUTION = 15;                             // minutes of spare time below which the stage turns yellow (assumption)
+  var navLegCache = {};
+  function navLeg(i) {                          // habitat -> station i, zones penalised (sketch route)
+    if (!navLegCache[i]) {
+      var to = G.idxOf(G.F.stations[i].c), fld = G.dijkstra(to, G.ZONE_PENALTY, G.hIdx);
+      var cells = G.pathFrom(fld, G.hIdx), ps = G.pathStats(cells), up = 0, dn = 0;
+      for (var k = 1; k < cells.length; k++) { var dz = G.z[cells[k]] - G.z[cells[k - 1]]; if (dz > 0) up += dz; else dn -= dz; }
+      navLegCache[i] = { cells: cells, minutes: fld.time[G.hIdx], length: ps.length, zoneMetres: ps.zoneMetres, maxSlope: ps.maxSlope, up: up, dn: dn };
     }
-    if (b === 4 && t >= SC.tQa) return t <= SC.drift.t1 ? onDrift(t) : G.posOn(SC.reroute, t);
-    return G.posOn(SC.ret, t);
+    return navLegCache[i];
   }
-  function remaining(tr, t) {   // metres and minutes left on a timed track
-    var m = 0;
-    for (var i = 1; i < tr.ts.length; i++) {
-      if (tr.ts[i] <= t) continue;
-      var a = tr.pts[i - 1], b = tr.pts[i], segL = G.dist(a, b);
-      if (tr.ts[i - 1] < t) segL *= (tr.ts[i] - t) / (tr.ts[i] - tr.ts[i - 1]);
-      m += segL;
-    }
-    return { m: m, min: Math.max(0, tr.t1 - t) };
+  // longest stay at a station that is `back` minutes from base, arriving at EVA minute `tArr`
+  // (the 60-minute rule limits where the crew may be, not how long; past 60 min from base there is no safe stay)
+  function maxStayAt(back, tArr) { return back > 60 ? -1 : Math.floor(Math.min(LS, SUNSET) - tArr - back); }
+  function planOf(i) {
+    var lg = navLeg(i), walk = lg.minutes * walkK(), back = walk, tArr = NAVT0 + walk;   // the way home is the route reversed
+    var max = maxStayAt(back, tArr), ok = max > 0;
+    var stay = !ok ? 0 : STAY < 0 ? max : Math.min(STAY, max);
+    var tLeave = tArr + stay, tHome = tLeave + back;
+    return { i: i, lg: lg, walk: walk, back: back, t0: NAVT0, tArr: tArr, max: max, ok: ok, stay: stay, capped: ok && STAY > max,
+      tLeave: tLeave, tHome: tHome, reserve: LS - tHome };
   }
-  function phase() {   // where the crew is in the plan
-    var t = st.t;
-    if (st.beat >= 5) return { kind: 'abort' };
-    if (t <= 300) {
-      for (var i = 0; i < 4; i++) {
-        if (t < SC.tracks[i].t1) return { kind: 'walk', leg: i };
-        if (t <= SC.sched[i].leave) return { kind: 'dwell', stn: i };
-      }
-    }
-    return { kind: 'return' };
-  }
-  function homeTime() {
-    if (st.beat >= 5) return HOME_ABORT;
-    if (st.reroute) return SC.reroute.t1;
-    return SC.home;
+  function rulesOf(P) {
+    var early = P.tArr + P.back;                 // home at the earliest, without any stay
+    var tHome = P.ok ? P.tHome : early;
+    return [
+      { ok: P.back <= 60, l: 'Time to shelter', c: 'longest on the route, walking it back · limit 60 min', v: R(P.back), u: 'min', vc: 'max', s: 'xEVA' },
+      { ok: P.lg.maxSlope <= 20, l: 'Slope, 10 m baseline', c: 'limit 20° · ridge crossings: 0', v: P.lg.maxSlope.toFixed(1), u: '°', vc: 'max', s: 'DEM' },
+      { ok: true, l: 'Radio gap', c: 'longest on the route · limit 5 min', v: RADIO, u: 'min', vc: 'sketch', s: 'xEVA' },
+      { ok: tHome <= SUNSET, l: 'Daylight', c: 'home before sunset 17:41', v: lmst(tHome), u: '', vc: 'home', s: 'REMS' }
+    ];
   }
 
   // ---------- map overlay ----------
-  function ringPath(cx, cy, rx, ry, rot) {
-    var pts = [], n = 46, a0 = -2.25, sweep = Math.PI * 2 * 1.12;
-    for (var k = 0; k <= n; k++) {
-      var a = a0 + sweep * k / n, f = 0.94 + 0.13 * (k / n);
-      var x = Math.cos(a) * rx * f, y = Math.sin(a) * ry * f;
-      pts.push([cx + x * Math.cos(rot) - y * Math.sin(rot), cy + x * Math.sin(rot) + y * Math.cos(rot)]);
-    }
-    var len = 0;
-    for (var j = 1; j < pts.length; j++) len += Math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]);
-    return { d: 'M' + pts.map(function (p) { return p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join('L'), len: Math.ceil(len) };
-  }
-  function findings() {
-    var f = [];
-    if (st.beat >= 4 && st.t >= SC.tD - 0.01) f.push({ id: 'drift', p: SC.drift.pts[SC.drift.pts.length - 1], t: SC.tD });
-    if (st.beat >= 5) f.push({ id: 'injury', p: SC.P, t: SC.tP });
-    if (st.abort && st.t >= SC.zoneIn) f.push({ id: 'zone', p: SC.entry, t: SC.zoneIn });
-    return f;
-  }
-  var AVOID = [G.F.habitat].concat(G.F.stations.map(function (q) { return q.c; }), G.F.zones.map(function (q) { return q.c; }));
-  function eastmost(rings, dy) {
-    var best = null, bl = 0;
-    rings.forEach(function (r) { if (r.length > bl) { bl = r.length; best = r; } });
-    if (!best) return null;
-    var e = null, narrow = view.w < 700;
-    best.forEach(function (p) {
-      var sx = X(p[0]), sy = Y(p[1]) + (dy || 0);
-      if (sx < 20 || sy < (narrow ? 40 : view.h * 0.3) || sy > view.h - 70 || sx > view.w - 200) return;
-      if (!narrow && sx < (view.w < 1500 ? 320 : 350) && sy > view.h - 470) return;   // crew display
-      for (var m = 0; m < AVOID.length; m++) if (Math.abs(sx - X(AVOID[m][0])) < 110 && Math.abs(sy - Y(AVOID[m][1])) < 24) return;
-      if (!narrow && sx > view.w - 440 && sy < 330) return;    // map key and label room
-      if (!e || sx > X(e[0])) e = p;
-    });
-    if (!e) best.forEach(function (p) { var sx = X(p[0]), sy = Y(p[1]); if (sx > 20 && sx < view.w - 460 && sy > 40 && sy < view.h - 70 && !(sx < 340 && sy > view.h - 470) && (!e || sy > Y(e[1]))) e = p; });
-    return e;
-  }
+  function circ(cx, cy, r) { return 'M' + (cx - r).toFixed(1) + ' ' + cy.toFixed(1) + 'a' + r.toFixed(1) + ' ' + r.toFixed(1) + ' 0 1 0 ' + (2 * r).toFixed(1) + ' 0a' + r.toFixed(1) + ' ' + r.toFixed(1) + ' 0 1 0 ' + (-2 * r).toFixed(1) + ' 0Z'; }
   function label(x, y, txt, cls, anchor, fill) {
     return '<text class="' + (cls || 'lbl') + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="' + (anchor || 'start') + '" fill="' + (fill || '#2B2D2F') + '">' + txt + '</text>';
   }
-
-  var drawnRings = new Set(), ringsKey = '';
+  function circleLabel(cx, cy, r, txt, fill) {   // first spot on the circle that is on screen and clear of the map key
+    var A = [150, 210, 125, 235, 35, 325, 60, 300, 180, 0, 95, 265];
+    for (var k = 0; k < A.length; k++) {
+      var a = A[k] * Math.PI / 180, x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+      var right = Math.cos(a) >= 0, tw = txt.length * 7.4 + 12;   // rough label width
+      if ((right ? x + tw > view.w - 16 : x - tw < 70) || y < 40 || y > view.h - 60) continue;
+      if ((right ? x + tw : x) > view.w - 300 && y < 360) continue;   // map key
+      return label(x + (right ? 8 : -8), y + (Math.sin(a) >= 0 ? 16 : -6), txt, 'lbl', right ? 'start' : 'end', fill);
+    }
+    return '';
+  }
   function renderOverlay() {
     var o = [], L = [], s = view.s, narrow = view.w < 700;
     o.push('<defs><pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="rgba(237,240,230,.30)"/><path d="M0 0v7" stroke="#2459A8" stroke-width="1.7"/></pattern></defs>');
@@ -1445,29 +1103,25 @@ body.nav .console, body.nav #plan-controls { display: none; }
     }
     for (var lat = -4.780; lat >= -4.8301; lat -= tstep) {
       var wy = G.H / 2 - (lat - G.CENTER.lat) * M, sy = Y(wy);
-      if (sy < 40 || sy > view.h - (narrow ? 70 : 470)) continue;
+      if (sy < 40 || sy > view.h - 70) continue;
       tk += '<path d="M0 ' + sy.toFixed(1) + 'h7" stroke="#2B2D2F" stroke-width="1.2"/><text class="tick" x="10" y="' + (sy + 3.5).toFixed(1) + '">' + Math.abs(lat).toFixed(3) + '°S</text>';
     }
     var ticks = '<g>' + tk + '</g>';
-    // return area and the fixed 60-minute line
+    // return area at the start (straight line, placeholder) and the fixed 60-minute line
     if (st.showArea) {
-      var A = areaSpec(), area = contourOf(A.field, A.key, A.factor, A.limit);
-      var line = contourOf(G.homePen, 'p', walkK(), 60);
-      var ad = area.map(function (r) { return pd(r) + 'Z'; }).join('');
-      var ld = line.map(function (r) { return pd(r) + 'Z'; }).join('');
-      var same = A.limit >= 60 && A.factor === walkK() && A.key === 'p';
-      if (!same) o.push('<path d="' + ld + ad + '" fill="rgba(237,240,230,.52)" fill-rule="evenodd" stroke="none"/>');
-      o.push('<path d="' + ad + '" fill="rgba(31,107,69,.24)" fill-rule="evenodd" stroke="none"/>');
-      o.push('<path d="' + ld + '" fill="none" stroke="rgba(237,240,230,.85)" stroke-width="4.5"/>');
-      o.push('<path d="' + ld + '" fill="none" stroke="#2B2D2F" stroke-width="2" stroke-dasharray="7 5"/>');
-      o.push('<path d="' + ad + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="5.5"/>');
-      o.push('<path d="' + ad + '" fill="none" stroke="#1F6B45" stroke-width="2.6"/>');
-      var le = eastmost(line), ae = eastmost(area);
-      if (le && area.length) { var big = area.reduce(function (p, r) { return r.length > p.length ? r : p; }, []), bd = 1e9; big.forEach(function (p) { var dd = Math.hypot(X(p[0]) - X(le[0]), Y(p[1]) - Y(le[1])); if (dd < bd && !(X(p[0]) < 340 && Y(p[1]) > view.h - 470)) { bd = dd; ae = p; } }); }
-      if (le) L.push(label(X(le[0]) + 8, Y(le[1]) - 6, same ? 'Return area = 60-minute line' : '60-minute line', 'lbl', 'start'));
-      var aly = ae ? Y(ae[1]) + 16 : 0;
-      if (ae && le && Math.abs(aly - (Y(le[1]) - 6)) < 22 && Math.abs(X(ae[0]) - X(le[0])) < 260) aly = Y(le[1]) + 16;
-      if (ae && !same) L.push(label(X(ae[0]) + 8, aly, 'Return area · ' + A.limit + ' min' + (A.factor > walkK() * 1.5 ? ', injured' : ''), 'lbl', 'start', '#1F6B45'));
+      var Hb = G.F.habitat, hx = X(Hb[0]), hy = Y(Hb[1]), v = vWalk();
+      var half = (Math.min(LS, SUNSET) - NAVT0) / 2;        // go out and come back
+      var same = half >= 60, rA = Math.max(0, Math.min(60, half)) * v * s, r60 = 60 * v * s;
+      if (!same) o.push('<path d="' + circ(hx, hy, r60) + circ(hx, hy, rA) + '" fill="rgba(237,240,230,.52)" fill-rule="evenodd" stroke="none"/>');
+      o.push('<path d="' + circ(hx, hy, rA) + '" fill="rgba(31,107,69,.20)" stroke="none"/>');
+      o.push('<path d="' + circ(hx, hy, r60) + '" fill="none" stroke="rgba(237,240,230,.85)" stroke-width="4.5"/>');
+      o.push('<path d="' + circ(hx, hy, r60) + '" fill="none" stroke="#2B2D2F" stroke-width="2" stroke-dasharray="7 5"/>');
+      o.push('<path d="' + circ(hx, hy, rA) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="5.5"/>');
+      o.push('<path d="' + circ(hx, hy, rA) + '" fill="none" stroke="#1F6B45" stroke-width="2.6"/>');
+      if (!narrow) {
+        L.push(circleLabel(hx, hy, r60, same ? 'Return area = 60-minute line' : '60-minute line', '#2B2D2F'));
+        if (!same) L.push(circleLabel(hx, hy, rA, 'Return area · from EVA hour ' + hm(NAVT0), '#1F6B45'));
+      }
     }
     // protected zones
     if (st.showZones) {
@@ -1487,502 +1141,162 @@ body.nav .console, body.nav #plan-controls { display: none; }
       var tp = G.F.traverse[3];
       L.push(label(X(tp[0]) + 10, Y(tp[1]) + 4, 'Curiosity traverse', 'lbl', 'start'));
     }
-    // planned route
-    var plan = SC.tracks.map(function (t) { return t.draw; }).concat([SC.ret.draw]);
-    var preview = st.beat === 1 && !st.playing && NAVSEL != null;
-    var planOp = st.beat >= 5 ? 0.42 : preview ? 0.3 : 1;
-    plan.forEach(function (p) {
-      o.push('<path d="' + pd(p) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="6.5" stroke-linejoin="round" opacity="' + planOp + '"/>');
-      o.push('<path d="' + pd(p) + '" fill="none" stroke="#2B2D2F" stroke-width="3" stroke-linejoin="round" opacity="' + planOp + '"/>');
-    });
-    // drift and reroute
-    if (st.beat >= 4 && st.t >= SC.tQa) {
-      var dEnd = st.beat === 4 ? Math.min(st.t, SC.drift.t1) : SC.drift.t1, dp = [];
-      for (var k2 = 0; k2 < SC.drift.pts.length; k2++) {
-        var tt = SC.drift.t0 + (SC.drift.t1 - SC.drift.t0) * k2 / (SC.drift.pts.length - 1);
-        if (tt <= dEnd + 1e-6) dp.push(SC.drift.pts[k2]);
-      }
-      if (dp.length > 1) o.push('<path d="' + pd(dp) + '" fill="none" stroke="#C8361F" stroke-width="2.2" stroke-dasharray="4 3"/>');
-      if (st.reroute && st.beat === 4) {
-        o.push('<path d="' + pd(SC.reroute.draw) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="6.5"/>');
-        o.push('<path d="' + pd(SC.reroute.draw) + '" fill="none" stroke="#2B2D2F" stroke-width="3"/>');
-        var rm = SC.reroute.draw[R(SC.reroute.draw.length * 0.25)];
-        L.push(label(X(rm[0]) - 10, Y(rm[1]) + 18, 'Reroute · +' + DETOUR + ' min', 'lbl', 'end'));
-      }
-    }
-    // ABORT candidates and route
-    if (st.beat === 5 || (st.beat === 6 && !st.abort)) {
-      var pp = SC.protectedTr.draw, ap = SC.abortTr.draw;
-      o.push('<path d="' + pd(pp) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="6"/>');
-      o.push('<path d="' + pd(pp) + '" fill="none" stroke="#2B2D2F" stroke-width="2.6" stroke-dasharray="8 5"/>');
-      o.push('<path d="' + pd(ap) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="7"/>');
-      o.push('<path d="' + pd(ap) + '" fill="none" stroke="#C8361F" stroke-width="3.6" stroke-dasharray="10 5"/>');
-      var pm = pp[R(pp.length * 0.62)], am = ap[R(ap.length * 0.78)];
-      L.push(label(X(pm[0]) - 12, Y(pm[1]) + 4, 'Protected route · ' + R(PROT) + ' min', 'lbl', 'end'));
-      L.push(label(X(am[0]) + 12, Y(am[1]) + 4, 'Through Drill site B · ' + R(ABRT) + ' min', 'lbl', 'start', '#C8361F'));
-    }
-    if (st.beat === 6 && st.abort) {
-      var ar = SC.abortTr.draw;
-      o.push('<path d="' + pd(ar) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="7.5"/>');
-      o.push('<path d="' + pd(ar) + '" fill="none" stroke="#C8361F" stroke-width="3.8"/>');
-      var am2 = ar[R(ar.length * 0.62)];
-      L.push(label(X(am2[0]) - 14, Y(am2[1]) + 4, 'ABORT route · ' + ZONE_M + ' m in zone, logged', 'lbl', 'end', '#C8361F'));
-    }
-    // navigation preview: habitat to the picked station
-    if (preview) {
+    // planned route to the picked station
+    if (NAVSEL != null) {
       var nl = navLeg(NAVSEL), pv = G.chaikin(nl.cells.map(G.ctr), 2);
       o.push('<path d="' + pd(pv) + '" fill="none" stroke="rgba(237,240,230,.95)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>');
       o.push('<path d="' + pd(pv) + '" fill="none" stroke="#2B2D2F" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>');
-      var pm2 = pv[R(pv.length * 0.55)];
-      L.push(label(X(pm2[0]) + 14, Y(pm2[1]) + 4, 'Route to Stn ' + (NAVSEL + 1) + ' · ' + R(nl.minutes * walkK()) + ' min', 'lbl', 'start'));
+      var pm = pv[R(pv.length * 0.55)];
+      L.push(label(X(pm[0]) + 14, Y(pm[1]) + 4, 'Route to Stn ' + (NAVSEL + 1) + ' · ' + R(nl.minutes * walkK()) + ' min each way', 'lbl', 'start'));
     }
-    // habitat and stations
-    var h = G.F.habitat, hx = X(h[0]), hy = Y(h[1]);
-    o.push('<rect x="' + (hx - 8).toFixed(1) + '" y="' + (hy - 8).toFixed(1) + '" width="16" height="16" fill="#2B2D2F" stroke="#EDF0E6" stroke-width="2"/>');
-    L.push(label(hx - 14, hy + 5, 'Habitat', 'lbl', 'end'));
+    // habitat and stations (click a station to pick it)
+    var h = G.F.habitat, hx2 = X(h[0]), hy2 = Y(h[1]);
+    o.push('<rect x="' + (hx2 - 8).toFixed(1) + '" y="' + (hy2 - 8).toFixed(1) + '" width="16" height="16" fill="#2B2D2F" stroke="#EDF0E6" stroke-width="2"/>');
+    L.push(label(hx2 - 14, hy2 + 5, 'Habitat', 'lbl', 'end'));
     G.F.stations.forEach(function (sn, i) {
-      var sx2 = X(sn.c[0]), sy2 = Y(sn.c[1]), done = st.t >= SC.sched[i].leave && (st.beat > 1);
-      o.push('<circle cx="' + sx2.toFixed(1) + '" cy="' + sy2.toFixed(1) + '" r="11.5" fill="' + (done ? '#2459A8' : '#EDF0E6') + '" stroke="#2459A8" stroke-width="2"/>');
-      o.push('<text x="' + sx2.toFixed(1) + '" y="' + (sy2 + 4.2).toFixed(1) + '" text-anchor="middle" font-family="Atkinson Hyperlegible Mono, monospace" font-size="12" font-weight="700" fill="' + (done ? '#EDF0E6' : '#2459A8') + '">' + sn.n + '</text>');
+      var sx2 = X(sn.c[0]), sy2 = Y(sn.c[1]), on = i === NAVSEL;
+      o.push('<g class="stn" data-stn="' + i + '" role="button" tabindex="0" aria-label="Pick Station ' + sn.n + ', ' + sn.name + '">' +
+        '<circle cx="' + sx2.toFixed(1) + '" cy="' + sy2.toFixed(1) + '" r="' + (on ? 14 : 11.5) + '" fill="' + (on ? '#2459A8' : '#EDF0E6') + '" stroke="#2459A8" stroke-width="2"/>' +
+        '<text x="' + sx2.toFixed(1) + '" y="' + (sy2 + 4.2).toFixed(1) + '" text-anchor="middle" font-family="Atkinson Hyperlegible Mono, monospace" font-size="12" font-weight="700" fill="' + (on ? '#EDF0E6' : '#2459A8') + '">' + sn.n + '</text></g>');
       var right = i >= 2;
-      if (!narrow) L.push(label(right ? sx2 + 17 : sx2 - 17, sy2 + 4.5, 'Stn ' + sn.n, 'lbl', right ? 'start' : 'end', '#2459A8'));
+      if (!narrow) L.push(label(right ? sx2 + 18 : sx2 - 18, sy2 + 4.5, 'Stn ' + sn.n, 'lbl', right ? 'start' : 'end', '#2459A8'));
     });
-    ov.innerHTML = o.join('') + ticks + L.join('') + '<g id="g-rings"></g><g id="g-crew"></g>';
-    ringsKey = '';
-    renderRings();
-    renderCrewMarker();
-  }
-  function renderRings() {
-    var f = findings(), key = f.map(function (x) { return x.id; }).join(',');
-    var g = $('#g-rings');
-    if (!g || key === ringsKey) return;
-    ringsKey = key;
-    g.innerHTML = f.map(function (x, n) {
-      var sz = x.id === 'injury' ? [34, 26] : x.id === 'drift' ? [19, 15] : [27, 20];
-      var rp = ringPath(X(x.p[0]), Y(x.p[1]), sz[0], sz[1], -0.2), fresh = !drawnRings.has(x.id);
-      drawnRings.add(x.id);
-      return '<g class="finding' + (n < f.length - 1 ? ' old' : '') + (st.sel === x.id ? ' is-hl' : '') + '" data-f="' + x.id + '" tabindex="0" role="button" aria-label="Finding on the map: show it in the log">' +
-        '<path class="ring' + (fresh ? ' draw' : '') + '" d="' + rp.d + '" style="--len:' + rp.len + ';stroke-dasharray:' + rp.len + '"/>' +
-        '<circle class="ring-hit" cx="' + X(x.p[0]).toFixed(1) + '" cy="' + Y(x.p[1]).toFixed(1) + '" r="26"/></g>';
-    }).join('');
-  }
-  function renderCrewMarker() {
-    var g = $('#g-crew');
-    if (!g) return;
-    var p = crewPos(), cx = X(p[0]), cy = Y(p[1]), red = st.beat >= 5 && !st.done;
-    var txt = st.done ? 'Crew home' : st.beat >= 5 ? 'Crew · EV2 injured' : 'Crew';
-    var atHome = st.beat === 1 || st.done;
-    g.innerHTML = (atHome ? '' :
-      '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="14" fill="none" stroke="' + (red ? '#C8361F' : '#2B2D2F') + '" stroke-width="1.2" opacity=".55"/>' +
-      '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="7.5" fill="' + (red ? '#C8361F' : '#2B2D2F') + '" stroke="#EDF0E6" stroke-width="2.2"/>' +
-      label(cx + 18, cy - 10, txt, 'lbl', 'start', red ? '#C8361F' : '#2B2D2F'));
+    ov.innerHTML = o.join('') + ticks + L.join('');
   }
 
-  // ---------- verdict, rules, info ----------
+  // ---------- verdict, picker, rules, station details, plan bar ----------
   function renderVerdict() {
-    var b = st.beat, o = '<div class="v-label">Planner recommendation · decision: <b>Habitat control</b></div>';
-    function word(w, cls, count) { return '<div class="v-line"><span class="v-word ' + cls + '">' + w + '</span>' + (count ? '<span class="v-count">– ' + count + '</span>' : '') + '</div>'; }
-    function constraint(trig, act, warn) { return '<div class="constraint' + (warn ? ' warn' : '') + '"><span class="trig">' + trig + '</span>' + icon('arrow') + '<span class="act">' + act + '</span></div>'; }
-    if (b === 1) {
-      o += word('GO', 'go') + '<p class="v-sub">All four rules pass. The route avoids all three protected zones.</p>';
-      o += st.go ? '<div class="v-status ok">' + icon('check') + 'GO confirmed by habitat control · 09:00</div>'
-        : '<div class="v-actions"><button class="btn btn-go" id="act-go">' + icon('check') + 'Confirm GO</button><button class="btn" id="act-hold">Hold</button></div>';
-    } else if (b === 2 || (b === 3 && st.t < 300)) {
-      o += word('GO', 'go') + '<p class="v-sub">On plan at Station 4. Turnaround at 14:00, latest ' + lmst(TURN_LATEST) + '.</p>';
-      o += '<div class="v-status ok">' + icon('check') + 'GO confirmed 09:00</div>';
-    } else if (b <= 4) {
-      o += word('GO', 'go', '1 constraint') + '<p class="v-sub">Life support now sets the return area. The crew is heading home.</p>';
-      o += constraint('Crew leaves the return area', 'ABORT: return to shelter now');
-      if (b === 4 && st.t >= SC.tD - 0.01) {
-        o += constraint('Crew 10 m from Drill site B', st.reroute ? 'Rerouted: +' + DETOUR + ' min' : 'Reroute around the zone', true);
-        if (!st.reroute) o += '<div class="v-actions"><button class="btn btn-dark" id="act-reroute">' + icon('arrow') + 'Reroute around Drill site B</button></div>';
-        else o += '<div class="v-status">' + icon('check') + 'Reroute sent ' + lmst(SC.tD + 0.5) + ' · home ' + lmst(SC.reroute.t1) + '</div>';
-      }
-    } else if (b === 5 || !st.abort) {
-      o += word('ABORT', 'abort') + '<p class="v-sub">Return to shelter now. EV2 is injured; walking speed is halved.</p>';
-      o += '<ul class="v-facts">' +
-        '<li class="bad">' + icon('cross') + '<span>Protected route home: breaks the 60-minute rule and runs past life support</span><span class="num">' + R(PROT) + ' min</span></li>' +
-        '<li class="good">' + icon('check') + '<span>Through Drill site B: fits. Life support left ' + R(SC.lsAtP) + ' min</span><span class="num">' + R(ABRT) + ' min</span></li></ul>';
-      o += '<div class="v-actions"><button class="btn btn-abort" id="act-abort">' + icon('check') + 'Confirm ABORT through Drill site B</button><button class="btn" id="act-keep">Keep protected route</button></div>';
-      if (st.keepNote) o += '<div class="v-status red">' + icon('warn') + 'Protected route: ' + R(PROT) + ' min. The crew would arrive after life support runs out.</div>';
-    } else if (st.done) {
-      o = '<div class="v-label">EVA closed · decisions: <b>Habitat control</b></div>' + word('HOME', 'go');
-      o += '<p class="v-sub">Closed after the ABORT at ' + lmst(SC.tP) + '. Both crew members inside at ' + lmst(HOME_ABORT) + ', ' + R(LS - HOME_ABORT) + ' min of life support left.</p>';
-      o += '<div class="v-status red">' + icon('check') + 'Override logged · ' + ZONE_M + ' m inside Drill site B · reason: ABORT</div>';
+    var o = '<div class="v-label">Planner recommendation · decision: <b>Habitat control</b></div>';
+    function word(w, cls) { return '<div class="v-line"><span class="v-word ' + cls + '">' + w + '</span></div>'; }
+    if (NAVSEL == null) {
+      o += '<p class="v-sub v-empty">Pick a station to plan the Marswalk. The verdict appears here.</p>';
     } else {
-      o += word('ABORT', 'abort') + '<p class="v-sub">Override confirmed ' + lmst(SC.tP) + '. The crew returns through Drill site B.</p>';
-      o += '<div class="v-status red">' + icon('check') + 'Override logged · ' + ZONE_M + ' m inside Drill site B · reason: ABORT</div>';
+      var P = planOf(NAVSEL), fail = rulesOf(P).filter(function (r) { return !r.ok; }), sn = G.F.stations[NAVSEL];
+      if (P.ok && !fail.length) {
+        o += word('GO', 'go') + '<p class="v-sub">Stn ' + sn.n + ': ' + R(P.walk) + ' min out, ' + hm(P.stay) + ' on station, home at ' + lmst(P.tHome) + ' LMST with ' + hm(P.reserve) + ' of life support left. All four rules pass.</p>';
+      } else {
+        var why = P.back > 60 ? 'The way home from Stn ' + sn.n + ' takes ' + R(P.back) + ' min, over the 60-minute rule.'
+          : !P.ok ? 'Starting at EVA hour ' + hm(NAVT0) + ', the crew could not get back from Stn ' + sn.n + ' before ' + (LS <= SUNSET ? 'life support' : 'daylight') + ' runs out.'
+          : fail.map(function (r) { return r.l; }).join(', ') + ' fails.';
+        o += word('NO-GO', 'nogo') + '<p class="v-sub">' + why + '</p>';
+      }
     }
     $('#verdict').innerHTML = o;
   }
+  function renderNavPick() {
+    $('#navpick-list').innerHTML = G.F.stations.map(function (sn, i) {
+      var P = planOf(i), on = NAVSEL === i;
+      return '<li><button type="button" class="np-row' + (on ? ' is-on' : '') + '" data-i="' + i + '" aria-pressed="' + on + '">' +
+        '<span class="badge' + (on ? ' done' : '') + '">' + sn.n + '</span>' +
+        '<span class="np-l">' + sn.name + '<span class="cap">' + R(P.walk) + ' min each way · ' +
+        (P.ok ? 'max stay ' + hm(P.max) : '<b style="color:var(--red)">cannot get home in time</b>') + '</span></span>' +
+        '<span class="np-v">' + (P.lg.length / 1000).toFixed(2) + ' km<small>route</small></span></button></li>';
+    }).join('');
+    $$('#np-t0 button').forEach(function (bb) { bb.setAttribute('aria-pressed', String(+bb.dataset.t0 === NAVT0)); });
+    $$('#np-stay button').forEach(function (bb) { bb.setAttribute('aria-pressed', String(+bb.dataset.stay === STAY)); });
+    var P = NAVSEL == null ? null : planOf(NAVSEL);
+    $('#btn-start').disabled = !P || !P.ok;
+    $('#np-note').innerHTML = !P ? 'Choose a station first'
+      : !P.ok ? '<span style="color:var(--red)">Stn ' + (NAVSEL + 1) + ': no safe stay at this start hour</span>'
+      : 'Stay ' + hm(P.stay) + (P.capped ? ' (capped at the max stay)' : '') + ' · home ' + lmst(P.tHome) + ' LMST';
+  }
   function renderRules() {
-    var b = st.beat, rows;
-    var daylight = { ok: true, l: 'Daylight', c: 'home before sunset 17:41', v: lmst(homeTime()), u: '', vc: 'home', s: 'REMS' };
-    var radio = { ok: true, l: 'Radio gap', c: 'longest on the route · limit 5 min', v: '1.6', u: 'min', vc: 'sketch', s: 'xEVA' };
-    if (b <= 4) {
-      rows = [
-        { ok: true, l: 'Time to shelter', c: 'max on the route · limit 60 min', v: R(SC.maxTTB), u: 'min', vc: 'max', s: 'xEVA' },
-        { ok: true, l: 'Slope, 10 m baseline', c: 'limit 20° · ridge crossings: 0', v: SC.maxSlope.toFixed(1), u: '°', vc: 'max', s: 'DEM' }, radio, daylight];
-    } else if (!st.abort) {
-      rows = [
-        { ok: false, l: 'Time to shelter', c: 'protected route, injured · limit 60 min', v: R(PROT), u: 'min', vc: 'fails', s: 'xEVA' },
-        { ok: true, l: 'Slope, 10 m baseline', c: 'ABORT route · limit 20°', v: SC.abortMaxSlope.toFixed(1), u: '°', vc: 'max', s: 'DEM' }, radio, daylight];
-    } else {
-      rows = [
-        { fired: true, l: 'Time to shelter', c: 'fired ' + lmst(SC.tP) + ' on the protected route; the ABORT route is within 60 min', v: R(ABRT), u: 'min', vc: 'ABORT route', s: 'xEVA' },
-        { ok: true, l: 'Slope, 10 m baseline', c: 'ABORT route · limit 20°', v: SC.abortMaxSlope.toFixed(1), u: '°', vc: 'max', s: 'DEM' }, radio, daylight];
+    if (NAVSEL == null) {
+      $('#rules-count').textContent = '';
+      $('#rules').innerHTML = '<li class="rows-empty cap">Pick a station to check the route against the four rules.</li>';
+      $('#info').innerHTML = '';
+      return;
     }
-    var fails = rows.filter(function (r) { return !r.ok && !r.fired; }).length, fired = rows.some(function (r) { return r.fired; });
-    $('#rules-count').textContent = fired ? '1 fired · all pass on the ABORT route' : fails ? fails + ' of 4 fails' : '4 of 4 pass';
+    var P = planOf(NAVSEL), rows = rulesOf(P), fails = rows.filter(function (r) { return !r.ok; }).length;
+    $('#rules-count').textContent = fails ? fails + ' of 4 fail' : '4 of 4 pass';
     $('#rules').innerHTML = rows.map(function (r) {
-      var stc = r.fired ? 'fired' : r.ok ? 'pass' : 'fail', ic = r.fired ? 'warn' : r.ok ? 'check' : 'cross', w = r.fired ? 'fired' : r.ok ? 'pass' : 'fails';
-      return '<li class="row4' + (r.ok || r.fired ? '' : ' fail') + '"><span class="a"><span class="stat ' + stc + '">' + icon(ic) + '<span class="w">' + w + '</span></span></span>' +
+      var stc = r.ok ? 'pass' : 'fail', ic = r.ok ? 'check' : 'cross', w = r.ok ? 'pass' : 'fails';
+      return '<li class="row4' + (r.ok ? '' : ' fail') + '"><span class="a"><span class="stat ' + stc + '">' + icon(ic) + '<span class="w">' + w + '</span></span></span>' +
         '<span class="l">' + r.l + '<span class="cap">' + r.c + '</span></span><span class="v">' + numCell(r.v, r.u, r.vc) + '</span><span class="s">' + src(r.s) + '</span></li>';
     }).join('');
-    var dose = 0.64 * st.t / 1440;
+    var dose = P.ok ? (0.64 * (P.tHome - P.t0) / 1440).toFixed(2) : '–';
     $('#info').innerHTML =
-      '<li class="row4"><span class="a"><span class="stat info">' + icon('info') + '<span class="w">info</span></span></span><span class="l">Radiation dose this EVA<span class="cap">information only, never a gate · 0.64 mSv per day</span></span><span class="v">' + numCell(dose.toFixed(2), 'mSv', 'so far') + '</span><span class="s">' + src('RAD') + '</span></li>' +
+      '<li class="row4"><span class="a"><span class="stat info">' + icon('info') + '<span class="w">info</span></span></span><span class="l">Radiation dose, planned EVA<span class="cap">information only, never a gate · 0.64 mSv per day</span></span><span class="v">' + numCell(dose, 'mSv', 'planned') + '</span><span class="s">' + src('RAD') + '</span></li>' +
       '<li class="row4"><span class="a"><span class="stat info">' + icon('info') + '<span class="w">info</span></span></span><span class="l">Compared with Curiosity<span class="cap">mean deviation of our routes from its drives · straight line: 58 m</span></span><span class="v">' + numCell('21', 'm', 'sketch') + '</span><span class="s">' + src('LOO') + '</span></li>';
   }
-
-  // ---------- station log ----------
-  function logEntries() {
-    var E = [], t = st.t, b = st.beat;
-    function add(time, kind, o) { o.time = time; o.kind = kind; E.push(o); }
-    add(0, 'plan', { id: 'plan', title: 'Route planned', text: '4 stations · ' + (SC.routeLen / 1000).toFixed(1) + ' km · all 3 protected zones avoided', v: hm(SC.home), u: '', vc: 'EVA plan' });
-    if (st.go) add(0.01, 'decision', { id: 'go', title: 'GO confirmed', text: 'Habitat control' });
-    G.F.stations.forEach(function (sn, i) { add(SC.sched[i].arrive, 'station', { id: 'stn' + sn.n, i: i }); });
-    if (b >= 2) add(T45 - 0.01, 'event', { id: 'jump', title: 'Time jump to EVA hour 4:45', text: 'Rehearsal skips the quiet hours; the clock shows it' });
-    if (b >= 3 && t >= 300) add(300, 'event', { id: 'turn', title: 'Turnaround at Station 4', text: 'Heading home' });
-    if (b >= 3 && t >= 301) add(301, 'event', { id: 'ls', title: 'Life support now sets the return area', text: 'Less than 60 min left' });
-    if (b >= 4 && t >= SC.tD - 0.01) add(SC.tD, 'finding', { id: 'drift', title: 'Crew 10 m from Drill site B', text: 'Drifting off the route toward a protected zone', v: '10', u: 'm', vc: 'to zone' });
-    if (st.reroute) add(SC.tD + 0.5, 'decision', { id: 'reroute', title: 'Reroute around Drill site B', text: 'Habitat control', v: '+' + DETOUR, u: 'min', vc: 'detour' });
-    if (b >= 5) add(SC.tP, 'finding', { id: 'injury', title: 'EV2 injured', text: 'Walking speed ×0.5 (assumption)', v: '×0.5', u: '', vc: 'speed', s: 'ASSUME' });
-    if (b >= 5) add(SC.tP + 0.01, 'event', { id: 'reco', title: 'Planner recommends ABORT', text: 'Protected route ' + R(PROT) + ' min breaks the 60-minute rule' });
-    if (st.abort) add(SC.tP + 0.02, 'decision', { id: 'abort', title: 'ABORT confirmed · override', text: 'Habitat control · route through Drill site B' });
-    if (st.abort && t >= SC.zoneIn) add(SC.zoneIn, 'finding', { id: 'zone', title: 'Zone entered · Drill site B', text: ZONE_M + ' m · reason: ABORT', v: ZONE_M, u: 'm', vc: 'in zone', s: 'PP' });
-    if (st.abort && t >= SC.zoneOut) add(SC.zoneOut, 'event', { id: 'zoneout', title: 'Zone left · Drill site B', text: 'Override closed' });
-    if (st.done) add(HOME_ABORT, 'event', { id: 'home', title: 'Crew home', text: 'Both crew members inside the habitat', v: R(LS - HOME_ABORT), u: 'min', vc: 'life support left' });
-    E.sort(function (a, c) { return a.time - c.time; });
-    return E;
+  function renderTarget() {
+    var el = $('#target');
+    if (NAVSEL == null) { $('#target-cap').textContent = ''; el.innerHTML = '<p class="cap tg-empty">Pick a station in the list or on the map.</p>'; return; }
+    var sn = G.F.stations[NAVSEL], P = planOf(NAVSEL), lg = P.lg, zi = G.idxOf(sn.c);
+    var zone = null;
+    G.F.zones.forEach(function (z) { var d = G.dist(sn.c, z.c) - G.F.zoneR; if (!zone || d < zone.d) zone = { d: d, name: z.name }; });
+    function row(l, cap, v, u, s) { return '<li class="row4"><span class="a"></span><span class="l">' + l + '<span class="cap">' + cap + '</span></span><span class="v">' + numCell(v, u) + '</span><span class="s">' + (s ? src(s) : '') + '</span></li>'; }
+    $('#target-cap').textContent = 'Stn ' + sn.n;
+    el.innerHTML = '<div class="tg-head"><span class="badge done">' + sn.n + '</span><div><b>' + sn.name + '</b><div class="cap">' + sn.reason + '</div></div></div>' +
+      '<div class="lg-media"><canvas width="168" height="108" id="tg-thumb" aria-hidden="true"></canvas><div class="cap">Ground image slot: orbital crop until the Curiosity image is in</div></div>' +
+      '<ul class="rows">' +
+      row('Route length', 'habitat to the station, zones avoided', (lg.length / 1000).toFixed(2), 'km', 'ROUTE') +
+      row('Walk each way', 'at ' + st.walk.toFixed(1) + ' km/h, slowed on slopes', R(P.walk), 'min', 'ROUTE') +
+      row('Climb on the way out', 'descent ' + R(lg.dn) + ' m', '+' + R(lg.up), 'm', 'DEM') +
+      row('Steepest on the route', '10 m baseline · limit 20°', lg.maxSlope.toFixed(1), '°', 'DEM') +
+      row('Max stay', P.ok ? 'life support or daylight left, minus the way home' : 'cannot get home in time', P.ok ? hm(P.max) : '–', '', 'ASSUME') +
+      row('Straight line to habitat', R(slHome(sn.c)) + ' min at walking speed · placeholder', R(G.dist(sn.c, G.F.habitat)), 'm', 'GRID') +
+      row('Nearest protected zone', zone.name + ' · route inside zones: ' + R(lg.zoneMetres) + ' m', Math.max(0, R(zone.d)), 'm', 'PP') +
+      row('Elevation', 'synthetic test terrain', R(G.z[zi]), 'm', 'DEM') +
+      '</ul>';
+    var c = $('#tg-thumb'), ctx = c.getContext('2d'), sw = 120 * 0.36, sh = sw * 108 / 168;
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage($('#cv-terrain'), X(sn.c[0]) - sw / 2, Y(sn.c[1]) - sh / 2, sw, sh, 0, 0, 168, 108);
+    ctx.strokeStyle = 'rgba(36,89,168,.9)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(84, 54, 9, 0, Math.PI * 2); ctx.stroke();
   }
-  var lastLogKey = '', seenLog = new Set(), logPrimed = false;
-  function renderLog(force) {
-    var E = logEntries(), t = st.t;
-    var key = E.map(function (e) {
-      if (e.kind === 'station') { var s = SC.sched[e.i]; return e.id + (t < s.arrive ? 'p' : t <= s.leave && st.beat > 1 ? 'o' : 'd'); }
-      return e.id;
-    }).join('|') + (st.sel || '');
-    if (key === lastLogKey && !force) return;
-    lastLogKey = key;
-    var html = E.map(function (e) {
-      var fresh = logPrimed && !seenLog.has(e.id);
-      seenLog.add(e.id);
-      if (e.kind === 'station') {
-        var sn = G.F.stations[e.i], s = SC.sched[e.i];
-        var stateTxt = (st.beat === 1 || t < s.arrive) ? 'planned' : (t <= s.leave ? 'on station' : 'done');
-        var planned = stateTxt === 'planned';
-        var ttb = G.homePen.time[G.idxOf(sn.c)];
-        return '<li class="row4 lg station' + (planned ? ' is-planned' : '') + (fresh ? ' is-new' : '') + '" data-id="' + e.id + '">' +
-          '<span class="a">' + lmst(s.arrive) + '<small>' + stateTxt + '<br>' + R(s.leave - s.arrive) + ' min</small></span>' +
-          '<div class="l"><div class="lg-title"><span class="badge' + (stateTxt === 'done' ? ' done' : '') + '">' + sn.n + '</span>' + sn.name + '</div>' +
-          '<div class="cap">' + sn.reason + '</div>' +
-          '<div class="lg-media"><canvas width="168" height="108" data-thumb="' + e.i + '" aria-hidden="true"></canvas><div class="cap">Ground image slot: orbital crop until the Curiosity image is in</div></div></div>' +
-          '<span class="v">' + numCell(R(ttb), 'min', 'to base') + '</span><span class="s">' + src('GRID') + '</span></li>';
-      }
-      var ring = '';
-      if (e.kind === 'finding') {
-        var rp = ringPath(29, 15, 25, 12, -0.08);
-        ring = '<svg class="ring-wrap" viewBox="0 0 64 34" aria-hidden="true"><path class="ring' + (fresh ? ' draw' : '') + '" d="' + rp.d + '" style="--len:' + rp.len + ';stroke-dasharray:' + rp.len + '"/></svg>';
-      }
-      return '<li class="row4 lg ' + e.kind + (fresh ? ' is-new' : '') + (st.sel === e.id ? ' is-hl' : '') + '" data-id="' + e.id + '"' + (e.kind === 'finding' ? ' data-f="' + e.id + '" tabindex="0" role="button" aria-label="Finding: ' + e.title + '. Show on the map"' : '') + '>' + ring +
-        '<span class="a">' + lmst(e.time) + '</span><span class="l">' + e.title + '<span class="cap">' + (e.text || '') + '</span></span>' +
-        '<span class="v">' + (e.v != null ? numCell(e.v, e.u, e.vc) : '') + '</span><span class="s">' + (e.s ? src(e.s) : '') + '</span></li>';
-    }).join('');
-    logPrimed = true;
-    var ol = $('#log');
-    ol.innerHTML = html;
-    drawThumbs();
-    snapLog();
-  }
-  function snapLog() {
-    var ol = $('#log');
-    ol.style.paddingBottom = '';
-    if (window.innerWidth > 1100) {
-      if (st.beat === 1) { ol.scrollTop = 0; return; }
-      var base = ol.scrollHeight, maxTop = base - ol.clientHeight, rows = ol.children, top = -1;
-      if (maxTop <= 0) { ol.scrollTop = 0; return; }
-      for (var ri = 0; ri < rows.length; ri++) { var ot = rows[ri].offsetTop - ol.offsetTop; if (ot >= maxTop - 1) { top = ot; break; } }
-      if (top < 0) top = maxTop;
-      var extra = top + ol.clientHeight - base;
-      if (extra > 0) ol.style.paddingBottom = (14 + extra) + 'px';
-      ol.scrollTop = top;
-    }
-  }
-  function drawThumbs() {
-    var src2 = $('#cv-terrain');
-    $$('canvas[data-thumb]').forEach(function (c) {
-      var i = +c.getAttribute('data-thumb'), p = G.F.stations[i].c, ctx = c.getContext('2d');
-      var sw = 120 / view.s * view.s, sh = sw * 108 / 168;
-      ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(src2, X(p[0]) - sw / 2 * 0.36, Y(p[1]) - sh / 2 * 0.36, sw * 0.36, sh * 0.36, 0, 0, 168, 108);
-      ctx.strokeStyle = 'rgba(36,89,168,.9)'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(84, 54, 9, 0, Math.PI * 2); ctx.stroke();
-    });
-  }
-
-  // ---------- crew display ----------
-  function crewData() {
-    var t = st.t, ls = LS - t, sun = SUNSET - t, ph = phase(), p = crewPos(), k = walkK();
-    var d = { ls: hm(ls), sun: hm(sun), state: 'ON PLAN', stateNum: '±0 min', cls: 'ok', warn: null, fill: null };
-    var ttbHere = G.homePen.time[G.idxOf(p)] * k;
-    if (st.beat === 1) {
-      d.next = 'Stn 1'; d.nextCap = R(G.legs[0].length) + ' m'; d.nextV = R(G.legs[0].minutes * k) + ' min';
-      d.ttb = '0 min'; d.ttbCap = 'at the habitat';
-      d.res = R(TURN_LATEST - 300) + ' min'; d.resCap = 'to turnaround · 14:00';
-      return d;
-    }
-    if (st.done) {
-      d.state = 'HOME'; d.stateNum = lmst(HOME_ABORT); d.cls = 'home';
-      d.next = 'Habitat'; d.nextCap = 'arrived'; d.nextV = '0 min'; d.ttb = '0 min'; d.ttbCap = 'inside';
-      d.res = R(LS - HOME_ABORT) + ' min'; d.resCap = 'life support at arrival';
-      return d;
-    }
-    if (ph.kind === 'abort') {
-      var rem = st.abort ? remaining(SC.abortTr, t) : null;
-      d.fill = { instr: 'Return to shelter now', route: st.abort ? 'Through Drill site B · override logged' : 'Stand by: route from habitat control' };
-      d.next = 'Habitat'; d.nextCap = rem ? R(rem.m) + ' m' : 'route pending'; d.nextV = rem ? R(rem.min) + ' min' : '—';
-      d.ttb = rem ? R(rem.min) + ' min' : '—'; d.ttbCap = 'injured pace';
-      d.res = rem ? R(ls - rem.min) + ' min' : '—'; d.resCap = 'at arrival';
-      return d;
-    }
-    if (ph.kind === 'walk' || ph.kind === 'dwell') {
-      var leg = ph.kind === 'walk' ? ph.leg : ph.stn + 1;
-      if (leg <= 3) {
-        var trk = SC.tracks[leg], r2 = ph.kind === 'walk' ? remaining(trk, t) : { m: G.legs[leg].length, min: G.legs[leg].minutes };
-        d.next = 'Stn ' + (leg + 1); d.nextCap = R(r2.m) + ' m'; d.nextV = R(r2.min * k) + ' min';
-      } else {
-        d.next = 'Habitat'; d.nextCap = R(G.legs[4].length) + ' m'; d.nextV = R(G.legs[4].minutes * k) + ' min';
-      }
-      d.ttb = R(ttbHere) + ' min'; d.ttbCap = 'from here';
-      d.res = R(TURN_LATEST - 300) + ' min'; d.resCap = 'to turnaround · 14:00';
-      if (t >= 290 && t < 300) { d.state = 'TURNAROUND DUE'; d.stateNum = '14:00'; d.cls = 'due'; }
-      return d;
-    }
-    var trk2 = (st.beat === 4 && t >= SC.tD && st.reroute) ? SC.reroute : SC.ret;
-    var r3 = remaining(trk2, t);
-    d.next = 'Habitat'; d.nextCap = R(r3.m) + ' m'; d.nextV = R(r3.min) + ' min';
-    d.ttb = R(ttbHere) + ' min'; d.ttbCap = 'from here';
-    d.res = R(ls - (homeTime() - t)) + ' min'; d.resCap = 'at arrival';
-    if (st.beat === 4 && t >= SC.tD - 0.01 && !st.reroute) d.warn = 'Protected zone 10 m ahead · stop';
-    if (st.beat === 4 && st.reroute) d.stateNum = '−' + DETOUR + ' min';
-    return d;
-  }
-  function cdNum(v) { var m = String(v).match(/^(\S+) (min|m)$/); return m ? numCell(m[1], m[2]) : numCell(v, ''); }
-  function renderCrew() {
-    var d = crewData(), body = $('#crew-body'), o = '';
-    if (st.skin === 'console') {
-      if (d.fill) {
-        o += '<div class="cd-fill"><div class="instr">ABORT: ' + d.fill.instr.toLowerCase() + '</div><div class="route">' + d.fill.route + '</div></div>';
-        o += '<div class="cd-compact"><div>Next target<b>' + d.nextV + '</b>' + d.next + '</div><div>Time to base<b>' + d.ttb + '</b>' + d.ttbCap + '</div><div>Reserve<b>' + d.res + '</b>' + d.resCap + '</div>' +
-          '<div>Life support<b>' + d.ls + '</b>assumption</div><div>Time to sunset<b>' + d.sun + '</b>17:41</div></div>';
-      } else {
-        o += '<div class="cd-state ' + d.cls + '">' + (d.cls === 'ok' ? icon('check') : '') + d.state + '<span class="num">' + d.stateNum + '</span></div>';
-        if (d.warn) o += '<div class="cd-warn">' + icon('warn') + d.warn + '</div>';
-        o += '<dl class="cd-vals">' +
-          '<div><dt>Next target<span class="cap">' + d.next + ' · ' + d.nextCap + '</span></dt><dd>' + cdNum(d.nextV) + '</dd></div>' +
-          '<div><dt>Time to base<span class="cap">' + d.ttbCap + '</span></dt><dd>' + cdNum(d.ttb) + '</dd></div>' +
-          '<div><dt>Reserve<span class="cap">' + d.resCap + '</span></dt><dd>' + cdNum(d.res) + '</dd></div>' +
-          '<div><dt>Life support<span class="cap">assumption: 6:00 EVA</span></dt><dd>' + cdNum(d.ls) + '</dd></div>' +
-          '<div><dt>Time to sunset<span class="cap">sunset 17:41 LMST</span></dt><dd>' + cdNum(d.sun) + '</dd></div></dl>';
-      }
-    } else {
-      var stateTxt = d.fill ? '<div class="cuff-state abort"><span>ABORT</span><span class="sub">RETURN TO SHELTER NOW</span></div>'
-        : '<div class="cuff-state"><span>' + d.state + '</span><span>' + d.stateNum + '</span></div>';
-      o += '<div class="cuff"><div class="cuff-strap top"></div><div class="cuff-body">' +
-        '<div class="cuff-keys l"><div class="cuff-key"><span>PAGE</span></div><div class="cuff-key"><span>MARK</span></div></div>' +
-        '<div class="cuff-screen">' + stateTxt +
-        (d.fill && !st.abort ? '<div class="cuff-row pending"><span>ROUTE</span><span>PENDING FROM HABITAT</span></div>' :
-        '<div class="cuff-row"><span>NEXT ' + d.next.toUpperCase() + '</span><b>' + d.nextV + '</b></div>' +
-        '<div class="cuff-row"><span>TO BASE</span><b>' + d.ttb + '</b></div>' +
-        '<div class="cuff-row"><span>RESERVE</span><b>' + d.res + '</b></div>') +
-        '<div class="cuff-row"><span>LIFE SUPP*</span><b>' + d.ls + '</b></div>' +
-        '<div class="cuff-row"><span>SUNSET IN</span><b>' + d.sun + '</b></div></div>' +
-        '<div class="cuff-keys r"><div class="cuff-key"><span>LIGHT</span></div><div class="cuff-key"><span>ACK</span></div></div>' +
-        '</div><div class="cuff-strap bottom"></div>' +
-        '<div class="cuff-note">Same five values on the forearm. Hardware keys page through them; nothing needs touch. *assumption</div></div>';
-    }
-    body.innerHTML = o;
-  }
-
-  // ---------- time budget ----------
-  function renderBudget() {
+  function renderPlanBar() {
     var el = $('#bbar'), W = Math.max(200, el.clientWidth), H = 90, max = 420;
     var sx = function (m) { return 2 + (W - 4) * m / max; };
-    var b = st.beat, o = [];
+    var o = [], y = 20, bh = 24, P = NAVSEL == null ? null : planOf(NAVSEL);
     for (var hr = 0; hr <= 7; hr++) {
       o.push('<path d="M' + sx(hr * 60).toFixed(1) + ' 14v4" stroke="#2B2D2F"/>');
       o.push('<text x="' + sx(hr * 60).toFixed(1) + '" y="10" text-anchor="' + (hr === 0 ? 'start' : hr === 7 ? 'end' : 'middle') + '">' + hr + ':00</text>');
     }
-    var y = 20, bh = 24;
     o.push('<rect x="' + sx(360) + '" y="' + y + '" width="' + (sx(420) - sx(360)) + '" height="' + bh + '" fill="rgba(43,45,47,.08)"/>');
     if (W > 520) o.push('<text x="' + ((sx(360) + sx(420)) / 2) + '" y="' + (y + 16) + '" text-anchor="middle">backup 1:00</text>');
-    o.push('<rect x="' + sx(0) + '" y="' + y + '" width="' + (sx(300) - sx(0)) + '" height="' + bh + '" fill="#2B2D2F"/>');
-    SC.sched.forEach(function (s) {
-      o.push('<rect x="' + sx(s.arrive).toFixed(1) + '" y="' + (y + 4) + '" width="' + (sx(s.leave) - sx(s.arrive)).toFixed(1) + '" height="' + (bh - 8) + '" fill="#2459A8"/>');
-      o.push('<text x="' + ((sx(s.arrive) + sx(s.leave)) / 2).toFixed(1) + '" y="' + (y + 16) + '" text-anchor="middle" fill="#EDF0E6" font-weight="700">' + s.n + '</text>');
-    });
-    var retEnd, retStart = 300, overflow = null;
-    if (b >= 5) {
-      o.push('<rect x="' + sx(300) + '" y="' + y + '" width="' + (sx(SC.tP) - sx(300)) + '" height="' + bh + '" fill="#8A8F92"/>');
-      retStart = SC.tP; retEnd = R(SC.tP) + R(ABRT);
-      o.push('<rect x="' + sx(SC.tP).toFixed(1) + '" y="' + y + '" width="' + (sx(HOME_ABORT) - sx(SC.tP)).toFixed(1) + '" height="' + bh + '" fill="' + (st.abort ? '#C8361F' : 'rgba(200,54,31,.25)') + '" stroke="#C8361F" stroke-width="1.5"' + (st.abort ? '' : ' stroke-dasharray="4 3"') + '/>');
-      o.push('<text x="' + ((sx(SC.tP) + sx(HOME_ABORT)) / 2).toFixed(1) + '" y="' + (y + 16) + '" text-anchor="middle" font-weight="700" fill="' + (st.abort ? '#EDF0E6' : '#A92C18') + '">ABORT</text>');
-      if (!st.abort) {
-        var y2 = y + bh + 4, pEnd = R(SC.tP) + R(PROT);
-        o.push('<rect x="' + sx(SC.tP).toFixed(1) + '" y="' + y2 + '" width="' + (sx(Math.min(360, pEnd)) - sx(SC.tP)).toFixed(1) + '" height="9" fill="#8A8F92"/>');
-        o.push('<rect x="' + sx(360).toFixed(1) + '" y="' + y2 + '" width="' + (sx(pEnd) - sx(360)).toFixed(1) + '" height="9" fill="#C8361F"/>');
-        o.push('<text x="' + (sx(SC.tP) - 6).toFixed(1) + '" y="' + (y2 + 8) + '" text-anchor="end">protected route ' + hm(PROT) + '</text>');
-        o.push('<text x="' + (W > 520 ? sx(pEnd) + 4 : W - 2).toFixed(1) + '" y="' + (y2 + (W > 520 ? 8 : 20)) + '" fill="#C8361F" font-weight="700" text-anchor="' + (W > 520 ? 'start' : 'end') + '">over ' + hm(pEnd - 360) + '</text>');
-        overflow = pEnd - 360;
-      }
-    } else {
-      retEnd = 300 + R(homeTime() - 300);
-      o.push('<rect x="' + sx(300) + '" y="' + y + '" width="' + (sx(retEnd) - sx(300)).toFixed(1) + '" height="' + bh + '" fill="#8A8F92"/>');
+    if (NAVT0 > 0) {
+      o.push('<rect x="' + sx(0) + '" y="' + y + '" width="' + (sx(NAVT0) - sx(0)).toFixed(1) + '" height="' + bh + '" fill="rgba(43,45,47,.14)"/>');
+      o.push('<text x="' + ((sx(0) + sx(NAVT0)) / 2).toFixed(1) + '" y="' + (y + 16) + '" text-anchor="middle">used (test start)</text>');
     }
-    var resStart = retEnd;
-    if (resStart < 360) {
-      o.push('<rect x="' + sx(resStart).toFixed(1) + '" y="' + (y + 0.75) + '" width="' + (sx(360) - sx(resStart) - 0.75).toFixed(1) + '" height="' + (bh - 1.5) + '" fill="none" stroke="#2B2D2F" stroke-width="1.2" stroke-dasharray="3 3"/>');
+    function seg(a, b, fill, txt, txtFill) {
+      if (b <= a) return;
+      o.push('<rect x="' + sx(a).toFixed(1) + '" y="' + y + '" width="' + (sx(b) - sx(a)).toFixed(1) + '" height="' + bh + '" fill="' + fill + '"/>');
+      if (txt && sx(b) - sx(a) > txt.length * 7 + 8) o.push('<text x="' + ((sx(a) + sx(b)) / 2).toFixed(1) + '" y="' + (y + 16) + '" text-anchor="middle" font-weight="700" fill="' + txtFill + '">' + txt + '</text>');
+    }
+    if (P && P.ok) {
+      seg(P.t0, P.tArr, '#2B2D2F', 'out', '#EDF0E6');
+      seg(P.tArr, P.tLeave, '#2459A8', 'Stn ' + (NAVSEL + 1), '#EDF0E6');
+      seg(P.tLeave, P.tHome, '#8A8F92', 'home', '#2B2D2F');
+      if (P.tHome < 360) o.push('<rect x="' + sx(P.tHome).toFixed(1) + '" y="' + (y + 0.75) + '" width="' + (sx(360) - sx(P.tHome) - 0.75).toFixed(1) + '" height="' + (bh - 1.5) + '" fill="none" stroke="#2B2D2F" stroke-width="1.2" stroke-dasharray="3 3"/>');
+    } else {
+      o.push('<text class="t-lbl" x="' + sx(NAVT0).toFixed(1) + '" y="' + (y + bh + 16) + '" text-anchor="' + (NAVT0 > 180 ? 'end' : 'start') + '" fill="' + (P ? '#C8361F' : '#51575B') + '">' + (P ? 'No safe stay at Stn ' + (NAVSEL + 1) + ' from this start hour' : 'Pick a station to see the plan') + '</text>');
     }
     o.push('<path d="M' + sx(360) + ' 12V' + (y + bh + 16) + '" stroke="#2B2D2F" stroke-width="2.5"/>');
-    var ly = y + bh + 30;
-    o.push('<text class="t-lbl" x="' + ((sx(0) + sx(300)) / 2) + '" y="' + ly + '" text-anchor="middle">Outbound ' + hm(300) + '</text>');
-    if (overflow == null) o.push('<text class="t-lbl" x="' + (sx(300) + 2) + '" y="' + ly + '" text-anchor="start">Return ' + hm(retEnd - 300) + '</text>');
-    o.push('<text class="t-lbl" x="' + (sx(360) + 4) + '" y="' + (ly + 15) + '" text-anchor="start">EVA limit</text>');
-    // elapsed and now
-    var t = st.t;
-    if (b >= 2) {
-      o.push('<path d="M' + sx(0) + ' ' + (y + bh + 3) + 'H' + sx(T45) + '" stroke="#E3B21B" stroke-width="3" stroke-dasharray="5 4"/>');
-      o.push('<path d="M' + sx(T45) + ' ' + (y + bh + 3) + 'H' + sx(t) + '" stroke="#E3B21B" stroke-width="3"/>');
-    }
-    o.push('<path d="M' + sx(t).toFixed(1) + ' 13V' + (y + bh + 6) + '" stroke="#C8361F" stroke-width="2"/><path d="M' + (sx(t) - 5).toFixed(1) + ' 12h10l-5 6z" fill="#C8361F"/>');
-    el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Time budget: outbound and return against the 6-hour EVA limit">' + o.join('') + '</svg>';
-    // sums
+    o.push('<text class="t-lbl" x="' + (sx(360) + 4) + '" y="' + (y + bh + 30) + '" text-anchor="start">EVA limit</text>');
+    o.push('<path d="M' + sx(NAVT0).toFixed(1) + ' 13V' + (y + bh + 6) + '" stroke="#C8361F" stroke-width="2"/><path d="M' + (sx(NAVT0) - 5).toFixed(1) + ' 12h10l-5 6z" fill="#C8361F"/>');
+    el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="EVA plan: way out, stay and way home against the 6-hour limit">' + o.join('') + '</svg>';
     var s = '';
     function row(k, v, cls) { s += '<div class="row' + (cls ? ' ' + cls : '') + '"><span class="k">' + k + '</span><span>' + v + '</span></div>'; }
-    row('Outbound', hm(300));
-    if (b >= 5) { row('Return so far', hm(R(SC.tP) - 300)); row(st.abort ? 'ABORT route' : 'ABORT option', hm(R(ABRT))); }
-    else row('Return' + (st.reroute ? ' incl. detour' : ''), hm(retEnd - 300));
-    row('Total of 6:00', hm(retEnd), 'total');
-    row('Reserve', hm(360 - retEnd));
-    if (overflow != null) row('Protected route: over by', hm(overflow), 'over');
-    $('#bsum').innerHTML = s;
-    $('#clk-eva').textContent = hm(t);
-    $('#clk-cap').textContent = lmst(t) + ' LMST · ' + (b >= 2 ? 'after time jump' : 'simulation clock');
-    $('#hdr-clock').textContent = lmst(t) + ' LMST';
-  }
-
-  // ---------- banner, summary, subtitles ----------
-  function renderBanner() {
-    var el = $('#banner'), b = st.beat;
-    if (b === 2) { el.className = 'banner'; el.innerHTML = 'Time jump ' + icon('arrow') + ' EVA hour <span class="num">4:45</span>'; el.hidden = false; }
-    else if (b === 5) { el.className = 'banner event'; el.innerHTML = icon('warn') + 'Crew member injured · walking speed <span class="num">×0.5</span> (assumption)'; el.hidden = false; }
-    else el.hidden = true;
-    var sm = $('#summary');
-    if (st.done) {
-      sm.innerHTML = '<header><h2>Crew home at ' + lmst(HOME_ABORT) + ' LMST</h2><p>EVA rehearsal complete. Summary for the debrief.</p></header><dl>' +
-        '<div><dt>Life support left<span class="cap">1:00 backup untouched</span></dt><dd>' + R(LS - HOME_ABORT) + ' min</dd></div>' +
-        '<div><dt>Inside protected zones<span class="cap">1 entry, logged with reason ABORT</span></dt><dd class="red">' + ZONE_M + ' m</dd></div>' +
-        '<div><dt>Rules fired<span class="cap">slope, radio gap and daylight never fired</span></dt><dd class="txt">Time to shelter, ' + lmst(SC.tP) + '</dd></div>' +
-        '<div><dt>Science stations<span class="cap">all samples taken before the injury</span></dt><dd>4 of 4</dd></div>' +
-        '<div><dt>Radiation dose<span class="cap">information only</span></dt><dd>' + (0.64 * HOME_ABORT / 1440).toFixed(2) + ' mSv</dd></div></dl>' +
-        '<p class="slogan">Explore Mars. Return Safely. Preserve the Evidence.<span>Rehearsal on synthetic terrain. Every number in the build carries its source.</span></p>';
-      sm.hidden = false;
-    } else sm.hidden = true;
-    $('.legend').classList.toggle('is-off', !!st.done);
-    var be = BEATS[b - 1];
-    $('#subs-beat').innerHTML = '<span>Beat ' + b + '/6</span> · ' + be.title;
-    $('#subs-text').textContent = be.sub;
-    $$('#tp-dots button').forEach(function (btn, i) { if (i + 1 === b) btn.setAttribute('aria-current', 'step'); else btn.removeAttribute('aria-current'); });
-  }
-
-  // ---------- render orchestration ----------
-  var lastMinute = -1;
-  function renderAll() {
-    renderOverlay(); renderVerdict(); renderNavPick(); renderRules(); renderLog(); renderCrew(); renderBudget(); renderBanner();
-    lastMinute = Math.floor(st.t);
-  }
-  function renderFrame() {
-    if (Math.floor(st.t) !== lastMinute) { renderAll(); return; }
-    renderCrewMarker();
-    $('#clk-eva').textContent = hm(st.t);
-  }
-
-  // ---------- demo player ----------
-  var token = 0, raf = 0;
-  function sleep(ms, tok) { return new Promise(function (res, rej) { setTimeout(function () { if (tok === token) res(); else rej('stop'); }, ms); }); }
-  function runClock(t0, t1, tok) {
-    return new Promise(function (res, rej) {
-      var last = performance.now(); st.t = t0;
-      function tick(now) {
-        if (tok !== token) return rej('stop');
-        var dt = Math.min(0.1, (now - last) / 1000); last = now;
-        st.t = Math.min(t1, st.t + dt * st.speedX / 60);
-        renderFrame();
-        if (st.t >= t1) { renderAll(); return res(); }
-        raf = requestAnimationFrame(tick);
-      }
-      raf = requestAnimationFrame(tick);
-    });
-  }
-  function press(sel) { var b = $(sel); if (b) b.classList.add('is-pressed'); }
-  function syncSpeed() { $$('.clock .seg button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.x === st.speedX)); }); }
-  async function beatScript(b, tok) {
-    if (b === 1) { await sleep(3400, tok); press('#act-go'); await sleep(380, tok); st.go = true; renderAll(); await sleep(3200, tok); }
-    if (b === 2) { await sleep(5600, tok); }
-    if (b === 3) { await sleep(1200, tok); await runClock(T45, SC.tQa, tok); await sleep(1600, tok); }
-    if (b === 4) { await runClock(SC.tQa, SC.tD, tok); await sleep(2200, tok); press('#act-reroute'); await sleep(380, tok); st.reroute = true; renderAll(); await sleep(1200, tok); await runClock(SC.tD, SC.tP, tok); await sleep(900, tok); }
-    if (b === 5) { await sleep(7000, tok); }
-    if (b === 6) {
-      await sleep(2000, tok); press('#act-abort'); await sleep(380, tok); st.abort = true; renderAll();
-      var prev = st.speedX; st.speedX = Math.max(prev, 240); syncSpeed();
-      try { await runClock(SC.tP, HOME_ABORT, tok); } finally { st.speedX = prev; syncSpeed(); }
-      st.done = true; renderAll();
+    if (P && P.ok) {
+      row('Way out', hm(P.walk)); row('Stay at Stn ' + (NAVSEL + 1), hm(P.stay)); row('Way home', hm(P.back));
+      row('Home at', lmst(P.tHome) + ' LMST', 'total'); row('Reserve', hm(P.reserve));
+    } else {
+      row('Life support', hm(LS - NAVT0)); row('Sunset', '17:41 LMST');
     }
+    $('#bsum').innerHTML = s;
+    $('#clk-eva').textContent = hm(NAVT0);
+    $('#clk-cap').textContent = lmst(NAVT0) + ' LMST · life support ' + hm(LS - NAVT0);
+    $('#hdr-clock').textContent = lmst(NAVT0) + ' LMST';
   }
-  async function play(from, only) {
-    stop(true);
-    var tok = ++token; st.playing = true; syncPlay();
-    try {
-      for (var b = from; b <= (only || 6); b++) { setBeat(b, false); renderAll(); await beatScript(b, tok); }
-    } catch (e) { return; }
-    if (tok === token) { st.playing = false; syncPlay(); }
-  }
-  function stop(silent) { token++; cancelAnimationFrame(raf); st.playing = false; if (!silent) syncPlay(); }
-  function syncPlay() {
-    var btn = $('#btn-demo');
-    btn.innerHTML = st.playing ? icon('pause') + '<span>Stop demo</span>' : icon('play') + '<span>Play demo</span>';
-  }
-  function goBeat(n) { stop(); setBeat(Math.max(1, Math.min(6, n)), true); renderAll(); }
-
-  // ---------- highlight link between map rings and log ----------
-  function setHL(id, redraw) {
-    $$('[data-f]').forEach(function (el) {
-      var on = el.getAttribute('data-f') === id;
-      el.classList.toggle('is-hl', on);
-      if (on && redraw) {
-        var r = el.querySelector('.ring');
-        if (r && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) { r.classList.remove('draw'); void r.getBoundingClientRect(); r.classList.add('draw'); }
-      }
-    });
-  }
+  function renderAll() { renderOverlay(); renderVerdict(); renderNavPick(); renderRules(); renderTarget(); renderPlanBar(); }
+  function pick(i) { NAVSEL = i; renderAll(); }
 
   // ---------- assumptions panel ----------
   var AS = [
-    { id: 'walk', label: 'Walking speed, level ground', min: 1, max: 2, step: 0.1, val: 1.5, fmt: function (v) { return v.toFixed(1) + ' km/h'; }, src: 'EWT', note: 'Changes the return area and the 60-minute line in this sketch.' },
+    { id: 'walk', label: 'Walking speed, level ground', min: 1, max: 2, step: 0.1, val: 1.5, fmt: function (v) { return v.toFixed(1) + ' km/h'; }, src: 'EWT', note: 'Changes walk times, the return area and the 60-minute line in this sketch.' },
     { id: 'pen', label: 'Slope penalty on walking speed', kind: 'select', options: ['Tobler-type, scaled to 1.5 km/h', 'Sensitivity check: −30 %', 'Sensitivity check: +30 %'], src: 'ASSUME' },
     { id: 'slope', label: 'Slope blocked above', min: 15, max: 25, step: 1, val: 20, fmt: function (v) { return v + '°'; }, src: 'xEVA', note: 'Suit design limit. Comfortable walking up to 10°.' },
-    { id: 'inj', label: 'Walking speed when injured', min: 0.3, max: 0.8, step: 0.05, val: 0.5, fmt: function (v) { return '×' + v.toFixed(2); }, src: 'ASSUME' },
     { id: 'buf', label: 'Protected-zone buffer radius', min: 50, max: 200, step: 10, val: 100, fmt: function (v) { return v + ' m'; }, src: 'PP' },
     { id: 'eva', label: 'EVA duration', min: 4, max: 8, step: 0.5, val: 6, fmt: function (v) { return v.toFixed(1) + ' h + 1 h backup'; }, src: 'xEVA' }
   ];
@@ -1993,32 +1307,19 @@ body.nav .console, body.nav #plan-controls { display: none; }
         : '<input type="range" id="as-' + a.id + '" min="' + a.min + '" max="' + a.max + '" step="' + a.step + '" value="' + a.val + '">';
       return '<div class="as"><div class="as-top"><label for="as-' + a.id + '">' + a.label + '</label>' + (a.fmt ? '<output id="out-' + a.id + '">' + a.fmt(a.val) + '</output>' : '') + '</div>' + ctl +
         '<div class="as-src">' + src(a.src) + '<span class="cap">' + (a.src === 'ASSUME' ? 'Labeled assumption' : 'Sourced value') + (a.note ? ' · ' + a.note : '') + '</span></div></div>';
-    }).join('') + '<p class="as-note">In this sketch only walking speed redraws the map. The other controls show the panel; each carries its source or the label “assumption”.</p>';
+    }).join('') + '<p class="as-note">In this sketch only walking speed changes the plan. The other controls show the panel; each carries its source or the label “assumption”.</p>';
     AS.forEach(function (a) {
       var inp = $('#as-' + a.id);
       if (!inp || a.kind === 'select') return;
       inp.addEventListener('input', function () {
         var v = +inp.value; $('#out-' + a.id).textContent = a.fmt(v);
-        if (a.id === 'walk') { st.walk = v; renderOverlay(); renderCrew(); }
+        if (a.id === 'walk') { st.walk = v; renderAll(); }
       });
     });
   }
 
-  // ---------- wiring ----------
+  // ---------- wiring (planning) ----------
   function wire() {
-    $('#btn-demo').addEventListener('click', function () { if (st.playing) stop(); else play(1); });
-    $('#tp-prev').addEventListener('click', function () { goBeat(st.beat - 1); });
-    $('#tp-next').addEventListener('click', function () { goBeat(st.beat + 1); });
-    $('#tp-dots').innerHTML = BEATS.map(function (b) { return '<button type="button" data-b="' + b.n + '" aria-label="Beat ' + b.n + ': ' + b.title + '">' + b.n + '</button>'; }).join('');
-    $('#tp-dots').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) goBeat(+b.dataset.b); });
-    $('#verdict').addEventListener('click', function (e) {
-      var b = e.target.closest('button'); if (!b) return;
-      if (b.id === 'act-go') { st.go = true; renderAll(); }
-      if (b.id === 'act-hold') { b.textContent = 'Holding · no clock'; }
-      if (b.id === 'act-reroute') { st.reroute = true; renderAll(); }
-      if (b.id === 'act-abort' && !st.playing) { play(6, 6); }
-      if (b.id === 'act-keep') { st.keepNote = true; renderVerdict(); }
-    });
     $('#tgl-grid').addEventListener('change', function (e) { st.grid = e.target.checked; renderOverlay(); });
     var lb = $('#btn-layers'), lp = $('#layers');
     lb.addEventListener('click', function (e) { e.stopPropagation(); var open = lp.hidden; lp.hidden = !open; lb.setAttribute('aria-expanded', String(open)); });
@@ -2033,30 +1334,13 @@ body.nav .console, body.nav #plan-controls { display: none; }
     $('#ly-trav').addEventListener('change', function (e) { st.showTrav = e.target.checked; renderOverlay(); });
     $('#btn-assume').addEventListener('click', function () { var a = $('#assume'); if (a.hidden) openAssume(); else closeAssume(); });
     $('#assume-close').addEventListener('click', closeAssume);
-    $$('.crew-head .seg button').forEach(function (b) {
-      b.addEventListener('click', function () {
-        st.skin = b.dataset.skin;
-        $('#crew').setAttribute('data-skin', st.skin);
-        $$('.crew-head .seg button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
-        renderCrew();
-      });
-    });
-    $$('.clock .seg button').forEach(function (b) { b.addEventListener('click', function () { st.speedX = +b.dataset.x; syncSpeed(); }); });
-    // rings and log rows
-    ov.addEventListener('mouseover', function (e) { var g = e.target.closest('.finding'); if (g) setHL(g.getAttribute('data-f'), true); });
-    ov.addEventListener('mouseout', function (e) { var g = e.target.closest('.finding'); if (g && !g.contains(e.relatedTarget)) setHL(st.sel, false); });
-    ov.addEventListener('click', function (e) {
-      var g = e.target.closest('.finding'); if (!g) return;
-      st.sel = g.getAttribute('data-f'); setHL(st.sel, true);
-      var row = $('#log [data-f="' + st.sel + '"]'); if (row) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    });
-    $('#log').addEventListener('mouseover', function (e) { var li = e.target.closest('.lg.finding'); if (li) setHL(li.getAttribute('data-f'), !li.classList.contains('is-hl')); });
-    $('#log').addEventListener('mouseleave', function () { setHL(st.sel, false); });
-    $('#log').addEventListener('click', function (e) { var li = e.target.closest('.lg.finding'); if (li && !e.target.closest('.src')) { st.sel = st.sel === li.getAttribute('data-f') ? null : li.getAttribute('data-f'); setHL(st.sel, true); } });
-    document.addEventListener('keydown', function (e) {
-      var f = document.activeElement && document.activeElement.closest && document.activeElement.closest('[data-f]');
-      if (f && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); st.sel = f.getAttribute('data-f'); setHL(st.sel, true); }
-    });
+    // pick a station in the list or on the map
+    $('#navpick-list').addEventListener('click', function (e) { var bt = e.target.closest('.np-row'); if (bt) pick(+bt.dataset.i); });
+    ov.addEventListener('click', function (e) { var g = e.target.closest('[data-stn]'); if (g) pick(+g.getAttribute('data-stn')); });
+    ov.addEventListener('keydown', function (e) { var g = e.target.closest('[data-stn]'); if (g && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pick(+g.getAttribute('data-stn')); } });
+    $('#np-stay').addEventListener('click', function (e) { var bb = e.target.closest('button'); if (!bb) return; STAY = +bb.dataset.stay; renderAll(); });
+    $('#np-t0').addEventListener('click', function (e) { var bb = e.target.closest('button'); if (!bb) return; NAVT0 = +bb.dataset.t0; renderAll(); });
+    $('#btn-start').addEventListener('click', function () { if (NAVSEL != null && planOf(NAVSEL).ok) navStart(NAVSEL); });
     // source tooltips
     var tip = $('#tip');
     function showTip(btn) {
@@ -2075,13 +1359,13 @@ body.nav .console, body.nav #plan-controls { display: none; }
     stage.addEventListener('mousemove', function (e) {
       var r = stage.getBoundingClientRect(), wx = (e.clientX - r.left - view.ox) / view.s, wy = (e.clientY - r.top - view.oy) / view.s;
       if (wx < 0 || wy < 0 || wx >= G.W || wy >= G.H) return;
-      var i = G.idxOf([wx, wy]), ll = G.toLonLat([wx, wy]), t = G.homePen.time[i] * walkK();
-      var what = G.ridge[i] ? 'ridge · no crossing' : G.slope[i] > 20 ? 'slope over 20° · blocked' : isFinite(t) ? R(t) + ' min to habitat' : 'no way home';
+      var i = G.idxOf([wx, wy]), ll = G.toLonLat([wx, wy]);
+      var what = G.ridge[i] ? 'ridge · no crossing' : G.slope[i] > 20 ? 'slope over 20° · blocked' : R(slHome([wx, wy])) + ' min to habitat, straight line';
       $('#readout').textContent = ll[0].toFixed(4) + '°E  ' + Math.abs(ll[1]).toFixed(4) + '°S · slope ' + G.slope[i].toFixed(1) + '° · ' + what;
     });
     stage.addEventListener('mouseleave', function () { $('#readout').textContent = ''; });
     var rt = 0;
-    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(relayout, 180); });
+    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { if (!NAV.on) relayout(); }, 180); });
   }
   function openAssume() { $('#assume').hidden = false; $('#btn-assume').setAttribute('aria-expanded', 'true'); var f = $('#assume input, #assume select'); if (f) f.focus(); }
   function closeAssume() { if ($('#assume').hidden) return; $('#assume').hidden = true; $('#btn-assume').setAttribute('aria-expanded', 'false'); }
@@ -2098,77 +1382,45 @@ body.nav .console, body.nav #plan-controls { display: none; }
     $('#scale .bar').style.width = (L * view.s).toFixed(1) + 'px';
     $('#scale span').textContent = L + ' m';
   }
-  function relayout() {
-    fit(); renderTerrain(); renderSlope(); renderRidges(); scaleBar(); cCache.clear(); renderAll(); renderLog(true);
-  }
+  function relayout() { fit(); renderTerrain(); renderSlope(); renderRidges(); scaleBar(); renderAll(); }
 
   // =====================================================================
   // ---------- navigation mode: forearm tablet + helmet HUD ----------
-  // Sketch only. The route to the picked station is a Dijkstra on the
-  // synthetic grid (zones penalised); the build reads precomputed routes.
+  // Runs only after a station is picked and "Start route" is pressed. The crew keeps the plan:
+  // walk out, stay the planned time, then the return starts on its own along the same route.
   // =====================================================================
-  var NAVSEL = null;                           // picked station index in planning
-  var NAV = { on: false, target: null, out: null, ret: null, phase: 'out', t: 0, t0: 0, tAt: 0, playing: true, speedX: 60, zoomI: 2, base: 'ortho', swapped: false, hd: null, pos: null, tex: null };
-  var NAVT0 = 0;                               // test: EVA hour at the start of navigation, i.e. less life support left
-  var T0_OPTS = [0, 180, 270];
+  var NAV = { on: false, target: null, out: null, ret: null, tLeave: 0, stay: 0, max: 0, phase: 'out', t: 0, t0: 0, playing: true, speedX: 60, zoomI: 2, base: 'ortho', swapped: false, hd: null, pos: null, tex: null };
   var ZOOMS = [0.45, 0.75, 1.2, 1.9, 3];       // screen px per metre
   var HUD_RANGE = 250;                         // metres from the HUD centre to its rim
-  var CAUTION = 15;                            // minutes of spare time below which the stage turns yellow (assumption)
   var BASES = ['ortho', 'slope', 'plain'], BASE_LBL = { ortho: 'Orthophoto', slope: 'Slope, 10 m baseline', plain: 'Plain: return stages only' };
   var STAGE = {
     green: { c: '#1F6B45', bg: '#1F6B45', fg: '#EDF0E6', tint: 'rgba(31,107,69,.22)', word: 'Home in time', hud: 'HOME IN TIME' },
     yellow: { c: '#D9A300', bg: '#D9A300', fg: '#2B2D2F', tint: 'rgba(217,163,0,.30)', word: 'Head home soon', hud: 'HEAD HOME SOON' },
     red: { c: '#C8361F', bg: '#C8361F', fg: '#EDF0E6', tint: 'rgba(200,54,31,.24)', word: 'ABORT: return to shelter now', hud: 'ABORT · RETURN NOW' }
   };
-  var navLegCache = {};
-  function navLeg(i) {                          // habitat -> station i, zones penalised
-    if (!navLegCache[i]) {
-      var to = G.idxOf(G.F.stations[i].c), fld = G.dijkstra(to, G.ZONE_PENALTY, G.hIdx);
-      var cells = G.pathFrom(fld, G.hIdx), ps = G.pathStats(cells);
-      navLegCache[i] = { cells: cells, minutes: fld.time[G.hIdx], length: ps.length, zoneMetres: ps.zoneMetres };
-    }
-    return navLegCache[i];
-  }
   function angNorm(a) { var t = Math.PI * 2; return ((a % t) + t) % t; }
   function angDiff(a, b) { return angNorm(a - b + Math.PI) - Math.PI; }
   function bearingTo(from, to) { return Math.atan2(to[0] - from[0], -(to[1] - from[1])); }   // x east, y south; 0 = north
   function compass8(a) { return ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(angNorm(a) / (Math.PI / 4)) % 8]; }
-
-  // ---------- planning: target picker ----------
-  function renderNavPick() {
-    var el = $('#navpick');
-    var show = st.beat === 1 && !st.playing;
-    el.hidden = !show;
-    if (!show) return;
-    $('#navpick-list').innerHTML = G.F.stations.map(function (sn, i) {
-      var lg = navLeg(i), on = NAVSEL === i, back = G.homePen.time[G.idxOf(sn.c)] * walkK(), walk = lg.minutes * walkK();
-      var stay = maxStayAt(back, NAVT0 + walk);
-      return '<li><button type="button" class="np-row' + (on ? ' is-on' : '') + '" data-i="' + i + '" aria-pressed="' + on + '">' +
-        '<span class="badge' + (on ? ' done' : '') + '">' + sn.n + '</span>' +
-        '<span class="np-l">' + sn.name + '<span class="cap">back to base ' + R(back) + ' min · ' +
-        (stay > 0 ? 'max stay ' + hm(stay) : '<b style="color:var(--red)">cannot get home in time</b>') + '</span></span>' +
-        '<span class="np-v">' + (lg.length / 1000).toFixed(2) + ' km<small>' + R(walk) + ' min walk</small></span></button></li>';
-    }).join('');
-    $$('#np-t0 button').forEach(function (bb) { bb.setAttribute('aria-pressed', String(+bb.dataset.t0 === NAVT0)); });
-    $('#btn-start').disabled = NAVSEL == null;
-    $('#np-note').textContent = NAVSEL == null ? 'Choose a station first' : 'EVA clock starts at ' + hm(NAVT0) + ', ' + lmst(NAVT0) + ' LMST · life support ' + hm(LS - NAVT0);
+  function remaining(tr, t) {   // metres and minutes left on a timed track
+    var m = 0;
+    for (var i = 1; i < tr.ts.length; i++) {
+      if (tr.ts[i] <= t) continue;
+      var a = tr.pts[i - 1], b = tr.pts[i], segL = G.dist(a, b);
+      if (tr.ts[i - 1] < t) segL *= (tr.ts[i] - t) / (tr.ts[i] - tr.ts[i - 1]);
+      m += segL;
+    }
+    return { m: m, min: Math.max(0, tr.t1 - t) };
   }
-  // longest stay at a place that is `back` minutes from base, arriving at EVA time `tArr`
-  // (the 60-minute rule limits where the crew may be, not how long; past 60 min from base there is no safe stay)
-  function maxStayAt(back, tArr) { return back > 60 ? -1 : Math.min(LS, SUNSET) - tArr - back; }
 
   // ---------- simulation ----------
+  function navPhaseAt(t) { return t < NAV.out.t1 ? 'out' : t < NAV.tLeave ? 'at' : t < NAV.ret.t1 ? 'ret' : 'home'; }
   function navTrack() { return NAV.phase === 'ret' || NAV.phase === 'home' ? NAV.ret : NAV.out; }
   function navAdvance(dm) {                     // dm: simulated minutes
-    NAV.t += dm;
-    if (NAV.phase === 'out' && NAV.t >= NAV.out.t1) { NAV.phase = 'at'; NAV.tAt = NAV.out.t1; }
-    if (NAV.phase === 'ret' && NAV.t >= NAV.ret.t1) { NAV.phase = 'home'; NAV.t = NAV.ret.t1; NAV.playing = false; syncNavPause(); }
-  }
-  function navReturn() {                        // the crew decides to head home from the station
-    if (NAV.phase !== 'at') return;
-    NAV.phase = 'ret';
-    NAV.ret = G.track(G.pathFrom(G.homePen, G.idxOf(G.F.stations[NAV.target].c)), walkK(), NAV.t);
-    navFrame(0, true);
+    var was = NAV.phase;
+    NAV.t = Math.min(NAV.ret.t1, NAV.t + dm);
+    NAV.phase = navPhaseAt(NAV.t);
+    if (NAV.phase === 'home' && was !== 'home') { NAV.playing = false; syncNavPause(); }
   }
   function navBearing() {                       // walking direction, from the route 1 min behind to 1 min ahead
     if (NAV.phase === 'at' || NAV.phase === 'home') return null;
@@ -2182,36 +1434,33 @@ body.nav .console, body.nav #plan-controls { display: none; }
     if (tb != null) NAV.hd = NAV.hd == null ? tb : angNorm(NAV.hd + angDiff(tb, NAV.hd) * Math.min(1, dt * 3));
     if (NAV.hd == null) NAV.hd = 0;
   }
-  // The return limit: the crew must reach the habitat within 60 min (safe-haven rule) AND before life support or
-  // daylight runs out. B is what is left of life support and daylight; L is the limit where the crew stands now.
+  // The return limit: home within 60 min (safe-haven rule) AND before life support or daylight runs out.
+  // B is what is left of life support and daylight; L is the limit where the crew stands now.
   function navLimit(t) {
     var B = Math.min(LS, SUNSET) - t, L = Math.min(60, B);
     return { B: B, L: Math.max(0, Math.floor(L)), by: B >= 60 ? '60-minute rule' : (LS <= SUNSET ? 'life support' : 'sunset') };
   }
-  // spare minutes at the crew position: how long before they would have to turn home
   function stageOf(spare) { return !(spare >= 0) ? 'red' : spare < CAUTION ? 'yellow' : 'green'; }
   function navData() {
-    var t = NAV.t, p = NAV.pos, lim = navLimit(t), ttb = G.homePen.time[G.idxOf(p)] * walkK();
-    var home = NAV.phase === 'home', at = NAV.phase === 'at', tr = navTrack(), rem = remaining(tr, t);
-    var tgt = (NAV.phase === 'ret' || home) ? { name: 'Habitat', n: 'H', c: G.F.habitat } : { name: 'Stn ' + (NAV.target + 1) + ' · ' + G.F.stations[NAV.target].name, n: NAV.target + 1, c: G.F.stations[NAV.target].c };
+    var t = NAV.t, p = NAV.pos, lim = navLimit(t), ph = NAV.phase, home = ph === 'home', at = ph === 'at';
+    var sl = home ? 0 : slHome(p), spare = Math.min(60 - sl, lim.B - sl);          // straight line, placeholder
+    var tr = navTrack(), rem = remaining(tr, t);
+    var tgt = (ph === 'ret' || home) ? { name: 'Habitat', n: 'H', c: G.F.habitat } : { name: 'Stn ' + (NAV.target + 1) + ' · ' + G.F.stations[NAV.target].name, n: NAV.target + 1, c: G.F.stations[NAV.target].c };
     var zone = null;
     G.F.zones.forEach(function (z) { var d = G.dist(p, z.c) - G.F.zoneR; if (!zone || d < zone.d) zone = { d: d, name: z.name }; });
-    var backT = G.homePen.time[G.idxOf(G.F.stations[NAV.target].c)] * walkK();
-    var homeAt = NAV.ret ? NAV.ret.t1 : (at ? t : NAV.out.t1) + backT;
-    var spare = Math.min(60 - ttb, lim.B - ttb);
+    var back = NAV.ret.t1 - NAV.ret.t0;
+    var wayHome = ph === 'out' ? t - NAV.out.t0 : at ? back : ph === 'ret' ? NAV.ret.t1 - t : 0;   // along the route
     return {
-      t: t, p: p, lim: lim, ttb: home ? 0 : ttb, spare: spare, stage: home ? 'green' : stageOf(spare), tgt: tgt, rem: rem,
-      eta: t + rem.min, ls: LS - t, sun: SUNSET - t, dose: 0.64 * t / 1440, slope: G.slope[G.idxOf(p)], zone: zone,
-      reserve: LS - homeAt, baseD: G.dist(p, G.F.habitat), home: home, at: at, out: NAV.phase === 'out',
-      stay: at ? maxStayAt(backT, t) : maxStayAt(backT, NAV.out.t1), z: G.z[G.idxOf(p)]
+      t: t, p: p, lim: lim, sl: sl, spare: spare, stage: home ? 'green' : stageOf(spare), tgt: tgt, rem: rem, wayHome: wayHome,
+      eta: t + rem.min, ls: LS - t, sun: SUNSET - t, dose: 0.64 * (t - NAV.t0) / 1440, slope: G.slope[G.idxOf(p)], zone: zone,
+      homeAt: NAV.ret.t1, reserve: LS - NAV.ret.t1, home: home, at: at, out: ph === 'out', stayLeft: at ? NAV.tLeave - t : NAV.stay, z: G.z[G.idxOf(p)]
     };
   }
   function navWarnings(d) {
     var w = [];
     if (d.home) return [['ok', 'check', 'Crew home · ' + lmst(d.t) + ' LMST']];
-    if (d.at && d.stay <= 0) w.push(['red', 'warn', 'Max stay reached · start the return now']);
-    else if (d.at && d.stay < CAUTION) w.push(['amber', 'warn', 'Start the return within ' + hm(d.stay)]);
-    else if (d.stage === 'red') w.push(['red', 'warn', 'Cannot get home in time · return to shelter now']);
+    if (d.at && d.stayLeft <= 10) w.push(['amber', 'warn', 'Return starts in ' + hm(Math.max(0, d.stayLeft))]);
+    if (d.stage === 'red') w.push(['red', 'warn', 'Cannot get home in time · return to shelter now']);
     else if (d.stage === 'yellow') w.push(['amber', 'warn', 'Under ' + CAUTION + ' min to spare · head home soon']);
     if (d.zone.d < 60) w.push(['blue', 'warn', (d.zone.d <= 0 ? 'Inside ' : 'Protected zone ' + R(d.zone.d) + ' m · ') + d.zone.name]);
     if (d.slope > 15) w.push(['red', 'warn', 'Steep ground ' + R(d.slope) + '° · limit 20°']);
@@ -2239,33 +1488,12 @@ body.nav .console, body.nav #plan-controls { display: none; }
     };
     return NAV.tex;
   }
-  function ringsPath(rings) {
+  function polyPath(pts) {
+    if (!pts) return null;
     var p = new Path2D();
-    rings.forEach(function (r) { r.forEach(function (q, i) { if (i) p.lineTo(q[0], q[1]); else p.moveTo(q[0], q[1]); }); p.closePath(); });
+    pts.forEach(function (q, i) { if (i) p.lineTo(q[0], q[1]); else p.moveTo(q[0], q[1]); });
+    p.closePath();
     return p;
-  }
-  var line60 = null;
-  function line60Path() { if (!line60) line60 = ringsPath(contourOf(G.homePen, 'p', walkK(), 60)); return line60; }
-  // Return stages on the map. For every cell X: spare(X) = min(60 - home(X), B - walk(here -> X) - home(X)).
-  // So a place is only green if the crew can walk there from where they are now and still get home inside the
-  // 60-minute rule and before life support (or daylight) runs out. B shrinks every minute, so the area does too.
-  // At the crew position walk = 0, which gives the same spare time as the stage chip and the HUD ring.
-  var SPF = { pR: null, pG: null, t: -1e9, p: null, real: 0 };
-  function spareField(d, force) {
-    var now = performance.now(), moved = SPF.p ? G.dist(SPF.p, d.p) : 1e9;
-    var due = Math.abs(d.t - SPF.t) >= 1 || moved >= 20;
-    if (SPF.pR && !force && !(due && now - SPF.real > 500)) return SPF;
-    var k = walkK(), B = d.lim.B, ht = G.homePen.time;
-    var wf = G.dijkstra(G.idxOf(d.p), G.ZONE_PENALTY, -1).time, val = new Float32Array(G.N);
-    for (var i = 0; i < G.N; i++) {
-      var hb = ht[i] * k, sp = Math.min(60 - hb, B - wf[i] * k - hb);
-      val[i] = 1000 - sp;                       // contour() draws the area where val <= limit
-    }
-    var fld = { time: val };
-    SPF.pR = ringsPath(G.contour(fld, 1, 1000, 24));
-    SPF.pG = ringsPath(G.contour(fld, 1, 1000 - CAUTION, 24));
-    SPF.t = d.t; SPF.p = d.p.slice(); SPF.real = performance.now();
-    return SPF;
   }
   var hatchCache = {};
   function hatch(ctx) {
@@ -2295,18 +1523,17 @@ body.nav .console, body.nav #plan-controls { display: none; }
     ctx.translate(cx, cy); ctx.rotate(-b); ctx.scale(s, s); ctx.translate(-p[0], -p[1]);
     if (NAV.base === 'plain') { ctx.fillStyle = '#EDF0E6'; ctx.fillRect(0, 0, G.W, G.H); }
     else navTextures()[NAV.base].forEach(function (tx) { ctx.drawImage(tx.cv, tx.x0, tx.y0, tx.w, tx.h); });
-    // return stages: green = 15+ min spare, yellow = under 15 min spare, red = cannot get home in time
-    var sf = spareField(d), pL = sf.pR, pG = sf.pG;
-    var red = new Path2D(); red.rect(-4000, -4000, G.W + 8000, G.H + 8000); red.addPath(pL);
+    // return stages from here: green = 15+ min spare, yellow = under 15 min, red = cannot get home in time
+    var pR = polyPath(returnPts(p, d.lim.B, 0)), pG = polyPath(returnPts(p, d.lim.B, CAUTION));
+    var red = new Path2D(); red.rect(-4000, -4000, G.W + 8000, G.H + 8000); if (pR) red.addPath(pR);
     ctx.fillStyle = STAGE.red.tint; ctx.fill(red, 'evenodd');
-    var yel = new Path2D(); yel.addPath(pL); yel.addPath(pG);
-    ctx.fillStyle = STAGE.yellow.tint; ctx.fill(yel, 'evenodd');
-    ctx.fillStyle = STAGE.green.tint; ctx.fill(pG, 'evenodd');
+    if (pR) { var yel = new Path2D(); yel.addPath(pR); if (pG) yel.addPath(pG); ctx.fillStyle = STAGE.yellow.tint; ctx.fill(yel, 'evenodd'); }
+    if (pG) { ctx.fillStyle = STAGE.green.tint; ctx.fill(pG); }
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-    ctx.setLineDash([7 / s, 5 / s]); ctx.lineWidth = 1.6 / s; ctx.strokeStyle = 'rgba(43,45,47,.7)'; ctx.stroke(line60Path()); ctx.setLineDash([]);
-    ctx.lineWidth = 6 / s; ctx.strokeStyle = 'rgba(237,240,230,.85)'; ctx.stroke(pL);
-    ctx.lineWidth = 3 / s; ctx.strokeStyle = STAGE.red.c; ctx.stroke(pL);
-    ctx.lineWidth = 5 / s; ctx.strokeStyle = 'rgba(237,240,230,.85)'; ctx.stroke(pG); ctx.lineWidth = 2.4 / s; ctx.strokeStyle = STAGE.green.c; ctx.stroke(pG);
+    var l60 = new Path2D(); l60.arc(G.F.habitat[0], G.F.habitat[1], 60 * vWalk(), 0, Math.PI * 2);
+    ctx.setLineDash([7 / s, 5 / s]); ctx.lineWidth = 1.6 / s; ctx.strokeStyle = 'rgba(43,45,47,.7)'; ctx.stroke(l60); ctx.setLineDash([]);
+    if (pR) { ctx.lineWidth = 6 / s; ctx.strokeStyle = 'rgba(237,240,230,.85)'; ctx.stroke(pR); ctx.lineWidth = 3 / s; ctx.strokeStyle = STAGE.red.c; ctx.stroke(pR); }
+    if (pG) { ctx.lineWidth = 5 / s; ctx.strokeStyle = 'rgba(237,240,230,.85)'; ctx.stroke(pG); ctx.lineWidth = 2.4 / s; ctx.strokeStyle = STAGE.green.c; ctx.stroke(pG); }
     // protected zones
     var pat = hatch(ctx);
     if (pat.setTransform) pat.setTransform(new DOMMatrix().scale(1 / s));
@@ -2323,7 +1550,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
       ctx.setLineDash([]);
     }
     var tr = navTrack();
-    if (NAV.ret) line(NAV.out.draw, 'rgba(43,45,47,.45)', 2.5, false, [6, 5]);
+    if (NAV.phase === 'ret') line(NAV.out.draw, 'rgba(43,45,47,.45)', 2.5, false, [6, 5]);
     if (NAV.phase !== 'home') {
       line(tr.draw, '#2B2D2F', 5, true);
       var k = 0; while (k < tr.ts.length - 1 && tr.ts[k + 1] <= NAV.t) k++;
@@ -2418,8 +1645,8 @@ body.nav .console, body.nav #plan-controls { display: none; }
     o.push(corner(S - 8, S - 30, 'end', 'Life support*', hm(d.ls)));
     $('#hud').innerHTML = '<svg viewBox="0 0 ' + S + ' ' + S + '" role="img" aria-label="Helmet HUD: heading ' + hdg + ' degrees, ' + stg.word + '">' + o.join('') + '</svg>';
     $('#hud-line').innerHTML = d.home ? '<span>Habitat</span><span>arrived</span>'
-      : d.at ? '<span>Stn ' + d.tgt.n + ' · max stay ' + (d.stay > 0 ? hm(d.stay) : '0:00') + '</span><span>Base ' + R(d.ttb) + ' min</span>'
-      : '<span>' + (d.tgt.n === 'H' ? 'Base' : 'Stn ' + d.tgt.n) + ' ' + R(d.rem.m) + ' m · ' + R(d.rem.min) + ' min</span><span>Base ' + R(d.ttb) + ' min</span>';
+      : d.at ? '<span>Stn ' + d.tgt.n + ' · return in ' + hm(Math.max(0, d.stayLeft)) + '</span><span>Home ' + lmst(d.homeAt) + '</span>'
+      : '<span>' + (d.tgt.n === 'H' ? 'Base' : 'Stn ' + d.tgt.n) + ' ' + R(d.rem.m) + ' m · ' + R(d.rem.min) + ' min</span><span>Home ' + lmst(d.homeAt) + '</span>';
     $('#hud-warn').innerHTML = navWarnings(d).slice(0, 3).map(function (w) { return '<li class="' + w[0] + '">' + icon(w[1]) + w[2] + '</li>'; }).join('');
   }
 
@@ -2433,44 +1660,36 @@ body.nav .console, body.nav #plan-controls { display: none; }
     }
     var tot = Math.max(1, dist[n - 1]), zmin = Math.min.apply(null, zs), zmax = Math.max.apply(null, zs);
     var span = Math.max(10, zmax - zmin), W = 600, H = 120, l = 62, r = 8, t = 10, bt = 22;
-    function X(m) { return l + (W - l - r) * m / tot; }
-    function Y(z) { return t + (H - t - bt) * (1 - (z - zmin) / span); }
+    function PX(m) { return l + (W - l - r) * m / tot; }
+    function PY(z) { return t + (H - t - bt) * (1 - (z - zmin) / span); }
     var k = 0; while (k < n - 1 && tr.ts[k + 1] <= d.t) k++;
     var f = k < n - 1 ? Math.max(0, Math.min(1, (d.t - tr.ts[k]) / Math.max(1e-6, tr.ts[k + 1] - tr.ts[k]))) : 0;
     var cur = dist[k] + (k < n - 1 ? (dist[k + 1] - dist[k]) * f : 0);
     var zc = zs[k] + (k < n - 1 ? (zs[k + 1] - zs[k]) * f : 0);
-    var line = zs.map(function (z, j) { return (j ? 'L' : 'M') + X(dist[j]).toFixed(1) + ' ' + Y(z).toFixed(1); }).join('');
-    var o = '<path d="' + line + 'L' + X(tot) + ' ' + (H - bt) + 'L' + l + ' ' + (H - bt) + 'Z" fill="#D6DCCB"/>' +
+    var line = zs.map(function (z, j) { return (j ? 'L' : 'M') + PX(dist[j]).toFixed(1) + ' ' + PY(z).toFixed(1); }).join('');
+    var o = '<path d="' + line + 'L' + PX(tot) + ' ' + (H - bt) + 'L' + l + ' ' + (H - bt) + 'Z" fill="#D6DCCB"/>' +
       '<path d="' + line + '" fill="none" stroke="#2B2D2F" stroke-width="2"/>' +
       '<path d="M' + l + ' ' + (H - bt) + 'H' + (W - r) + '" stroke="#2B2D2F" stroke-width="1"/>' +
-      '<text x="' + (l - 6) + '" y="' + (Y(zmax) + 4).toFixed(1) + '" text-anchor="end">' + R(zmax) + ' m</text>' +
-      '<text x="' + (l - 6) + '" y="' + (Y(zmin) + 4).toFixed(1) + '" text-anchor="end">' + R(zmin) + ' m</text>' +
+      '<text x="' + (l - 6) + '" y="' + (PY(zmax) + 4).toFixed(1) + '" text-anchor="end">' + R(zmax) + ' m</text>' +
+      '<text x="' + (l - 6) + '" y="' + (PY(zmin) + 4).toFixed(1) + '" text-anchor="end">' + R(zmin) + ' m</text>' +
       '<text x="' + l + '" y="' + (H - 6) + '">0 m</text><text x="' + (W - r) + '" y="' + (H - 6) + '" text-anchor="end">' + R(tot) + ' m</text>' +
-      '<path d="M' + X(cur).toFixed(1) + ' ' + t + 'V' + (H - bt) + '" stroke="#C8361F" stroke-width="1.5"/>' +
-      '<circle cx="' + X(cur).toFixed(1) + '" cy="' + Y(zc).toFixed(1) + '" r="5" fill="#C8361F" stroke="#EDF0E6" stroke-width="2"/>';
+      '<path d="M' + PX(cur).toFixed(1) + ' ' + t + 'V' + (H - bt) + '" stroke="#C8361F" stroke-width="1.5"/>' +
+      '<circle cx="' + PX(cur).toFixed(1) + '" cy="' + PY(zc).toFixed(1) + '" r="5" fill="#C8361F" stroke="#EDF0E6" stroke-width="2"/>';
     return '<div class="nd-prof"><div class="nd-prof-h"><b>Elevation, ' + (NAV.phase === 'ret' ? 'way home' : 'way out') + '</b><span class="num">+' + R(up) + ' m · −' + R(dn) + ' m</span></div>' +
       '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Elevation profile of the current leg">' + o + '</svg></div>';
   }
   function renderNavUi(d) {
     var stg = STAGE[d.stage], tr = navTrack(), turn;
     var spareTxt = d.spare >= 0 ? R(d.spare) + ' min spare' : 'no way home';
-    var leaveTxt = d.stay > 0 ? 'leave by ' + lmst(d.t + d.stay) : 'overdue by ' + hm(-d.stay);
     if (d.home) turn = icon('check') + '<div><div class="to">Crew home</div><div class="big">' + lmst(d.t) + '<small>LMST</small></div></div>';
-    else if (d.at) turn = icon('check') + '<div><div class="to">Arrived · ' + d.tgt.name + ' · ' + hm(d.t - NAV.tAt) + ' on station</div><div class="big">Max stay ' +
-      (d.stay > 0 ? hm(d.stay) : '0:00') + '<small>' + leaveTxt + '</small></div></div>';
+    else if (d.at) turn = icon('check') + '<div><div class="to">At ' + d.tgt.name + ' · ' + hm(d.t - NAV.out.t1) + ' of ' + hm(NAV.stay) + ' on station</div><div class="big">Return in ' +
+      hm(Math.max(0, d.stayLeft)) + '<small>leave ' + lmst(NAV.tLeave) + ' LMST</small></div></div>';
     else {
       var ah = G.posOn(tr, Math.min(tr.t1, d.t + 2)), ra = G.dist(d.p, ah) > 2 ? bearingTo(d.p, ah) - NAV.hd : 0;
       turn = '<svg viewBox="0 0 34 34" aria-hidden="true"><g transform="translate(17 17) rotate(' + (ra * 180 / Math.PI).toFixed(0) + ')"><path d="M0 -13L9 7L0 2L-9 7Z" fill="#E3B21B"/></g></svg>' +
         '<div><div class="to">To ' + d.tgt.name + '</div><div class="big">' + R(d.rem.m) + ' m<small>' + R(d.rem.min) + ' min · ETA ' + lmst(d.eta) + '</small></div></div>';
     }
     $('#nv-turn').innerHTML = turn;
-    // the return buttons are static elements, so a click is never lost to a re-render
-    var urgent = d.at && d.stay < CAUTION;
-    [$('#nv-return'), $('#nd-return')].forEach(function (bt) {
-      bt.hidden = !d.at;
-      bt.className = 'btn ' + (urgent ? 'btn-abort' : 'btn-go') + (bt.id === 'nv-return' ? ' nv-return' : '');
-      bt.lastChild.textContent = d.at && d.stay <= 0 ? 'Start return now' : 'Start return';
-    });
     $('#nd-end').hidden = !d.home;
     var se = $('#nv-stage');
     se.style.background = stg.bg; se.style.color = stg.fg;
@@ -2481,19 +1700,23 @@ body.nav .console, body.nav #plan-controls { display: none; }
       '<div><i style="background:' + STAGE.yellow.tint + ';border-color:' + STAGE.yellow.c + '"></i>Yes, under ' + CAUTION + ' min to spare</div>' +
       '<div><i style="background:' + STAGE.red.tint + ';border-color:' + STAGE.red.c + '"></i>No: ABORT if the crew is here</div>' +
       '<div><i style="border:0;border-top:2px dashed #2B2D2F;height:0"></i>60 min from base, fixed</div>' +
-      '<span class="cap">From here, with ' + hm(Math.max(0, d.lim.B)) + ' of ' + (LS <= SUNSET ? 'life support' : 'daylight') + ' left</span>';
+      '<span class="cap">From here, with ' + hm(Math.max(0, d.lim.B)) + ' of ' + (LS <= SUNSET ? 'life support' : 'daylight') + ' left</span>' +
+      '<span class="cap">Straight lines at ' + st.walk.toFixed(1) + ' km/h · placeholder</span>';
     function row(l, cap, v, unit, sk) { return '<div><dt>' + l + '<span class="cap">' + cap + '</span></dt><dd>' + numCell(v, unit) + '</dd><dd>' + (sk ? src(sk) : '') + '</dd></div>'; }
-    var stayRow = d.home || NAV.phase === 'ret' ? '' :
-      row(d.at ? 'Max stay here' : 'Max stay at target', d.at ? 'then start the return · ' + leaveTxt : 'if you arrive at ' + lmst(NAV.out.t1) + ' LMST', d.stay > 0 ? hm(d.stay) : '0:00', '', 'ASSUME');
+    var stayRow = d.home || NAV.phase === 'ret' ? ''
+      : d.at ? row('Return starts in', 'planned stay ' + hm(NAV.stay) + ' · leave ' + lmst(NAV.tLeave) + ' LMST', hm(Math.max(0, d.stayLeft)), '', 'ASSUME')
+      : row('Planned stay', 'at ' + d.tgt.name + ' · max ' + hm(NAV.max), hm(NAV.stay), '', 'ASSUME');
     $('#nd-body').innerHTML =
       '<div class="nd-stage" style="background:' + stg.bg + ';color:' + stg.fg + '"><span>' + stg.word + '</span><span class="num">' + spareTxt + '</span></div>' +
       (d.home ? '' : profileSVG(d)) +
       '<dl class="nd">' + stayRow +
       row('Next target', d.home ? 'arrived' : d.tgt.name, d.home || d.at ? 0 : R(d.rem.m), 'm') +
-      row('Time to target', d.home || d.at ? 'arrived' : 'ETA ' + lmst(d.eta) + ' LMST', d.home || d.at ? 0 : R(d.rem.min), 'min', 'GRID') +
-      row('Time to base', 'from here · walking ' + st.walk.toFixed(1) + ' km/h', R(d.ttb), 'min', 'GRID') +
+      row('Time to target', d.home || d.at ? 'arrived' : 'ETA ' + lmst(d.eta) + ' LMST', d.home || d.at ? 0 : R(d.rem.min), 'min', 'ROUTE') +
+      row('Home at', d.home ? 'arrived' : 'planned · EVA ' + hm(d.homeAt), lmst(d.homeAt), '', 'ROUTE') +
+      row('Way home on the route', 'from here, back along the route', R(d.wayHome), 'min', 'ROUTE') +
+      row('Time to base, straight line', 'placeholder until the routing engine', R(d.sl), 'min', 'GRID') +
       row('Return limit here', 'set by the ' + d.lim.by + ' · tightest of 60 min, life support, sunset', d.lim.L, 'min', 'xEVA') +
-      row('Reserve', 'life support left at arrival home', hm(d.reserve), '', 'ASSUME') +
+      row('Reserve', 'life support left at the planned arrival', hm(d.reserve), '', 'ASSUME') +
       row('Life support', 'assumption: 6:00 EVA', hm(Math.max(0, d.ls)), '', 'ASSUME') +
       row('Time to sunset', 'sunset 17:41 LMST', hm(d.sun), '', 'REMS') +
       row('Radiation dose', 'information only, never a gate', d.dose.toFixed(2), 'mSv', 'RAD') +
@@ -2531,16 +1754,15 @@ body.nav .console, body.nav #plan-controls { display: none; }
     $('#nav-pause').innerHTML = NAV.playing ? icon('pause') + '<span>Pause</span>' : icon('play') + '<span>' + (NAV.phase === 'home' ? 'Done' : 'Resume') + '</span>';
     $('#nav-pause').disabled = NAV.phase === 'home';
   }
-  function navStart(i, opts) {
-    opts = opts || {};
-    stop(true);
-    NAVSEL = i;
-    if (opts.t0 != null) NAVT0 = opts.t0;
-    NAV.t0 = NAVT0; SPF.pR = null;
-    NAV.on = true; NAV.target = i; NAV.out = G.track(navLeg(i).cells, walkK(), NAV.t0); NAV.ret = null;
-    NAV.phase = 'out'; NAV.t = NAV.t0; NAV.playing = !opts.pause; NAV.hd = null; NAV.swapped = !!opts.swap;
-    if (opts.zoom != null) NAV.zoomI = Math.max(0, Math.min(ZOOMS.length - 1, opts.zoom));
-    if (opts.base && BASES.indexOf(opts.base) >= 0) NAV.base = opts.base;
+  function navStart(i) {
+    var P = planOf(i);
+    if (!P.ok) return;
+    var cells = navLeg(i).cells;
+    NAV.target = i; NAV.t0 = P.t0; NAV.stay = P.stay; NAV.max = P.max;
+    NAV.out = G.track(cells, walkK(), P.t0);
+    NAV.tLeave = NAV.out.t1 + P.stay;
+    NAV.ret = G.track(cells.slice().reverse(), walkK(), NAV.tLeave);   // the way home: the same route, reversed
+    NAV.t = P.t0; NAV.phase = 'out'; NAV.playing = true; NAV.hd = null; NAV.swapped = false; NAV.on = true;
     document.body.classList.add('nav');
     $('#navmode').hidden = false; $('#nav-controls').hidden = false;
     placeViews(); syncNavPause();
@@ -2550,10 +1772,10 @@ body.nav .console, body.nav #plan-controls { display: none; }
     setTimeout(function () {
       navTextures();
       ld.remove();
-      if (opts.t) { while (NAV.t < opts.t && NAV.phase !== 'home') { navAdvance(0.25); navPose(0.05); } }
-      if (opts.ret) { navReturn(); if (opts.t2) while (NAV.t < opts.t2 && NAV.phase !== 'home') { navAdvance(0.25); navPose(0.05); } }
+      if (!NAV.on) return;
       navLast = performance.now();
       navFrame(1, true);
+      cancelAnimationFrame(navRaf);
       navRaf = requestAnimationFrame(navLoop);
     }, 30);
   }
@@ -2561,7 +1783,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     NAV.on = false; cancelAnimationFrame(navRaf);
     document.body.classList.remove('nav');
     $('#navmode').hidden = true; $('#nav-controls').hidden = true;
-    setBeat(1, false); relayout();
+    relayout();
   }
   function navKey(id) {
     var el = $('#' + id); el.classList.add('is-pressed'); setTimeout(function () { el.classList.remove('is-pressed'); }, 140);
@@ -2572,18 +1794,10 @@ body.nav .console, body.nav #plan-controls { display: none; }
     navFrame(0, true);
   }
   function navWire() {
-    $('#navpick-list').addEventListener('click', function (e) {
-      var bt = e.target.closest('.np-row'); if (!bt) return;
-      NAVSEL = +bt.dataset.i; renderNavPick(); renderOverlay();
-    });
-    $('#btn-start').addEventListener('click', function () { if (NAVSEL != null) navStart(NAVSEL); });
-    ['k-data', 'k-zin', 'k-zout', 'k-map'].forEach(function (id) { $('#' + id).addEventListener('click', function () { navKey(id); }); });
+    ['k-data', 'k-zin', 'k-zout', 'k-map'].forEach(function (id) { $('#' + id).addEventListener('click', function () { if (NAV.on) navKey(id); }); });
     $('#nav-pause').addEventListener('click', function () { if (NAV.phase === 'home') return; NAV.playing = !NAV.playing; syncNavPause(); });
     $('#nav-end').addEventListener('click', navEnd);
     $('#nd-end').addEventListener('click', navEnd);
-    $('#nd-return').addEventListener('click', navReturn);
-    $('#nv-return').addEventListener('click', navReturn);
-    $('#np-t0').addEventListener('click', function (e) { var bb = e.target.closest('button'); if (!bb) return; NAVT0 = +bb.dataset.t0; renderNavPick(); });
     $$('#nav-controls .seg button').forEach(function (bb) {
       bb.addEventListener('click', function () { NAV.speedX = +bb.dataset.nx; $$('#nav-controls .seg button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === bb)); }); });
     });
@@ -2591,7 +1805,6 @@ body.nav .console, body.nav #plan-controls { display: none; }
       if (!NAV.on || e.target.closest('input, select, textarea')) return;
       var map = { '1': 'k-data', '2': 'k-zin', '3': 'k-zout', '4': 'k-map' };
       if (map[e.key]) { e.preventDefault(); navKey(map[e.key]); }
-      if (e.key === 'r' || e.key === 'R') { e.preventDefault(); navReturn(); }
       if (e.key === ' ' && NAV.phase !== 'home') { e.preventDefault(); NAV.playing = !NAV.playing; syncNavPause(); }
     });
   }
@@ -2604,33 +1817,21 @@ body.nav .console, body.nav #plan-controls { display: none; }
     buildAssume();
     wire();
     navWire();
-    var q = new URLSearchParams(location.search);
-    var b = +(q.get('beat') || 0);
-    if (q.get('skin') === 'cuff') $('.crew-head .seg button[data-skin=cuff]').click();
+    var q = new URLSearchParams(location.search);   // view settings only; navigation starts from the Start button
     if (q.get('grid') === '1') { $('#tgl-grid').checked = true; st.grid = true; }
     if (q.get('base') === 'slope') { st.base = 'slope'; $('input[name=base][value=slope]').checked = true; }
     if (q.get('ridges') === '1') { st.ridges = true; $('#ly-ridges').checked = true; }
     if (q.get('assume') === '1') openAssume();
-    if (b >= 1 && b <= 6) setBeat(b, q.get('at') !== 'start'); else setBeat(1, false);
     fit();
     setTimeout(function () {
       renderTerrain(); renderSlope(); renderRidges(); scaleBar(); syncLayers();
       $('#loading').remove();
       renderAll();
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { renderLog(true); });
-      if (window.ResizeObserver) new ResizeObserver(function () { snapLog(); }).observe($('#log'));
-      if (q.get('play') === '1') play(1);
-      if (q.get('y')) window.scrollTo(0, +q.get('y'));
       if (q.get('layers') === '1') $('#btn-layers').click();
-      var ns = +(q.get('pick') || q.get('nav') || 0);
-      if (q.get('t0') != null) NAVT0 = +q.get('t0');
-      if (ns >= 1 && ns <= 4) { NAVSEL = ns - 1; renderNavPick(); renderOverlay(); }
-      if (q.get('nav') && ns >= 1 && ns <= 4) navStart(ns - 1, { t0: q.get('t0') != null ? +q.get('t0') : null, ret: q.get('ret') === '1', t2: +(q.get('t2') || 0), t: +(q.get('t') || 0), swap: q.get('swap') === '1', pause: q.get('pause') === '1', zoom: q.get('zoom') != null ? +q.get('zoom') : null, base: q.get('navbase') });
     }, 30);
   }
   init();
 })();
-
 </script>
 </body>
 </html>
