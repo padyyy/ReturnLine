@@ -10,3 +10,6 @@ export const BEATS = [
 
 // Crew view skin per beat (docs/demo-script.md, "Crew view")
 export const SKIN_FOR_BEAT = { 1: 'values', 2: 'cuff', 3: 'hud', 4: 'hud', 5: 'hud', 6: 'cuff' };
+
+// Forearm display mode per beat: the navigation map at the station (2) and on the ABORT way home (6)
+export const CUFF_MODE_FOR_BEAT = { 2: 'map', 6: 'map' };

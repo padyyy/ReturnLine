@@ -28,7 +28,12 @@ File names marked in code font are proposals until the grid spec in `../shared/`
 
 ## Crew view
 
-The console stays the main view, because every decision is habitat control's. The crew display panel (bottom left of the map) becomes the **crew view** with three read-only skins of the same data: console skin (five values), cuff tablet (heading-up map, data sheet with the elevation profile, four hardware keys) and helmet HUD (compass with base and target, stage ring, EVA time, sunset, dose, life support, warnings). During the demo the skin switches by itself as listed in the table, so each beat shows what the crew sees at that moment. A control above the panel lets the viewer pick a skin by hand or open the crew view full size in the navigation sketch's layout (tablet left, HUD and data sheet right); it changes only the view, never the EVA.
+The console stays the main view, because every decision is habitat control's. The crew display panel (bottom left of the map) becomes the **crew view** with three read-only tabs (team design rules of 2026-11-14):
+- **Values:** the five values as the console shows them.
+- **Cuff:** the forearm display in its hardware frame (keys DATA, ZOOM+, ZOOM−, MAP), so it is clearly what the crew sees on the arm and distinct from the HUD. Two modes: the five values (default) and the navigation map (heading up, return stages, zones, route, crew arrow, scale). DATA and MAP switch the mode, MAP again switches the base (orthophoto or plain), ZOOM changes the scale; the keys change only the view.
+- **HUD:** the helmet HUD: compass ring with a heading-up minimap (base and target at their bearing), stage ring, EVA time, sunset, dose, life support, and up to three warnings.
+
+ During the demo the skin switches by itself as listed in the table, so each beat shows what the crew sees at that moment. A control above the panel lets the viewer pick a skin by hand or open the crew view full size in the navigation sketch's layout (tablet left, HUD and data sheet right); it changes only the view, never the EVA.
 
 ## Demo button timeline
 
@@ -46,6 +51,8 @@ About 85 seconds after Start, subtitles on every beat. Each beat waits for its l
 **30-second video:** beats 3, 5 and 6 (`mission-scenario.md`). Suggested cut: beat 3 at ×120 (about 12 s), beat 5 (6 s), beat 6 (12 s).
 
 ## Data checks the real grid must pass
+
+Status 2026-11-14 evening: checked on the DEM-based fallback grid (`pipeline/time_grid.py`) with `frontend/scripts/find-scenario.mjs`. The story holds with an 80 m zone buffer and the placeholder positions listed in `../pipeline/README.md` (warning 5:05, injury 5:06: protected 56 min against 49 min through Drill site B, home 5:55). It did not hold with 40 m. The 1 m ridge mask is still missing, so check 1 (no ridge crossing) is open.
 
 The story is only true if the real data allow it. The sketch showed that a random layout usually does not; positions had to be tuned. Check these on the real grid before building beats 3 to 6, and pick the scenario station by them.
 

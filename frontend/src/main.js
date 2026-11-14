@@ -3,9 +3,9 @@ import './styles/app.css';
 import { loadData } from './data.js';
 import { buildModel } from './model.js';
 import { createMap } from './map.js';
-import { st, route, crewState, resetRun, scenarioStation, isScripted } from './sim.js';
-import { renderCrew } from './crew.js';
-import { BEATS, SKIN_FOR_BEAT } from './beats.js';
+import { st, route, crewState, resetRun, scenarioStation, isScripted, limits, walkFactor, abortTrack, script, rerouteTrack, detourMin } from './sim.js';
+import { renderCrew, crewFrame, cuffKey } from './crew.js';
+import { BEATS, SKIN_FOR_BEAT, CUFF_MODE_FOR_BEAT } from './beats.js';
 import * as ui from './ui.js';
 
 const $ = (s) => document.querySelector(s);
@@ -17,19 +17,39 @@ let mapApi;
 function renderMap() {
   const r = route(model);
   const c = crewState(model);
+  // return area, rule B: home in time from here, now (abort: zones allowed, injured: half speed)
+  mapApi.setArea({ L: limits(model).L, f: st.phase === 'plan' ? 1 : walkFactor(), which: st.abortAt != null ? 'allowed' : 'penalized' });
   if (st.phase === 'plan') {
     mapApi.showRoutes(r, { preview: true, ret: false });
     mapApi.setCrew(null);
   } else {
-    mapApi.showRoutes(r, { ret: st.retStart != null });
+    // beat 4: the drift drawn as far as the crew has walked it, the reroute and the finding ring at its end
+    const sp = st.drift ? script(model) : null;
+    const det = detourMin(model);
+    mapApi.showRoutes(r, {
+      ret: st.retStart != null,
+      abort: abortTrack(model),
+      drift: sp ? walked(sp.drift, st.t - sp.tQa) : null,
+      reroute: rerouteTrack(model),
+      rerouteLabel: det != null ? `Reroute · +${Math.max(0, Math.round(det))} min` : null,
+      ring: sp && st.driftAt != null && st.t >= st.driftAt ? sp.D : null,
+    });
     // once home, the crew is inside: the habitat marker stands for it
     if (st.done) mapApi.setCrew(null);
-    else mapApi.setCrew(c.pos, { red: st.injuredAt != null, label: st.injuredAt != null ? 'Crew · crew member injured' : 'Crew' });
+    else mapApi.setCrew(c.pos, { red: st.injuredAt != null, label: st.injuredAt != null ? 'Crew · injured' : 'Crew' });
   }
+  crewFrame(model); // moving parts of the crew view (navigation map, HUD)
   model.stations.forEach((s) => {
     const arrived = st.phase !== 'plan' && s.n === st.target && st.t >= (r?.out.minutes ?? Infinity);
     mapApi.setStation(s.n, arrived ? 'done' : s.n === st.target ? 'target' : '');
   });
+}
+
+// The part of a timed track walked after tt track minutes
+function walked(track, tt) {
+  if (tt >= track.minutes) return track;
+  const v = track.vertices.filter((x) => x.t_min <= tt);
+  return { vertices: v.length > 1 ? v : track.vertices.slice(0, 2), minutes: tt, length_m: 0 };
 }
 
 function renderAll() {
@@ -68,7 +88,7 @@ function runClock(t1, tok, speed) {
   });
 }
 function press(sel) { const b = $(sel); if (b) b.classList.add('is-pressed'); }
-function beat(n) { st.beat = n; st.skin = SKIN_FOR_BEAT[n]; renderAll(); }
+function beat(n) { st.beat = n; st.skin = SKIN_FOR_BEAT[n]; st.cuffMode = CUFF_MODE_FOR_BEAT[n] ?? 'values'; renderAll(); }
 
 async function playDemo() {
   const tok = ++token;
@@ -86,22 +106,30 @@ async function playDemo() {
     await runClock(300, tok);
     press('#act-return'); await sleep(400, tok);
     st.retStart = st.t; renderAll();
-    await runClock(312, tok);
+    const sp = script(model); // drift toward the protected zone nearest the way home (needs the grid)
+    await runClock(sp ? sp.tQa : 312, tok);
     await sleep(1000, tok);
     beat(4);
-    st.driftAt = st.t;
-    await runClock(314, tok);
-    await sleep(1500, tok);
-    press('#act-reroute'); await sleep(400, tok);
-    st.rerouted = true; st.rerouteAt = st.t; renderAll();
-    await sleep(2000, tok);
+    if (sp) {
+      st.drift = true; renderAll();
+      await runClock(sp.tD, tok);                 // the crew drifts until warn metres from the zone
+      st.driftAt = sp.tD; renderAll();            // the console warns
+      await sleep(2500, tok);
+      press('#act-reroute'); await sleep(400, tok);
+      st.rerouted = true; st.rerouteAt = st.t; renderAll();
+      await runClock(st.t + 1.5, tok);            // on the engine's way around the zone
+    } else {
+      st.driftAt = st.t;
+      await runClock(st.t + 2, tok);
+    }
+    await sleep(1000, tok);
     st.injuredAt = st.t;
     beat(5);
     await sleep(5000, tok);
     beat(6);
     await sleep(1500, tok);
     press('#act-abort'); await sleep(400, tok);
-    st.abort = true; renderAll();
+    st.abort = true; st.abortAt = st.t; renderAll();
     await runClock(st.t + crewState(model).backMin, tok, 240);
     st.done = true; st.phase = 'done'; renderAll();
   } catch { /* stopped by the user */ }
@@ -114,7 +142,7 @@ async function playNav() {
   const r = route(model);
   st.playing = true;
   try {
-    st.phase = 'run'; st.t = 0; st.skin = 'cuff'; renderAll();
+    st.phase = 'run'; st.t = 0; st.skin = 'cuff'; st.cuffMode = 'map'; renderAll(); // navigation run: the cuff's map
     await runClock(r.out.minutes, tok, 240);
     await sleep(1500, tok);
     press('#act-return'); await sleep(400, tok);
@@ -136,12 +164,17 @@ function goBeat(n) {
   st.phase = 'run';
   if (n >= 1) st.t = r.out.minutes;
   if (n >= 2) st.t = Math.max(st.t, 285);
-  if (n >= 3) { st.retStart = 300; st.t = 312; }
-  if (n >= 4) { st.driftAt = 313; st.t = 314; st.rerouted = true; st.rerouteAt = 314; }
-  if (n >= 5) { st.injuredAt = 315; st.t = 315; }
-  if (n >= 6) { st.abort = true; st.t += crewState(model).backMin; st.done = true; st.phase = 'done'; }
+  const sp = n >= 3 ? (st.retStart = 300, script(model)) : null;
+  if (n >= 3) st.t = sp ? sp.tQa : 312;
+  if (n >= 4) {
+    if (sp) { st.drift = true; st.driftAt = sp.tD; st.rerouted = true; st.rerouteAt = sp.tD + 0.5; st.t = st.rerouteAt; }
+    else { st.driftAt = st.t + 1; st.t += 2; }
+  }
+  if (n >= 5) { st.t += 1.5; st.injuredAt = st.t; }
+  if (n >= 6) { st.abort = true; st.abortAt = st.t; st.t += crewState(model).backMin; st.done = true; st.phase = 'done'; }
   st.beat = n;
   st.skin = SKIN_FOR_BEAT[n];
+  st.cuffMode = CUFF_MODE_FOR_BEAT[n] ?? 'values';
   renderAll();
 }
 
@@ -157,8 +190,8 @@ function wire() {
     const b = e.target.closest('button');
     if (!b || st.playing) return;
     if (b.id === 'act-return') st.retStart = st.t;
-    if (b.id === 'act-reroute') { st.rerouted = true; st.rerouteAt = st.t; }
-    if (b.id === 'act-abort') st.abort = true;
+    if (b.id === 'act-reroute') { st.rerouted = true; st.rerouteAt = st.t; if (st.driftAt == null) st.driftAt = st.t; }
+    if (b.id === 'act-abort') { st.abort = true; st.abortAt = st.t; }
     renderAll();
   });
   $('#tp-dots').innerHTML = BEATS.map((b) => `<button type="button" data-b="${b.n}" aria-label="Beat ${b.n}: ${b.title}">${b.n}</button>`).join('');
@@ -167,19 +200,54 @@ function wire() {
   $('#tp-next').addEventListener('click', () => goBeat(Math.min(6, st.beat + 1)));
   $$('.clock .seg button').forEach((b) => b.addEventListener('click', () => { st.speedX = +b.dataset.x; ui.renderBudget(model); }));
   $$('.crew-head .seg button').forEach((b) => b.addEventListener('click', () => { st.skin = b.dataset.skin; renderCrew(model); }));
+  // cuff hardware keys: they change only the crew's own view
+  $('#crew-body').addEventListener('click', (e) => {
+    const k = e.target.closest('[data-key]');
+    if (!k) return;
+    const id = k.dataset.key;
+    cuffKey(model, id);
+    const again = document.querySelector(`#crew-body [data-key="${id}"]`);
+    if (again) { again.classList.add('is-pressed'); again.focus(); setTimeout(() => again.classList.remove('is-pressed'), 140); }
+  });
   const lb = $('#btn-layers'), lp = $('#layers');
   lb.addEventListener('click', (e) => { e.stopPropagation(); lp.hidden = !lp.hidden; lb.setAttribute('aria-expanded', String(!lp.hidden)); });
   document.addEventListener('click', (e) => { if (!lp.hidden && !lp.contains(e.target)) { lp.hidden = true; lb.setAttribute('aria-expanded', 'false'); } });
   $('#ly-area').addEventListener('change', (e) => mapApi.setLayer('area', e.target.checked));
   $('#ly-zones').addEventListener('change', (e) => mapApi.setLayer('zones', e.target.checked));
   $('#ly-trav').addEventListener('change', (e) => mapApi.setLayer('traverse', e.target.checked));
+  // slope layer from the pipeline: only offered when its file is there
+  $('#ly-slope-row').hidden = !model.hasSlopeLayer;
+  $('#ly-slope').addEventListener('change', (e) => { mapApi.setLayer('slope', e.target.checked); $('#ly-slope-key').hidden = !e.target.checked; });
+  // collapsible map key; the choice is a per-viewer convenience, so browser storage is fine
+  const lgd = $('#legend'), lgt = $('#legend-toggle');
+  const setLegend = (open) => { lgd.classList.toggle('is-collapsed', !open); lgt.setAttribute('aria-expanded', String(open)); };
+  try { if (localStorage.getItem('rl.legend') === 'collapsed') setLegend(false); } catch { /* storage blocked */ }
+  lgt.addEventListener('click', () => {
+    const open = lgd.classList.contains('is-collapsed');
+    setLegend(open);
+    try { localStorage.setItem('rl.legend', open ? 'open' : 'collapsed'); } catch { /* storage blocked */ }
+  });
+  // 100 m survey grid: off by default, on with ?grid=1 or the remembered choice of this viewer
+  const tg = $('#tgl-grid');
+  let gridOn = new URLSearchParams(location.search).get('grid') === '1';
+  try { if (localStorage.getItem('rl.grid') === 'on') gridOn = true; } catch { /* storage blocked */ }
+  tg.checked = gridOn;
+  mapApi.setGrid(gridOn);
+  tg.addEventListener('change', () => {
+    mapApi.setGrid(tg.checked);
+    try { localStorage.setItem('rl.grid', tg.checked ? 'on' : 'off'); } catch { /* storage blocked */ }
+  });
   const ap = $('#assume');
   $('#btn-assume').addEventListener('click', () => { ap.hidden = !ap.hidden; $('#btn-assume').setAttribute('aria-expanded', String(!ap.hidden)); });
   $('#assume-close').addEventListener('click', () => { ap.hidden = true; $('#btn-assume').setAttribute('aria-expanded', 'false'); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { lp.hidden = true; ap.hidden = true; } });
   const tip = $('#tip');
   const show = (b) => {
-    tip.textContent = b.dataset.tip; tip.hidden = false;
+    // source cards as in the sketch: the chip label in yellow, then why the value was chosen
+    tip.replaceChildren();
+    if (b.dataset.tipLabel) { const k = document.createElement('b'); k.textContent = b.dataset.tipLabel; tip.append(k, ' · '); }
+    tip.append(b.dataset.tip);
+    tip.hidden = false;
     const r = b.getBoundingClientRect();
     tip.style.left = `${Math.max(8, Math.min(innerWidth - tip.offsetWidth - 8, r.right - tip.offsetWidth))}px`;
     tip.style.top = `${r.top - tip.offsetHeight - 8 < 8 ? r.bottom + 8 : r.top - tip.offsetHeight - 8}px`;
@@ -197,9 +265,9 @@ async function boot() {
     const data = await loadData();
     model = buildModel(data);
     mapApi = createMap($('#map'), data, model);
-    mapApi.fitPlan();
     ui.renderAssume(model);
     wire();
+    mapApi.fitPlan(); // after wire(): the padding depends on whether the map key is collapsed
     const q = new URLSearchParams(location.search);
     if (q.get('beat')) goBeat(+q.get('beat')); else renderAll();
   } catch (err) {

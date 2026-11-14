@@ -20,7 +20,7 @@ Folder `frontend/public/data/` unless noted.
 |---|---|---|---|
 | `../maps/ortho_gale_1m.jpg` + `.json` | orthophoto overlay and bounds | pipeline (exists) | console map, cuff map |
 | `slope_10m.png` + `.json` | slope picture for display: up to 10°, 10–20°, over 20° | pipeline | console layer, cuff base map "slope" |
-| `scenario.json` | constants and assumptions, each with source or "assumption": habitat `[lon, lat]`, `scenario_station` (station `n` the six beats play for, chosen by the data checks in `docs/demo-script.md`), EVA start (LMST), sol shown, life support 360 min, backup 60 min, sunset and sunrise (REMS, last reading sol 4995), walking speed, injury factor 0.5, caution margin 15 min, dose rate 0.64 mSv/day, zone buffer, slope limits 10° and 20° | team, pipeline for REMS | everything |
+| `scenario.json` | constants and assumptions, each with source or "assumption": habitat `[lon, lat]`, `scenario_station` (station `n` the six beats play for, chosen by the data checks in `docs/demo-script.md`), `drift_zone` (zone `id` the crew drifts toward in beat 4; pick one on the way home so that another zone still lies between the injury point and the habitat for the ABORT), `zone_warn_m` (warning distance to a zone edge, assumption, 10 m as in the design sketch), `zone_clearance_m` (planning clearance outside the buffer, assumption), EVA start (LMST), sol shown, life support 360 min, backup 60 min, sunset and sunrise (REMS, last reading sol 4995), walking speed, injury factor 0.5, caution margin 15 min, dose rate 0.64 mSv/day, zone buffer, slope limits 10° and 20° | team, pipeline for REMS | everything |
 | `stations.geojson` | points: `n`, `name`, `reason`, Curiosity `sol`, ground image `{path, instrument, sol}`, `elev_m` | pipeline | console log, target picker, maps, HUD |
 | `zones.geojson` | **polygons** (buffer drawn as polygon, not `L.circle`): `id`, `name`, `drill_sol`, `buffer_m` | pipeline | maps, HUD, warnings, zone metres |
 | `curiosity_traverse.geojson` | Curiosity's line, clipped to the map extent | pipeline (MMGIS) | console map |
@@ -69,7 +69,10 @@ The grid spec is the one page that lets engine, pipeline and frontend read the s
 | Meaning of time | walking time from the cell to the habitat at 1.5 km/h with the named slope penalty. In the zones-penalized variant the route avoids zones, but the stored value is the real walking time along that route, not the penalized cost |
 | Moves | 16 neighbours (8 give octagonal areas on open ground), no corner cutting past blocked cells |
 | Blocked | 1 m ridge mask aggregated to 10 m, and 10 m slope over 20° |
+| Zone clearance | in the zones-penalized variant, cells within `zone_clearance_m` outside the buffer cost a small extra factor (the placeholder uses 3, zones themselves 20), so planned routes keep distance and the 10 m warning fires only on a real deviation |
 | Header | `grid.json`: bbox in degrees, origin in metres, cell size, nx, ny, CRS, file names, dtype, nodata, source, generator, date |
 | Folder | `frontend/public/data/` |
 
 Team inputs the spec needs: the habitat coordinate, the slope penalty and the zone buffer radius (both labeled assumptions).
+
+Example header: `frontend/public/data/placeholder/grid.json`, written by `frontend/scripts/make-placeholder-data.mjs` together with the four binary grids in this format (flat ground, no slope, zones penalized by a factor of 20, 341 × 341 cells around the placeholder habitat). The console reads exactly these fields: `cell_m`, `nx`, `ny`, `origin_m.x` and `origin_m.y` (north-west corner of cell 0 in projected metres; lon° = x / 59274.70), `files`. Real files in `frontend/public/data/` replace the placeholder without code changes. The placeholder's grid search stands in for the engine only until then.

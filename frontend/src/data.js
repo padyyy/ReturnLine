@@ -28,17 +28,28 @@ export async function loadData() {
     load('curiosity_comparison.json', { placeholder: false }),
     fetchJson('maps/ortho_gale_1m.json').catch(() => null),
   ]);
+  // slope display layer (pipeline/mapping_bridge.py); optional, display only
+  let slopeLayer = await fetchJson('data/slope_10m.json').catch(() => null);
   if (!scenario || !stations || !routes) throw new Error('scenario, stations and routes are required');
-  const grid = await loadGrid(missing);
-  return { scenario, stations, zones, routes, traverse, radio, comparison, ortho, grid, placeholders, missing };
+  const grid = await loadGrid(missing, placeholders);
+  // the slope image must cover exactly the grid it was made from (pixels_per_cell pixels per cell edge)
+  const ppc = slopeLayer?.pixels_per_cell || 1;
+  if (slopeLayer && grid && (slopeLayer.width_px !== grid.header.nx * ppc || slopeLayer.height_px !== grid.header.ny * ppc)) {
+    console.warn('slope layer does not match grid.json; not drawn');
+    slopeLayer = null;
+  }
+  return { scenario, stations, zones, routes, traverse, radio, comparison, ortho, grid, slopeLayer, placeholders, missing };
 }
 
 // Time-to-base grids and return pointers from the routing engine (grid spec in shared/).
-async function loadGrid(missing) {
+async function loadGrid(missing, placeholders) {
   let header;
-  try { header = await fetchJson('data/grid.json'); } catch { missing.add('grid.json'); return null; }
+  let dir = 'data/';
+  try { header = await fetchJson('data/grid.json'); } catch {
+    try { header = await fetchJson('data/placeholder/grid.json'); dir = 'data/placeholder/'; placeholders.add('grid.json'); } catch { missing.add('grid.json'); return null; }
+  }
   const bin = async (file, Type) => {
-    const res = await fetch(BASE + 'data/' + file);
+    const res = await fetch(BASE + dir + file);
     if (!res.ok) throw new Error(`missing ${file}`);
     return new Type(await res.arrayBuffer());
   };
@@ -46,6 +57,7 @@ async function loadGrid(missing) {
     const f = header.files || {};
     return {
       header,
+      placeholder: dir !== 'data/',
       ttbPenalized: await bin(f.ttb_penalized || 'ttb_penalized.f32', Float32Array),
       ttbAllowed: await bin(f.ttb_allowed || 'ttb_allowed.f32', Float32Array),
       ptrPenalized: await bin(f.ptr_penalized || 'ptr_penalized.i32', Int32Array),

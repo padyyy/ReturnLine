@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { estimateDuration } from '../src/route-duration.js';
-import { parseRoute } from '../src/route-duration-input.js';
 const segment = (distanceM = 600, slopeDeg = 0, roughnessM = 0) => ({ distanceM, slopeDeg, roughnessM });
 const route = (...segments) => segments;
 const calc = (r, options = {}) => estimateDuration(r, { ...options, model: { baseSpeedMps: 1, ...options.model } });
@@ -64,23 +63,6 @@ test('empty and zero-length routes take no time, even with departure events', ()
   }
   close(calc(route(segment(0), segment())).totalMinutes, 10);
 });
-test('node adapter creates copied sections without mutating the input', () => {
-  const nodes = [
-    { x: 0, y: 0, elevation_m: 0, roughness_m: 0.2 },
-    { x: 1, y: 0, elevation_m: Math.tan(10 * Math.PI / 180), roughness_m: 0.1 },
-    { x: 2, y: 1, elevation_m: Math.tan(10 * Math.PI / 180) + Math.SQRT2 * Math.tan(-5 * Math.PI / 180), roughness_m: 0 },
-  ];
-  const before = JSON.stringify({ nodes });
-  const sections = parseRoute(before);
-  close(sections[0].distanceM, 1);
-  close(sections[0].slopeDeg, 10);
-  close(sections[1].distanceM, Math.SQRT2);
-  close(sections[1].slopeDeg, -5);
-  close(sections[0].roughnessM, 0.2);
-  close(sections[1].roughnessM, 0.1);
-  calc(sections);
-  assert.equal(JSON.stringify({ nodes }), before);
-});
 test('invalid input and configuration fail explicitly', () => {
   for (const value of [-1, NaN, Infinity, '600', null]) {
     assert.throws(() => calc(route(segment(value))), RangeError);
@@ -96,38 +78,12 @@ test('invalid input and configuration fail explicitly', () => {
     assert.throws(() => calc(route(segment()), { events: [e] }));
   }
   assert.throws(() => calc(route(segment()), { nowMinute: -1 }));
-  assert.throws(() => parseRoute('{'));
 });
 test('extreme terrain is bounded; unrepresentable durations fail', () => {
   close(calc(route(segment(6, 89, 1e300))).totalMinutes, 10);
   assert.throws(() => calc(route(segment(Number.MAX_VALUE))), RangeError);
 });
 
-test('one metre grid sums edge times rather than average terrain', () => {
-  const sections = parseRoute({ nodes: [
-    { x: 0, y: 0, elevation_m: 0, roughness_m: 0 },
-    { x: 1, y: 0, elevation_m: Math.tan(10 * Math.PI / 180), roughness_m: 0.5 },
-    { x: 2, y: 0, elevation_m: 0, roughness_m: 0 },
-  ] });
-  close(calc(sections).totalMinutes, (18.536273191950126 + 13.062290946139536 * 1.5) / 600);
-  close(sections.reduce((sum, s) => sum + s.distanceM, 0), 2);
-});
-test('empty and single-node paths contain no transitions', () => {
-  assert.deepEqual(parseRoute({ nodes: [] }), []);
-  const sections = parseRoute({ nodes: [{ x: 0, y: 0, elevation_m: -3600, roughness_m: 0.2 }] });
-  close(calc(sections).totalMinutes, 0);
-});
-test('node adapter rejects missing terrain, invalid coordinates, duplicates and jumps', () => {
-  const n = { x: 0, y: 0, elevation_m: 0, roughness_m: 0 };
-  for (const bad of [null, {}, { ...n, x: 0.5 }, { ...n, x: Infinity },
-    { ...n, elevation_m: NaN }, { ...n, elevation_m: null },
-    { ...n, roughness_m: -1 }, { ...n, roughness_m: undefined }]) {
-    assert.throws(() => parseRoute({ nodes: [bad] }));
-  }
-  assert.throws(() => parseRoute({ segments: [] }));
-  assert.throws(() => parseRoute({ nodes: [n, n] }));
-  assert.throws(() => parseRoute({ nodes: [n, { ...n, x: 2 }] }));
-});
 
 test('Tobler has its maximum at -5 percent grade and slows steeper descent', () => {
   const optimum = Math.atan(-0.05) * 180 / Math.PI;
@@ -147,29 +103,4 @@ test('base speed sensitivity scales duration inversely without clamping', () => 
   const baseline = calc(sections).totalMinutes;
   close(calc(sections, { model: { baseSpeedMps: 0.7 } }).totalMinutes, baseline / 0.7);
   close(calc(sections, { model: { baseSpeedMps: 1.3 } }).totalMinutes, baseline / 1.3);
-});
-
-test('directionless slope_deg is not reused as uphill slope', () => {
-  const nodes = [
-    { x: 0, y: 0, elevation_m: -3600, slope_deg: 30, roughness_m: 0 },
-    { x: 1, y: 0, elevation_m: -3600, slope_deg: 30, roughness_m: 0 },
-  ];
-  close(parseRoute({ nodes })[0].slopeDeg, 0);
-  close(calc(parseRoute({ nodes })).totalMinutes, 1 / 60);
-});
-test('reversing the path reverses the elevation slope sign', () => {
-  const nodes = [
-    { x: 0, y: 0, elevation_m: 0, roughness_m: 0 },
-    { x: 1, y: 0, elevation_m: 0.1, roughness_m: 0 },
-  ];
-  const uphill = parseRoute({ nodes });
-  const downhill = parseRoute({ nodes: nodes.toReversed() });
-  close(uphill[0].slopeDeg, -downhill[0].slopeDeg);
-  assert.ok(calc(uphill).totalMinutes > calc(downhill).totalMinutes);
-});
-test('extreme elevation differences are rejected rather than silently clamped', () => {
-  assert.throws(() => parseRoute({ nodes: [
-    { x: 0, y: 0, elevation_m: 0, roughness_m: 0 },
-    { x: 1, y: 0, elevation_m: 1e300, roughness_m: 0 },
-  ] }), RangeError);
 });

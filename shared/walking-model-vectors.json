@@ -1,0 +1,123 @@
+{
+  "model": "Tobler 1993, normalised to v(0) = base speed: speed = base * exp(-3.5 * (abs(g + 0.05) - 0.05)), g = dz / horizontal distance",
+  "source": "Tobler, NCGIA Technical Report 93-1",
+  "base_speed_kmh": 1.5,
+  "assumptions": [
+    "Astronaut and Mars scaling is not validated",
+    "roughness_m = 0; no roughness data",
+    "Distances are supplied ground distances; no extra slope-length correction"
+  ],
+  "min_speed_mps": 0.01,
+  "max_speed_mps": 3,
+  "tolerance_minutes": 1e-9,
+  "vectors": [
+    {
+      "distance_m": 10,
+      "dz_m": -3.6397023426620234,
+      "slope_deg": -20,
+      "minutes": 1.0076340801890369
+    },
+    {
+      "distance_m": 10,
+      "dz_m": -1.7632698070846498,
+      "slope_deg": -10,
+      "minutes": 0.5224916378455814
+    },
+    {
+      "distance_m": 10,
+      "dz_m": -0.87488663525924,
+      "slope_deg": -5,
+      "minutes": 0.3828620989746013
+    },
+    {
+      "distance_m": 10,
+      "dz_m": -0.49957916025615473,
+      "slope_deg": -2.86,
+      "minutes": 0.33583227071321164
+    },
+    {
+      "distance_m": 10,
+      "dz_m": 0,
+      "slope_deg": 0,
+      "minutes": 0.4000000000000001
+    },
+    {
+      "distance_m": 10,
+      "dz_m": 0.87488663525924,
+      "slope_deg": 5,
+      "minutes": 0.5433071802411564
+    },
+    {
+      "distance_m": 10,
+      "dz_m": 1.7632698070846498,
+      "slope_deg": 10,
+      "minutes": 0.7414509276780049
+    },
+    {
+      "distance_m": 10,
+      "dz_m": 3.6397023426620234,
+      "slope_deg": 20,
+      "minutes": 1.4299008240528785
+    },
+    {
+      "distance_m": 10,
+      "dz_m": -0.49999999999999994,
+      "slope_deg": -2.8624052261117474,
+      "minutes": 0.335782808307683
+    },
+    {
+      "distance_m": 22.36,
+      "dz_m": -8.138374438192285,
+      "slope_deg": -20,
+      "minutes": 2.2530698033026866
+    },
+    {
+      "distance_m": 22.36,
+      "dz_m": -3.942671288641277,
+      "slope_deg": -10,
+      "minutes": 1.16829130222272
+    },
+    {
+      "distance_m": 22.36,
+      "dz_m": -1.9562465164396607,
+      "slope_deg": -5,
+      "minutes": 0.8560796533072085
+    },
+    {
+      "distance_m": 22.36,
+      "dz_m": -1.117059002332762,
+      "slope_deg": -2.86,
+      "minutes": 0.7509209573147413
+    },
+    {
+      "distance_m": 22.36,
+      "dz_m": 0,
+      "slope_deg": 0,
+      "minutes": 0.8944
+    },
+    {
+      "distance_m": 22.36,
+      "dz_m": 1.9562465164396607,
+      "slope_deg": 5,
+      "minutes": 1.2148348550192258
+    },
+    {
+      "distance_m": 22.36,
+      "dz_m": 3.942671288641277,
+      "slope_deg": 10,
+      "minutes": 1.657884274288019
+    },
+    {
+      "distance_m": 22.36,
+      "dz_m": 8.138374438192285,
+      "slope_deg": 20,
+      "minutes": 3.1972582425822362
+    },
+    {
+      "distance_m": 22.36,
+      "dz_m": -1.1179999999999999,
+      "slope_deg": -2.8624052261117474,
+      "minutes": 0.7508103593759792
+    }
+  ]
+}

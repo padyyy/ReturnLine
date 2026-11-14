@@ -4,17 +4,21 @@
  "placeholder_fields": [
   "habitat",
   "scenario_station",
+  "drift_zone",
   "eva_start_lmst",
   "sol",
   "sunset_lmst",
   "sunrise_lmst",
-  "zone_buffer_m"
+  "zone_buffer_m",
+  "zone_clearance_m",
+  "zone_warn_m"
  ],
  "habitat": [
-  137.3915,
-  -4.7935
+  137.384902,
+  -4.812105
  ],
  "scenario_station": 1,
+ "drift_zone": "A",
  "eva_number": 7,
  "sol": 5120,
  "eva_start_lmst": "09:00",
@@ -26,7 +30,9 @@
  "injury_factor": 0.5,
  "caution_margin_min": 15,
  "dose_rate_msv_per_day": 0.64,
- "zone_buffer_m": 40,
+ "zone_buffer_m": 80,
+ "zone_clearance_m": 30,
+ "zone_warn_m": 10,
  "slope_comfort_deg": 10,
  "slope_block_deg": 20,
  "sources": {
@@ -37,6 +43,8 @@
   "dose_rate_msv_per_day": "Hassler et al. 2014, Science 343",
   "sunset_lmst": "REMS (placeholder value)",
   "slope_block_deg": "xEVA suit requirement",
-  "zone_buffer_m": "assumption (placeholder value)"
+  "zone_buffer_m": "assumption (placeholder value)",
+  "zone_clearance_m": "assumption (placeholder value)",
+  "zone_warn_m": "assumption (design sketch value)"
  }
 }

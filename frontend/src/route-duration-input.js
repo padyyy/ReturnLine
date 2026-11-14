@@ -1,29 +1,25 @@
-// Ordered A* nodes on a 1 m grid; x/y are integer cell indices, not GPS positions.
-// Directional slope comes from elevations; roughness comes from the departure cell.
-export function parseRoute(input) {
-  const data = typeof input === 'string' ? JSON.parse(input) : input;
-  if (!data || !Array.isArray(data.nodes)) throw new TypeError('nodes must be an array');
-  const nodes = data.nodes;
-  nodes.forEach((n, i) => {
-    if (!n || !Number.isSafeInteger(n.x) || !Number.isSafeInteger(n.y)) {
-      throw new TypeError(`nodes[${i}] must have safe integer x/y cell indices`);
+// Adapter for the shared routes.json track format. No grid geometry or route search.
+export function sectionsFromTrack(track) {
+  if (!track || !Array.isArray(track.vertices)) throw new TypeError('track.vertices must be an array');
+  const vertices = track.vertices;
+  vertices.forEach((v, i) => {
+    if (!v || !Number.isFinite(v.elev_m)) {
+      throw new RangeError(`vertices[${i}].elev_m is missing or nonfinite; real DEM heights are required`);
     }
-    if (!Number.isFinite(n.elevation_m) ||
-        !Number.isFinite(n.roughness_m) || n.roughness_m < 0) {
-      throw new RangeError(`nodes[${i}] requires finite elevation_m and roughness_m >= 0`);
+    if (!Number.isFinite(v.d_m) || v.d_m < 0) {
+      throw new RangeError(`vertices[${i}].d_m must be finite and nonnegative`);
     }
   });
-  return nodes.slice(0, -1).map((node, i) => {
-    const dx = Math.abs(nodes[i + 1].x - node.x);
-    const dy = Math.abs(nodes[i + 1].y - node.y);
-    if (dx > 1 || dy > 1 || dx + dy === 0) {
-      throw new RangeError(`nodes[${i}] and nodes[${i + 1}] must be distinct neighbouring cells`);
-    }
-    const distanceM = Math.hypot(dx, dy);
-    const slopeDeg = Math.atan2(nodes[i + 1].elevation_m - node.elevation_m, distanceM) * 180 / Math.PI;
+  const sections = [];
+  for (let i = 1; i < vertices.length; i++) {
+    const distanceM = vertices[i].d_m - vertices[i - 1].d_m;
+    if (distanceM <= 0) continue;
+    const slopeDeg = Math.atan2(vertices[i].elev_m - vertices[i - 1].elev_m, distanceM) * 180 / Math.PI;
     if (!Number.isFinite(slopeDeg) || Math.abs(slopeDeg) > 89) {
-      throw new RangeError(`edge ${i} exceeds the supported directional slope range [-89,89]`);
+      throw new RangeError(`edge ${i - 1} exceeds the supported slope range [-89,89]`);
     }
-    return { distanceM, slopeDeg, roughnessM: node.roughness_m };
-  });
+    // Assumption: no roughness grid is available. Do not invent measurements.
+    sections.push({ distanceM, slopeDeg, roughnessM: 0 });
+  }
+  return sections;
 }

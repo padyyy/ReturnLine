@@ -1,0 +1,54 @@
+{
+ "note": "Time-to-base grid from the real Gale DEM (4 m level averaged to 10 m), Python fallback for the routing engine; placeholder inputs: habitat and constants (scenario.json), stations, zones",
+ "generator": "pipeline/time_grid.py",
+ "placeholder": false,
+ "placeholder_inputs": [
+  "habitat and constants (scenario.json)",
+  "stations",
+  "zones"
+ ],
+ "crs": "+proj=eqc +lat_ts=0 +lon_0=0 +R=3396190 +units=m (Mars 2000 sphere, as the USGS Gale DEM)",
+ "cell_m": 10.0,
+ "nx": 475,
+ "ny": 476,
+ "origin_m": {
+  "x": 8140783.492786024,
+  "y": -282731.075189438
+ },
+ "origin_is": "north-west corner of cell (row 0, col 0), projected metres, on the DEM's 1 m pixel grid",
+ "order": "row 0 = north, columns west to east, index = row * nx + col",
+ "bbox_deg": [
+  137.3399415,
+  -4.8501483,
+  137.4200769,
+  -4.7698443
+ ],
+ "files": {
+  "ttb_penalized": "ttb_penalized.f32",
+  "ttb_allowed": "ttb_allowed.f32",
+  "ptr_penalized": "ptr_penalized.i32",
+  "ptr_allowed": "ptr_allowed.i32",
+  "elev": "elev_10m.f32",
+  "slope": "slope_10m.f32"
+ },
+ "dtype": {
+  "ttb": "float32 little-endian, minutes to the habitat, +Infinity where unreachable",
+  "ptr": "int32 little-endian, index of the next cell towards the habitat, -1 at the habitat and where unreachable",
+  "elev": "float32 little-endian, metres, NaN without data",
+  "slope": "float32 little-endian, degrees"
+ },
+ "habitat_cell": 119016,
+ "walk_speed_kmh": 1.5,
+ "slope_penalty": "assumption: speed x exp(-3.5 |dz/d|), symmetric, Tobler-type shape as in the design sketches",
+ "blocked": "no data or slope above 20 degrees; 1 m ridge mask not included (needs the 1 m DEM)",
+ "zone_penalty_factor": 20.0,
+ "zone_clearance_m": 30,
+ "zone_clearance_factor": 3.0,
+ "neighbours": 16,
+ "source": {
+  "source": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/MSL_Gale_DEM_Mosaic_1m_v3.tif",
+  "level_m": 4.0,
+  "nodata": -32767.0
+ },
+ "date": "2026-11-14"
+}

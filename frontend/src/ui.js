@@ -1,8 +1,8 @@
 // Console renderers: header, target picker, verdict, rules, info rows, station log, time budget,
 // subtitles, banner, summary and the assumptions panel. They read the model and the sim state only.
 import { hm, R, icon, numCell, srcChip, esc } from './format.js';
-import { lmst, pickerRows, doseAt } from './model.js';
-import { st, route, station, crewState, limits, homeTime, scenarioStation, isScripted } from './sim.js';
+import { lmst, pickerRows, doseAt, zoneAt, zoneHits, ttbAt } from './model.js';
+import { st, route, station, crewState, limits, homeTime, scenarioStation, isScripted, zoneEvents, zoneNow, proximity, script, detourMin, rerouteTrack, warnM } from './sim.js';
 import { BEATS } from './beats.js';
 
 const $ = (s) => document.querySelector(s);
@@ -12,7 +12,9 @@ const SRC = {
   RAD: ['Hassler', 'Hassler et al. 2014, Science 343: 0.64 ± 0.12 mSv per day at Gale. Information only, never a gate.'],
   LOO: ['LOO', 'Leave-one-out comparison with Curiosity\'s drives (routing engine).'],
   ROUTE: ['routes', 'Precomputed routes from the routing engine (shared/data-contract.md).'],
-  ASSUME: ['assum.', 'Labeled assumption, see the Assumptions panel.'],
+  ASSUME: ['assum.', 'Labeled assumption, set by the team and listed in the Assumptions panel.'],
+  EWT: ['EWT', 'About 2 km/h in NASA lunar planning (xEVA); 1.5 km/h on Mars is a labeled slowdown after Norcross et al., NASA TP-2009-214796.'],
+  PP: ['COSPAR', 'COSPAR policy for human missions to Mars and NASA NID 8715.129 (2020): the reason for protected zones. Still to be checked against the primary texts.'],
 };
 const src = (k) => srcChip(SRC[k][0], SRC[k][1], k === 'ASSUME');
 
@@ -33,7 +35,13 @@ export function renderPicker(model) {
   const scen = scenarioStation(model);
   $('#pick-list').innerHTML = pickerRows(model).map((r) => {
     const on = st.target === r.n;
-    const stay = r.stay == null ? 'max stay not available' : r.stay < 0 ? '<b class="red">cannot get home in time</b>' : `max stay ${hm(r.stay)}`;
+    let stay = r.stay == null ? 'max stay not available' : r.stay < 0 ? '<b class="red">cannot get home in time</b>' : `max stay ${hm(r.stay)}`;
+    // planetary protection: a station inside a zone, or a route through one, is shown before Start
+    const inside = zoneAt(model, r);
+    const rt = model.routes.get(r.n);
+    const crossed = rt ? [...zoneHits(model, rt.out), ...zoneHits(model, rt.ret)].map((h) => h.zone.name) : [];
+    if (inside) stay += ` · <b class="red">inside ${esc(inside.name)}</b>`;
+    else if (crossed.length) stay += ` · <b class="red">route enters ${esc([...new Set(crossed)].join(', '))}</b>`;
     return `<li><button type="button" class="pick-row${on ? ' is-on' : ''}" data-n="${r.n}" aria-pressed="${on}">` +
       `<span class="badge${on ? ' done' : ''}">${r.n}</span>` +
       `<span class="pick-l">${esc(r.name)}${r.n === scen ? ' <span class="pick-tag">six-beat scenario</span>' : ''}<span class="cap">back to base ${R(r.back)} min · ${stay}</span></span>` +
@@ -55,31 +63,60 @@ export function renderVerdict(model) {
   if (el.hidden) return;
   const s = station(model);
   let o = '<div class="v-label">Planner recommendation · decision: <b>Habitat control</b></div>';
+  const inZone = zoneNow(model);
+  const zoneLine = inZone && !st.done
+    ? `<div class="v-status red">${icon('warn')}Crew inside ${esc(inZone.name)} · ${st.abortAt != null ? 'override, logged' : 'entry logged'}</div>` : '';
   if (st.done) {
     o = `<div class="v-label">EVA closed · decisions: <b>Habitat control</b></div>${word('HOME', 'go')}` +
       `<p class="v-sub">Both crew members inside at ${lmst(model, st.t)} LMST.</p>`;
-    if (st.abort) o += `<div class="v-status red">${icon('check')}Override logged · reason: ABORT · zone metres need the zones-allowed grid</div>`;
+    if (st.abort) {
+      const over = zoneEvents(model).filter((e) => e.override);
+      const what = over.length ? over.map((e) => `${R(e.m)} m inside ${esc(e.zone.name)}`).join(', ') : (model.grid ? 'no protected zone entered' : 'zone metres need the grid');
+      o += `<div class="v-status red">${icon('check')}Override logged · ${what} · reason: ABORT</div>`;
+    }
   } else if (st.injuredAt != null && !st.abort) {
-    o += word('ABORT', 'abort') + '<p class="v-sub">Return to shelter now. A crew member is injured; walking speed is halved.</p>' +
-      `<ul class="v-facts"><li class="bad">${icon('cross')}<span>Protected route home, injured</span><span class="num">${model.grid ? '' : 'needs grid'}</span></li>` +
-      `<li class="good">${icon('check')}<span>Route through the protected zone, injured</span><span class="num">${model.grid ? '' : 'needs grid'}</span></li></ul>` +
+    // the two ways home from the crew's cell, at injured speed, against the return limit
+    const lim = limits(model).L, c = crewState(model);
+    const tp = ttbAt(model, c.pos, 'penalized'), ta = ttbAt(model, c.pos, 'allowed');
+    const fact = (label, T) => {
+      if (T == null) return `<li class="bad">${icon('cross')}<span>${label}</span><span class="num">needs grid</span></li>`;
+      const ok = T * 2 <= lim;
+      return `<li class="${ok ? 'good' : 'bad'}">${icon(ok ? 'check' : 'cross')}<span>${label}</span><span class="num">${R(T * 2)} min</span></li>`;
+    };
+    o += word('ABORT', 'abort') + `<p class="v-sub">Return to shelter now. A crew member is injured; walking speed is halved. Limit now ${R(lim)} min.</p>` +
+      `<ul class="v-facts">${fact('Protected route home, injured', tp)}${fact('Route through the protected zone, injured', ta)}</ul>` +
       `<div class="v-actions"><button class="btn btn-abort" id="act-abort">${icon('check')}Confirm ABORT</button></div>`;
   } else if (st.abort) {
     o += word('ABORT', 'abort') + '<p class="v-sub">Override confirmed. The crew returns to the habitat.</p>' +
       `<div class="v-status red">${icon('check')}Override logged · reason: ABORT</div>`;
   } else {
     const lim = limits(model);
-    const constraint = lim.B < 60;
-    o += word('GO', 'go', constraint ? '1 constraint' : '') +
-      `<p class="v-sub">${st.retStart == null ? `Target: ${esc(s?.name ?? '–')}. The route avoids every protected zone.` : 'Heading home.'}</p>`;
-    if (constraint) o += `<div class="constraint"><span class="trig">Crew leaves the return area</span>${icon('arrow')}<span class="act">ABORT: return to shelter now</span></div>`;
     const c = crewState(model);
+    // proximity warning (design sketch, beat 4): live while the crew is within warn metres of a zone;
+    // after the reroute the strip stays as the record until the next event
+    const near = proximity(model);
+    const sp = st.drift ? script(model) : null;
+    const det = detourMin(model);
+    const warnZone = near?.zone ?? (st.driftAt != null && st.injuredAt == null ? sp?.zone : null);
+    const strips = [];
+    if (lim.B < 60) strips.push(`<div class="constraint"><span class="trig">Crew leaves the return area</span>${icon('arrow')}<span class="act">ABORT: return to shelter now</span></div>`);
+    if (warnZone) {
+      const dTxt = near ? R(near.d) : R(warnM(model));
+      strips.push(`<div class="constraint warn"><span class="trig">Crew ${dTxt} m from ${esc(warnZone.name)}</span>${icon('arrow')}<span class="act">${st.rerouted ? `Rerouted: +${Math.max(0, R(det ?? 0))} min` : 'Reroute around the zone'}</span></div>`);
+    }
+    o += word('GO', 'go', strips.length ? `${strips.length} constraint${strips.length > 1 ? 's' : ''}` : '') +
+      `<p class="v-sub">${st.retStart == null ? `Target: ${esc(s?.name ?? '–')}. The route avoids every protected zone.` : near && !st.rerouted ? 'The crew is drifting toward a protected zone.' : 'Heading home.'}</p>` +
+      strips.join('');
     if (st.retStart == null && c.where === 'station') o += `<div class="v-actions"><button class="btn btn-dark" id="act-return">${icon('arrow')}Start return</button></div>`;
-    if (st.beat === 4 && !st.rerouted) o += `<div class="v-actions"><button class="btn btn-dark" id="act-reroute">${icon('arrow')}Reroute around the zone</button></div>`;
-    if (st.rerouted && st.beat === 4) o += `<div class="v-status">${icon('check')}Reroute sent · drift path and detour need the scenario data</div>`;
-    o += `<div class="v-status ok">${icon('check')}GO confirmed at Start · ${model.sc.eva_start_lmst} LMST</div>`;
+    if (near && !st.rerouted) o += `<div class="v-actions"><button class="btn btn-dark" id="act-reroute">${icon('arrow')}Reroute around the zone</button></div>`;
+    if (st.rerouted && st.injuredAt == null) {
+      const rt = rerouteTrack(model);
+      o += `<div class="v-status ok">${icon('check')}Reroute sent ${lmst(model, st.rerouteAt)}${rt ? ` · home ${lmst(model, st.rerouteAt + rt.minutes)}` : ''}</div>`;
+    } else {
+      o += `<div class="v-status ok">${icon('check')}GO confirmed at Start · ${model.sc.eva_start_lmst} LMST</div>`;
+    }
   }
-  el.innerHTML = o;
+  el.innerHTML = o + zoneLine;
 }
 
 export function renderRules(model) {
@@ -120,10 +157,20 @@ export function renderLog(model) {
     if (st.beat >= 2) add(285, 'Time jump to EVA hour 4:45', 'Rehearsal skips the quiet hours; the clock shows it');
     if (st.retStart != null) add(st.retStart, 'Return started', 'Habitat control', 'decision');
     if (st.t >= 300) add(300, 'Life support now sets the return area', 'Less than 60 min left');
-    if (st.driftAt != null) add(st.driftAt, 'Drift toward a protected zone', 'Needs the scripted drift path and the grid', 'finding');
-    if (st.rerouted) add(st.rerouteAt ?? st.t, 'Reroute around the zone', 'Habitat control', 'decision');
+    const sp = st.drift ? script(model) : null;
+    if (st.driftAt != null) {
+      add(st.driftAt, sp ? `Crew ${warnM(model)} m from ${sp.zone.name}` : 'Drift toward a protected zone',
+        sp ? 'Drifting off the route toward a protected zone' : 'The drift needs the scenario station and the grid', 'finding');
+    }
+    for (const e of zoneEvents(model)) {
+      add(e.t, `Entered ${e.zone.name}`, e.override ? `ABORT override · ${R(e.m)} m inside · logged` : `Protected zone · ${R(e.m)} m inside · logged`, 'finding');
+    }
+    if (st.rerouted) {
+      const det = detourMin(model);
+      add(st.rerouteAt ?? st.t, `Reroute around ${sp ? sp.zone.name : 'the zone'}`, `Habitat control${det != null ? ` · +${Math.max(0, R(det))} min detour` : ''}`, 'decision');
+    }
     if (st.injuredAt != null) add(st.injuredAt, 'Crew member injured', 'Walking speed ×0.5 (assumption)', 'finding');
-    if (st.abort) add(st.injuredAt, 'ABORT confirmed · override', 'Habitat control', 'decision');
+    if (st.abort) add(st.abortAt ?? st.injuredAt, 'ABORT confirmed · override', 'Habitat control', 'decision');
     if (st.done) add(st.t, 'Crew home', 'Both crew members inside the habitat');
   }
   const ol = $('#log');
@@ -156,7 +203,7 @@ export function renderBudget(model) {
     if (sx(turn) - sx(0) >= 130) o.push(`<text class="t-lbl" x="${(sx(0) + sx(turn)) / 2}" y="${y + bh + 30}" text-anchor="middle">Outbound ${hm(turn)}</text>`);
     if (sx(home) - sx(turn) >= 60 || sx(turn) - sx(0) >= 130) o.push(`<text class="t-lbl" x="${sx(turn) + 2}" y="${y + bh + 30}">Return ${hm(home - turn)}</text>`);
     const row = (k, v, cls = '') => `<div class="row ${cls}"><span class="k">${k}</span><span>${v}</span></div>`;
-    rows = row('Outbound', hm(turn)) + row('Return', hm(home - turn)) + row('Total of 6:00', hm(home), 'total') +
+    rows = row('Outbound', hm(turn)) + row(st.rerouted ? 'Return incl. detour' : 'Return', hm(home - turn)) + row('Total of 6:00', hm(home), 'total') +
       (homeR <= 360 ? row('Reserve', hm(360 - home)) : row('Over by', hm(home - 360), 'over'));
   }
   o.push(`<path d="M${sx(360)} 12V${y + bh + 16}" stroke="#2B2D2F" stroke-width="2.5"/><text class="t-lbl" x="${sx(360) + 4}" y="${y + bh + 45}">EVA limit</text>`);
@@ -188,7 +235,7 @@ export function renderBanner(model) {
   if (st.done) {
     sm.innerHTML = `<header><h2>Crew home at ${lmst(model, st.t)} LMST</h2><p>EVA rehearsal complete. Summary for the debrief.</p></header><dl>` +
       `<div><dt>Life support left<span class="cap">1:00 backup untouched</span></dt><dd>${hm(model.ls - st.t)}</dd></div>` +
-      `<div><dt>Inside protected zones<span class="cap">from the zones-allowed path</span></dt><dd class="txt">${model.grid ? '' : 'needs grid'}</dd></div>` +
+      `<div><dt>Inside protected zones<span class="cap">every entry logged</span></dt><dd>${R(zoneEvents(model).reduce((a, e) => a + e.m, 0))} m</dd></div>` +
       `<div><dt>Radiation dose<span class="cap">information only</span></dt><dd>${doseAt(model, st.t).toFixed(2)} mSv</dd></div></dl>` +
       '<p class="slogan">Explore Mars. Return Safely. Preserve the Evidence.</p>';
     sm.hidden = false;
@@ -197,22 +244,36 @@ export function renderBanner(model) {
 
 export function renderLegendNote(model) {
   const n = $('#legend-note');
-  n.hidden = !!model.grid;
-  n.textContent = 'Return area and 60-minute line appear with the time-to-base grid from the routing engine.';
+  n.hidden = !!model.grid && !model.grid.placeholder;
+  n.textContent = model.grid
+    ? 'Placeholder grid: flat ground, no slope, no ridges. The routing engine replaces it; then the area follows the terrain.'
+    : 'Return area and 60-minute line appear with the time-to-base grid from the routing engine.';
 }
 
+// Each value with its source chip (hover or focus shows why it was chosen), as in the design sketch.
+// Fixed for the rehearsal, so no sliders.
 export function renderAssume(model) {
-  const sc = model.sc, srcs = sc.sources || {};
+  const sc = model.sc;
+  const ph = new Set(sc.placeholder_fields || []);
+  const slope = sc.slope_penalty ?? (model.grid?.placeholder ? 'none yet' : model.grid ? 'from the engine' : 'open');
   const rows = [
-    ['Walking speed, level ground', `${sc.walk_speed_kmh} km/h`, srcs.walk_speed_kmh],
-    ['Life support', `${hm(sc.life_support_min)} + ${hm(sc.backup_min)} backup`, srcs.life_support_min],
-    ['Walking speed when injured', `×${sc.injury_factor}`, srcs.injury_factor],
-    ['Caution margin (return stages)', `${sc.caution_margin_min} min`, srcs.caution_margin_min],
-    ['Slope blocked above', `${sc.slope_block_deg}°`, srcs.slope_block_deg],
-    ['Protected-zone buffer', `${sc.zone_buffer_m} m`, srcs.zone_buffer_m],
-    ['Sunset', `${sc.sunset_lmst} LMST`, srcs.sunset_lmst],
+    { l: 'Walking speed, level ground', v: `${sc.walk_speed_kmh} km/h`, s: ['EWT'], note: 'Sets the return area and the 60-minute line (routing engine).', f: 'walk_speed_kmh' },
+    { l: 'Slope penalty on walking speed', v: slope, s: ['ASSUME'], note: 'No sourced function yet; a team input. The placeholder grid uses flat ground.', f: 'slope_penalty' },
+    { l: 'Slope blocked above', v: `${sc.slope_block_deg}°`, s: ['xEVA'], note: `Suit design limit. Comfortable walking up to ${sc.slope_comfort_deg ?? 10}°.`, f: 'slope_block_deg' },
+    { l: 'Walking speed when injured', v: `×${Number(sc.injury_factor).toFixed(2)}`, s: ['ASSUME'], note: 'Halves the speed in beat 5 and doubles every time home.', f: 'injury_factor' },
+    { l: 'Protected-zone buffer radius', v: `${sc.zone_buffer_m} m`, s: ['ASSUME', 'PP'], note: 'Zones follow planetary protection policy; the radius itself is ours.', f: 'zone_buffer_m' },
+    { l: 'Planning clearance around zones', v: sc.zone_clearance_m != null ? `${sc.zone_clearance_m} m` : 'open', s: ['ASSUME'], note: 'Routes keep this distance outside the buffer where they can (soft penalty in the routing engine).', f: 'zone_clearance_m' },
+    { l: 'Warning distance to a zone', v: `${warnM(model)} m`, s: ['ASSUME'], note: 'Closer than this, the console warns and habitat control can reroute (beat 4).', f: 'zone_warn_m' },
+    { l: 'EVA duration', v: `${hm(sc.life_support_min)} + ${hm(sc.backup_min)} backup`, s: ['xEVA'], note: 'Life support; the backup hour is never planned with.', f: 'life_support_min' },
+    { l: 'Caution margin, return stages', v: `${sc.caution_margin_min} min`, s: ['ASSUME'], note: 'Amber when less spare time than this is left (rule B).', f: 'caution_margin_min' },
+    { l: 'Sunset', v: `${sc.sunset_lmst} LMST`, s: ['REMS'], note: 'Daylight rule: home before sunset.', f: 'sunset_lmst' },
+    { l: 'Radiation dose rate', v: `${sc.dose_rate_msv_per_day} mSv/day`, s: ['RAD'], note: 'Information only, never a gate.', f: 'dose_rate_msv_per_day' },
   ];
-  $('#assume-body').innerHTML = rows.map(([l, v, s]) =>
-    `<div class="as"><div class="as-top"><label>${l}</label><output>${v}</output></div><div class="as-src"><span class="cap">${esc(s || 'source not given')}</span></div></div>`).join('') +
-    `<p class="as-note">${(sc.placeholder_fields || []).length ? `Placeholder values: ${sc.placeholder_fields.join(', ')}.` : ''} Sliders follow once the values are fixed.</p>`;
+  $('#assume-body').innerHTML = rows.map((a) => {
+    const kind = a.s[0] === 'ASSUME' ? 'Labeled assumption' : 'Sourced value';
+    const cap = `${kind}${ph.has(a.f) ? ' · placeholder value for now' : ''} · ${a.note}`;
+    return `<div class="as"><div class="as-top"><span class="as-l">${a.l}</span><output>${esc(a.v)}</output></div>` +
+      `<div class="as-src">${a.s.map(src).join('')}<span class="cap">${esc(cap)}</span></div></div>`;
+  }).join('') +
+    '<p class="as-note">Fixed for the rehearsal. Every value carries its source or the label “assumption”; hover or focus a chip for the reason.</p>';
 }
