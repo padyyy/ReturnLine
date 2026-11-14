@@ -126,3 +126,8 @@ tmp/
 # Local design tool state (Impeccable)
 # ==========================================
 .impeccable/
+
+# ==========================================
+# Offline routing outputs: large binary arrays stay local
+# ==========================================
+backend/routes/**/*.npz

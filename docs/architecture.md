@@ -19,6 +19,26 @@ There is **no backend**. The browser never computes a route; it looks up precomp
 
 ## Components
 
+Current Python implementation: `backend/geoMapper/mars_mapping/` maps GeoTIFF
+and CSV sources onto one local metric grid. `backend/terrain_features.py` derives
+slope and roughness; `backend/terrain_costs.py` turns cell features into costs.
+`backend/mapper_route.py` prepares maps once and computes A* paths on them.
+`backend/science_routes.py` exports independent base-to-target XY paths for the
+sites in `backend/config/science_targets.json`, with optional overview plot.
+Missing features are ignored in the mapper's explicit permissive mode; known
+constraints still apply. The strict cost API remains available. Costs are not
+calibrated travel times. `backend/radiation.py` generates a declared uniform
+historical GCR background GeoTIFF on `backend/config/radiation_grid.json` and
+integrates route dose equivalent from rates and an explicit constant-speed
+assumption, including optional goal dwell. Missing radiation produces unknown
+total dose. An optional nonnegative radiation weight adds movement dose costs
+to A* and blocks unknown radiation; its default zero preserves terrain routing.
+Scientific relevance remains metadata. See `backend/MAPPER_ROUTING.md` for
+units, CLI options and the distinction between scenario pixels and measurements.
+There is no frontend export integration or return-pointer/time field yet.
+Tests live in `backend/tests/`; former demo scripts were removed.
+The C# sections below describe the earlier planned architecture.
+
 ### 1. Offline data pipeline (Python)
 
 - numpy, scikit-image, tifffile (rasterio optional; the GDAL command-line tools are not available).

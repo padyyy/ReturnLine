@@ -1,0 +1,38 @@
+[
+  {
+    "id": "sol_4612",
+    "name": "Früher Boxwork-Aufschluss",
+    "sol": 4612,
+    "lat": -4.804945,
+    "lon": 137.379296,
+    "x": 417,
+    "y": 164
+  },
+  {
+    "id": "sol_4671",
+    "name": "Laguna Escondida / Laguna Socompa",
+    "sol": 4671,
+    "lat": -4.808271,
+    "lon": 137.38127,
+    "x": 533,
+    "y": 361
+  },
+  {
+    "id": "sol_4709",
+    "name": "Valle de la Luna / Nevado Sajama",
+    "sol": 4709,
+    "lat": -4.807999,
+    "lon": 137.38105,
+    "x": 520,
+    "y": 345
+  },
+  {
+    "id": "sol_4818",
+    "name": "Östlicher Boxwork-Bereich",
+    "sol": 4818,
+    "lat": -4.807904,
+    "lon": 137.382562,
+    "x": 609,
+    "y": 340
+  }
+]

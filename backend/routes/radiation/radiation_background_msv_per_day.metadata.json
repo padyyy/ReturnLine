@@ -1,0 +1,30 @@
+{
+  "scenario": "spatially_uniform_historical_gcr_background",
+  "quantity": "dose_equivalent_rate",
+  "unit": "mSv/day",
+  "seconds_per_day": 86400.0,
+  "rate_msv_per_day": 0.64,
+  "source": "https://doi.org/10.1126/science.1244797",
+  "source_measurement_period": "2012-08-07 to 2013-06-01",
+  "source_reference_rate_msv_per_day": 0.64,
+  "source_reference_uncertainty_msv_per_day": 0.12,
+  "spatial_information": "uniform scenario; output pixel spacing is not measurement resolution",
+  "limitations": "No local shielding, suit shielding, current space weather or SEP events modeled",
+  "grid": {
+    "mode": "local_metric",
+    "reference_latitude": -4.8106,
+    "reference_longitude": 137.3807,
+    "reference_position": "center",
+    "cell_size_m": 0.9999999999999661,
+    "columns": 1000,
+    "rows": 1000,
+    "mars_radius_m": 3396190.0,
+    "origin": "upper-left",
+    "index_order": "(x=column, y=row)",
+    "latitude_definition": "planetocentric",
+    "longitude_definition": "east-positive",
+    "projection": "local_equirectangular",
+    "reference_role": "Geografischer Projektionsanker, unabhängig von der Hintergrundkarte"
+  },
+  "nodata": -9999.0
+}
