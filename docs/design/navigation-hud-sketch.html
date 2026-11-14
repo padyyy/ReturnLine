@@ -452,7 +452,20 @@ body.nav .console, body.nav #plan-controls { display: none; }
 .screen .nd dd { font-size: 30px; }
 .screen .nd-stage { font-size: 34px; padding: 18px 20px; }
 .screen .nd-stage .num { font-size: 26px; }
-.nav-done { margin-top: 14px; }
+.nd-act { display: flex; gap: 10px; }
+.nd-act:has(> :not([hidden])) { margin: 0 0 10px; }
+.nd-prof { margin: 10px 0 2px; }
+.nd-prof-h { display: flex; justify-content: space-between; font-size: 13.5px; }
+.nd-prof-h .num { font-weight: 700; }
+.nd-prof svg { display: block; width: 100%; height: auto; }
+.nd-prof text { font: 600 11px var(--f-num); fill: var(--graphite-2); }
+.screen .nd-prof-h { font-size: 17px; } .screen .nd-prof svg { max-height: 190px; }
+.nv-return { position: absolute; top: 96px; left: 50%; transform: translateX(-50%); height: 46px; font-size: 16px; padding: 0 18px; }
+.nv-return:active { transform: translateX(-50%) translateY(1px); }
+.mini .nv-return { top: 58px; height: 34px; font-size: 13px; }
+.nv-legend b { display: block; margin-bottom: 3px; }
+.nv-legend .cap { display: block; margin-top: 3px; }
+.np-t0 { display: flex; align-items: center; gap: 10px; padding: 8px var(--pad) 0; flex-wrap: wrap; }
 
 @media (max-width: 1500px) {
   :root { --pad: 16px; --col-a: 48px; --col-v: 98px; --col-s: 64px; }
@@ -654,6 +667,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     <section class="navpick" id="navpick" aria-label="Navigation target">
       <h2 class="sect-h">Navigate <span class="cap">pick a station, then start the route</span></h2>
       <ul class="np-list" id="navpick-list"></ul>
+      <div class="np-t0"><span class="cap">Test: start at EVA hour</span><div class="seg" id="np-t0" role="group" aria-label="EVA hour at the start"><button type="button" data-t0="0" aria-pressed="true">0:00</button><button type="button" data-t0="180" aria-pressed="false">3:00</button><button type="button" data-t0="270" aria-pressed="false">4:30</button></div><span class="cap">less life support left</span></div>
       <div class="np-act"><button class="btn btn-go" id="btn-start" disabled><svg class="i"><use href="#i-arrow"/></svg>Start route</button><span class="cap" id="np-note">Choose a station first</span></div>
     </section>
     <h2 class="sect-h">Safety rules <span class="cap" id="rules-count"></span></h2>
@@ -680,6 +694,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
         <div class="nvmap" id="nav-map">
           <canvas id="nav-cv" aria-label="Navigation map, heading up" role="img"></canvas>
           <div class="nv-turn" id="nv-turn"></div>
+          <button class="btn btn-go nv-return" id="nv-return" hidden><svg class="i"><use href="#i-arrow"/></svg><span>Start return</span></button>
           <svg class="nv-north" id="nv-north" viewBox="0 0 44 44" aria-label="North"></svg>
           <div class="nv-mapname" id="nv-mapname"></div>
           <div class="nv-legend" id="nv-legend"></div>
@@ -699,7 +714,10 @@ body.nav .console, body.nav #plan-controls { display: none; }
     <section class="mini" aria-label="Second view">
       <h2 class="panel-h" id="mini-h">Data sheet</h2>
       <div class="mini-body" id="nav-mini">
-        <div class="nvdata" id="nav-data"></div>
+        <div class="nvdata" id="nav-data">
+          <div class="nd-act"><button class="btn btn-go" id="nd-return" hidden><svg class="i"><use href="#i-arrow"/></svg><span>Start return</span></button><button class="btn btn-dark" id="nd-end" hidden><svg class="i"><use href="#i-close"/></svg><span>End navigation</span></button></div>
+          <div id="nd-body"></div>
+        </div>
       </div>
     </section>
   </aside>
@@ -866,16 +884,19 @@ body.nav .console, body.nav #plan-controls { display: none; }
 
   // ---------- elevation, slope ----------
   function elevAt(x, y) {
+    // navigation sketch: stronger relief than the console sketch, so slope matters for routes and warnings (test terrain)
     var z = -3652 + 0.026 * y;
-    z += 14 * (fbm(x / 760, y / 760, 3, 3) - 0.5);
-    z += 5 * (fbm(x / 170, y / 170, 7, 2) - 0.5);
+    z += 40 * (fbm(x / 700, y / 700, 3, 3) - 0.5);
+    z += 18 * (fbm(x / 210, y / 210, 7, 2) - 0.5);
     var b = F.butte, ex = (x - b.c[0]) / b.rx, ey = (y - b.c[1]) / b.ry;
     var e = Math.sqrt(ex * ex + ey * ey) + (fbm(x / 120, y / 120, 9, 2) - 0.5) * 0.18;
-    z += b.h * smooth(1.0, 0.8, e);
-    var KN = [[1430, 760, 62], [2090, 830, 78], [1860, 600, 52], [1230, 1070, 48], [2330, 1080, 56]];
+    z += 40 * smooth(1.0, 0.7, e);
+    // knobs: [x, y, radius, height]; the last three sit between the habitat and the stations
+    var KN = [[1430, 760, 62, 16], [2090, 830, 78, 18], [1860, 600, 52, 14], [1230, 1070, 48, 12], [2330, 1080, 56, 14],
+      [1545, 1430, 70, 22], [1830, 1575, 48, 15], [1660, 1640, 40, 11]];
     for (var q = 0; q < KN.length; q++) {
       var kd = Math.sqrt((x - KN[q][0]) * (x - KN[q][0]) + (y - KN[q][1]) * (y - KN[q][1])) / KN[q][2] + (fbm(x / 60, y / 60, 21 + q, 2) - 0.5) * 0.3;
-      z += 9 * smooth(1.0, 0.72, kd);
+      z += KN[q][3] * smooth(1.15, 0.45, kd);
     }
     var sc = F.scarp, ys = sc.y + 40 * Math.sin(x / 380) + 30 * (fbm(x / 300, 1.7, 13, 2) - 0.5);
     var sw = 34 + 260 * Math.exp(-Math.pow((x - sc.ramp) / 90, 2));
@@ -2087,11 +2108,12 @@ body.nav .console, body.nav #plan-controls { display: none; }
   // synthetic grid (zones penalised); the build reads precomputed routes.
   // =====================================================================
   var NAVSEL = null;                           // picked station index in planning
-  var NAV = { on: false, target: null, out: null, ret: null, phase: 'out', t: 0, tAt: 0, playing: true, speedX: 60, zoomI: 2, base: 'ortho', swapped: false, hd: null, pos: null, tex: null };
+  var NAV = { on: false, target: null, out: null, ret: null, phase: 'out', t: 0, t0: 0, tAt: 0, playing: true, speedX: 60, zoomI: 2, base: 'ortho', swapped: false, hd: null, pos: null, tex: null };
+  var NAVT0 = 0;                               // test: EVA hour at the start of navigation, i.e. less life support left
+  var T0_OPTS = [0, 180, 270];
   var ZOOMS = [0.45, 0.75, 1.2, 1.9, 3];       // screen px per metre
   var HUD_RANGE = 250;                         // metres from the HUD centre to its rim
-  var CAUTION = 15;                            // minutes before the return limit: yellow stage (assumption)
-  var DWELL = 10;                              // minutes of station work before heading home (sketch value)
+  var CAUTION = 15;                            // minutes of spare time below which the stage turns yellow (assumption)
   var BASES = ['ortho', 'slope', 'plain'], BASE_LBL = { ortho: 'Orthophoto', slope: 'Slope, 10 m baseline', plain: 'Plain: return stages only' };
   var STAGE = {
     green: { c: '#1F6B45', bg: '#1F6B45', fg: '#EDF0E6', tint: 'rgba(31,107,69,.22)', word: 'Home in time', hud: 'HOME IN TIME' },
@@ -2119,26 +2141,34 @@ body.nav .console, body.nav #plan-controls { display: none; }
     el.hidden = !show;
     if (!show) return;
     $('#navpick-list').innerHTML = G.F.stations.map(function (sn, i) {
-      var lg = navLeg(i), on = NAVSEL === i, back = G.homePen.time[G.idxOf(sn.c)] * walkK();
+      var lg = navLeg(i), on = NAVSEL === i, back = G.homePen.time[G.idxOf(sn.c)] * walkK(), walk = lg.minutes * walkK();
+      var stay = maxStayAt(back, NAVT0 + walk);
       return '<li><button type="button" class="np-row' + (on ? ' is-on' : '') + '" data-i="' + i + '" aria-pressed="' + on + '">' +
         '<span class="badge' + (on ? ' done' : '') + '">' + sn.n + '</span>' +
-        '<span class="np-l">' + sn.name + '<span class="cap">back to base from there: ' + R(back) + ' min</span></span>' +
-        '<span class="np-v">' + (lg.length / 1000).toFixed(2) + ' km<small>' + R(lg.minutes * walkK()) + ' min walk</small></span></button></li>';
+        '<span class="np-l">' + sn.name + '<span class="cap">back to base ' + R(back) + ' min · ' +
+        (stay > 0 ? 'max stay ' + hm(stay) : '<b style="color:var(--red)">cannot get home in time</b>') + '</span></span>' +
+        '<span class="np-v">' + (lg.length / 1000).toFixed(2) + ' km<small>' + R(walk) + ' min walk</small></span></button></li>';
     }).join('');
+    $$('#np-t0 button').forEach(function (bb) { bb.setAttribute('aria-pressed', String(+bb.dataset.t0 === NAVT0)); });
     $('#btn-start').disabled = NAVSEL == null;
-    $('#np-note').textContent = NAVSEL == null ? 'Choose a station first' : 'Starts the EVA clock at 09:00 LMST';
+    $('#np-note').textContent = NAVSEL == null ? 'Choose a station first' : 'EVA clock starts at ' + hm(NAVT0) + ', ' + lmst(NAVT0) + ' LMST · life support ' + hm(LS - NAVT0);
   }
+  // longest stay at a place that is `back` minutes from base, arriving at EVA time `tArr`
+  // (the 60-minute rule limits where the crew may be, not how long; past 60 min from base there is no safe stay)
+  function maxStayAt(back, tArr) { return back > 60 ? -1 : Math.min(LS, SUNSET) - tArr - back; }
 
   // ---------- simulation ----------
   function navTrack() { return NAV.phase === 'ret' || NAV.phase === 'home' ? NAV.ret : NAV.out; }
   function navAdvance(dm) {                     // dm: simulated minutes
     NAV.t += dm;
     if (NAV.phase === 'out' && NAV.t >= NAV.out.t1) { NAV.phase = 'at'; NAV.tAt = NAV.out.t1; }
-    if (NAV.phase === 'at' && NAV.t >= NAV.tAt + DWELL) {
-      NAV.phase = 'ret';
-      NAV.ret = G.track(G.pathFrom(G.homePen, G.idxOf(G.F.stations[NAV.target].c)), walkK(), NAV.tAt + DWELL);
-    }
     if (NAV.phase === 'ret' && NAV.t >= NAV.ret.t1) { NAV.phase = 'home'; NAV.t = NAV.ret.t1; NAV.playing = false; syncNavPause(); }
+  }
+  function navReturn() {                        // the crew decides to head home from the station
+    if (NAV.phase !== 'at') return;
+    NAV.phase = 'ret';
+    NAV.ret = G.track(G.pathFrom(G.homePen, G.idxOf(G.F.stations[NAV.target].c)), walkK(), NAV.t);
+    navFrame(0, true);
   }
   function navBearing() {                       // walking direction, from the route 1 min behind to 1 min ahead
     if (NAV.phase === 'at' || NAV.phase === 'home') return null;
@@ -2152,29 +2182,37 @@ body.nav .console, body.nav #plan-controls { display: none; }
     if (tb != null) NAV.hd = NAV.hd == null ? tb : angNorm(NAV.hd + angDiff(tb, NAV.hd) * Math.min(1, dt * 3));
     if (NAV.hd == null) NAV.hd = 0;
   }
-  function navLimit(t) {                        // tightest of 60 min to shelter, life support, sunset
-    var ls = LS - t, sun = SUNSET - t, L = Math.min(60, ls, sun);
-    return { L: Math.max(0, Math.floor(L)), by: L === 60 ? '60-minute rule' : L === ls ? 'life support' : 'sunset' };
+  // The return limit: the crew must reach the habitat within 60 min (safe-haven rule) AND before life support or
+  // daylight runs out. B is what is left of life support and daylight; L is the limit where the crew stands now.
+  function navLimit(t) {
+    var B = Math.min(LS, SUNSET) - t, L = Math.min(60, B);
+    return { B: B, L: Math.max(0, Math.floor(L)), by: B >= 60 ? '60-minute rule' : (LS <= SUNSET ? 'life support' : 'sunset') };
   }
-  function stageOf(ttb, L) { return !(ttb <= L) ? 'red' : ttb > L - CAUTION ? 'yellow' : 'green'; }
+  // spare minutes at the crew position: how long before they would have to turn home
+  function stageOf(spare) { return !(spare >= 0) ? 'red' : spare < CAUTION ? 'yellow' : 'green'; }
   function navData() {
     var t = NAV.t, p = NAV.pos, lim = navLimit(t), ttb = G.homePen.time[G.idxOf(p)] * walkK();
-    var home = NAV.phase === 'home', tr = navTrack(), rem = remaining(tr, t);
+    var home = NAV.phase === 'home', at = NAV.phase === 'at', tr = navTrack(), rem = remaining(tr, t);
     var tgt = (NAV.phase === 'ret' || home) ? { name: 'Habitat', n: 'H', c: G.F.habitat } : { name: 'Stn ' + (NAV.target + 1) + ' · ' + G.F.stations[NAV.target].name, n: NAV.target + 1, c: G.F.stations[NAV.target].c };
     var zone = null;
     G.F.zones.forEach(function (z) { var d = G.dist(p, z.c) - G.F.zoneR; if (!zone || d < zone.d) zone = { d: d, name: z.name }; });
-    var homeAt = NAV.ret ? NAV.ret.t1 : NAV.out.t1 + DWELL + G.homePen.time[G.idxOf(G.F.stations[NAV.target].c)] * walkK();
+    var backT = G.homePen.time[G.idxOf(G.F.stations[NAV.target].c)] * walkK();
+    var homeAt = NAV.ret ? NAV.ret.t1 : (at ? t : NAV.out.t1) + backT;
+    var spare = Math.min(60 - ttb, lim.B - ttb);
     return {
-      t: t, p: p, lim: lim, ttb: home ? 0 : ttb, stage: home ? 'green' : stageOf(ttb, lim.L), tgt: tgt, rem: rem,
+      t: t, p: p, lim: lim, ttb: home ? 0 : ttb, spare: spare, stage: home ? 'green' : stageOf(spare), tgt: tgt, rem: rem,
       eta: t + rem.min, ls: LS - t, sun: SUNSET - t, dose: 0.64 * t / 1440, slope: G.slope[G.idxOf(p)], zone: zone,
-      reserve: LS - homeAt, baseD: G.dist(p, G.F.habitat), home: home
+      reserve: LS - homeAt, baseD: G.dist(p, G.F.habitat), home: home, at: at, out: NAV.phase === 'out',
+      stay: at ? maxStayAt(backT, t) : maxStayAt(backT, NAV.out.t1), z: G.z[G.idxOf(p)]
     };
   }
   function navWarnings(d) {
     var w = [];
     if (d.home) return [['ok', 'check', 'Crew home · ' + lmst(d.t) + ' LMST']];
-    if (d.stage === 'red') w.push(['red', 'warn', 'Outside the return area · return to shelter now']);
-    else if (d.stage === 'yellow') w.push(['amber', 'warn', 'Near the edge of the return area · head home soon']);
+    if (d.at && d.stay <= 0) w.push(['red', 'warn', 'Max stay reached · start the return now']);
+    else if (d.at && d.stay < CAUTION) w.push(['amber', 'warn', 'Start the return within ' + hm(d.stay)]);
+    else if (d.stage === 'red') w.push(['red', 'warn', 'Cannot get home in time · return to shelter now']);
+    else if (d.stage === 'yellow') w.push(['amber', 'warn', 'Under ' + CAUTION + ' min to spare · head home soon']);
     if (d.zone.d < 60) w.push(['blue', 'warn', (d.zone.d <= 0 ? 'Inside ' : 'Protected zone ' + R(d.zone.d) + ' m · ') + d.zone.name]);
     if (d.slope > 15) w.push(['red', 'warn', 'Steep ground ' + R(d.slope) + '° · limit 20°']);
     if (d.sun < 90) w.push(['red', 'warn', 'Sunset in ' + hm(d.sun)]);
@@ -2201,15 +2239,33 @@ body.nav .console, body.nav #plan-controls { display: none; }
     };
     return NAV.tex;
   }
-  var p2Cache = new Map();
-  function limitPath(lim) {                     // Path2D (world metres) of the area within lim minutes of the habitat
-    var k = walkK().toFixed(3) + '|' + lim, p = p2Cache.get(k);
-    if (!p) {
-      p = new Path2D();
-      if (lim > 0) contourOf(G.homePen, 'p', walkK(), lim).forEach(function (r) { r.forEach(function (q, i) { if (i) p.lineTo(q[0], q[1]); else p.moveTo(q[0], q[1]); }); p.closePath(); });
-      p2Cache.set(k, p);
-    }
+  function ringsPath(rings) {
+    var p = new Path2D();
+    rings.forEach(function (r) { r.forEach(function (q, i) { if (i) p.lineTo(q[0], q[1]); else p.moveTo(q[0], q[1]); }); p.closePath(); });
     return p;
+  }
+  var line60 = null;
+  function line60Path() { if (!line60) line60 = ringsPath(contourOf(G.homePen, 'p', walkK(), 60)); return line60; }
+  // Return stages on the map. For every cell X: spare(X) = min(60 - home(X), B - walk(here -> X) - home(X)).
+  // So a place is only green if the crew can walk there from where they are now and still get home inside the
+  // 60-minute rule and before life support (or daylight) runs out. B shrinks every minute, so the area does too.
+  // At the crew position walk = 0, which gives the same spare time as the stage chip and the HUD ring.
+  var SPF = { pR: null, pG: null, t: -1e9, p: null, real: 0 };
+  function spareField(d, force) {
+    var now = performance.now(), moved = SPF.p ? G.dist(SPF.p, d.p) : 1e9;
+    var due = Math.abs(d.t - SPF.t) >= 1 || moved >= 20;
+    if (SPF.pR && !force && !(due && now - SPF.real > 500)) return SPF;
+    var k = walkK(), B = d.lim.B, ht = G.homePen.time;
+    var wf = G.dijkstra(G.idxOf(d.p), G.ZONE_PENALTY, -1).time, val = new Float32Array(G.N);
+    for (var i = 0; i < G.N; i++) {
+      var hb = ht[i] * k, sp = Math.min(60 - hb, B - wf[i] * k - hb);
+      val[i] = 1000 - sp;                       // contour() draws the area where val <= limit
+    }
+    var fld = { time: val };
+    SPF.pR = ringsPath(G.contour(fld, 1, 1000, 24));
+    SPF.pG = ringsPath(G.contour(fld, 1, 1000 - CAUTION, 24));
+    SPF.t = d.t; SPF.p = d.p.slice(); SPF.real = performance.now();
+    return SPF;
   }
   var hatchCache = {};
   function hatch(ctx) {
@@ -2239,17 +2295,18 @@ body.nav .console, body.nav #plan-controls { display: none; }
     ctx.translate(cx, cy); ctx.rotate(-b); ctx.scale(s, s); ctx.translate(-p[0], -p[1]);
     if (NAV.base === 'plain') { ctx.fillStyle = '#EDF0E6'; ctx.fillRect(0, 0, G.W, G.H); }
     else navTextures()[NAV.base].forEach(function (tx) { ctx.drawImage(tx.cv, tx.x0, tx.y0, tx.w, tx.h); });
-    // return stages: green inside (limit - caution), yellow up to the limit, red beyond
-    var L = d.lim.L, Lg = L - CAUTION, pL = limitPath(L), pG = limitPath(Math.max(0, Lg));
+    // return stages: green = 15+ min spare, yellow = under 15 min spare, red = cannot get home in time
+    var sf = spareField(d), pL = sf.pR, pG = sf.pG;
     var red = new Path2D(); red.rect(-4000, -4000, G.W + 8000, G.H + 8000); red.addPath(pL);
     ctx.fillStyle = STAGE.red.tint; ctx.fill(red, 'evenodd');
     var yel = new Path2D(); yel.addPath(pL); yel.addPath(pG);
     ctx.fillStyle = STAGE.yellow.tint; ctx.fill(yel, 'evenodd');
-    if (Lg > 0) { ctx.fillStyle = STAGE.green.tint; ctx.fill(pG, 'evenodd'); }
+    ctx.fillStyle = STAGE.green.tint; ctx.fill(pG, 'evenodd');
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.setLineDash([7 / s, 5 / s]); ctx.lineWidth = 1.6 / s; ctx.strokeStyle = 'rgba(43,45,47,.7)'; ctx.stroke(line60Path()); ctx.setLineDash([]);
     ctx.lineWidth = 6 / s; ctx.strokeStyle = 'rgba(237,240,230,.85)'; ctx.stroke(pL);
     ctx.lineWidth = 3 / s; ctx.strokeStyle = STAGE.red.c; ctx.stroke(pL);
-    if (Lg > 0) { ctx.lineWidth = 5 / s; ctx.strokeStyle = 'rgba(237,240,230,.85)'; ctx.stroke(pG); ctx.lineWidth = 2.4 / s; ctx.strokeStyle = STAGE.green.c; ctx.stroke(pG); }
+    ctx.lineWidth = 5 / s; ctx.strokeStyle = 'rgba(237,240,230,.85)'; ctx.stroke(pG); ctx.lineWidth = 2.4 / s; ctx.strokeStyle = STAGE.green.c; ctx.stroke(pG);
     // protected zones
     var pat = hatch(ctx);
     if (pat.setTransform) pat.setTransform(new DOMMatrix().scale(1 / s));
@@ -2361,47 +2418,89 @@ body.nav .console, body.nav #plan-controls { display: none; }
     o.push(corner(S - 8, S - 30, 'end', 'Life support*', hm(d.ls)));
     $('#hud').innerHTML = '<svg viewBox="0 0 ' + S + ' ' + S + '" role="img" aria-label="Helmet HUD: heading ' + hdg + ' degrees, ' + stg.word + '">' + o.join('') + '</svg>';
     $('#hud-line').innerHTML = d.home ? '<span>Habitat</span><span>arrived</span>'
+      : d.at ? '<span>Stn ' + d.tgt.n + ' · max stay ' + (d.stay > 0 ? hm(d.stay) : '0:00') + '</span><span>Base ' + R(d.ttb) + ' min</span>'
       : '<span>' + (d.tgt.n === 'H' ? 'Base' : 'Stn ' + d.tgt.n) + ' ' + R(d.rem.m) + ' m · ' + R(d.rem.min) + ' min</span><span>Base ' + R(d.ttb) + ' min</span>';
     $('#hud-warn').innerHTML = navWarnings(d).slice(0, 3).map(function (w) { return '<li class="' + w[0] + '">' + icon(w[1]) + w[2] + '</li>'; }).join('');
   }
 
   // ---------- map chrome and data sheet ----------
+  function profileSVG(d) {                      // elevation along the current leg, crew position marked
+    var tr = navTrack(); if (!tr) return '';
+    var cells = tr.cells, n = cells.length, dist = [0], zs = [G.z[cells[0]]], up = 0, dn = 0;
+    for (var i = 1; i < n; i++) {
+      dist.push(dist[i - 1] + G.dist(tr.pts[i - 1], tr.pts[i])); zs.push(G.z[cells[i]]);
+      var dz = zs[i] - zs[i - 1]; if (dz > 0) up += dz; else dn -= dz;
+    }
+    var tot = Math.max(1, dist[n - 1]), zmin = Math.min.apply(null, zs), zmax = Math.max.apply(null, zs);
+    var span = Math.max(10, zmax - zmin), W = 600, H = 120, l = 62, r = 8, t = 10, bt = 22;
+    function X(m) { return l + (W - l - r) * m / tot; }
+    function Y(z) { return t + (H - t - bt) * (1 - (z - zmin) / span); }
+    var k = 0; while (k < n - 1 && tr.ts[k + 1] <= d.t) k++;
+    var f = k < n - 1 ? Math.max(0, Math.min(1, (d.t - tr.ts[k]) / Math.max(1e-6, tr.ts[k + 1] - tr.ts[k]))) : 0;
+    var cur = dist[k] + (k < n - 1 ? (dist[k + 1] - dist[k]) * f : 0);
+    var zc = zs[k] + (k < n - 1 ? (zs[k + 1] - zs[k]) * f : 0);
+    var line = zs.map(function (z, j) { return (j ? 'L' : 'M') + X(dist[j]).toFixed(1) + ' ' + Y(z).toFixed(1); }).join('');
+    var o = '<path d="' + line + 'L' + X(tot) + ' ' + (H - bt) + 'L' + l + ' ' + (H - bt) + 'Z" fill="#D6DCCB"/>' +
+      '<path d="' + line + '" fill="none" stroke="#2B2D2F" stroke-width="2"/>' +
+      '<path d="M' + l + ' ' + (H - bt) + 'H' + (W - r) + '" stroke="#2B2D2F" stroke-width="1"/>' +
+      '<text x="' + (l - 6) + '" y="' + (Y(zmax) + 4).toFixed(1) + '" text-anchor="end">' + R(zmax) + ' m</text>' +
+      '<text x="' + (l - 6) + '" y="' + (Y(zmin) + 4).toFixed(1) + '" text-anchor="end">' + R(zmin) + ' m</text>' +
+      '<text x="' + l + '" y="' + (H - 6) + '">0 m</text><text x="' + (W - r) + '" y="' + (H - 6) + '" text-anchor="end">' + R(tot) + ' m</text>' +
+      '<path d="M' + X(cur).toFixed(1) + ' ' + t + 'V' + (H - bt) + '" stroke="#C8361F" stroke-width="1.5"/>' +
+      '<circle cx="' + X(cur).toFixed(1) + '" cy="' + Y(zc).toFixed(1) + '" r="5" fill="#C8361F" stroke="#EDF0E6" stroke-width="2"/>';
+    return '<div class="nd-prof"><div class="nd-prof-h"><b>Elevation, ' + (NAV.phase === 'ret' ? 'way home' : 'way out') + '</b><span class="num">+' + R(up) + ' m · −' + R(dn) + ' m</span></div>' +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Elevation profile of the current leg">' + o + '</svg></div>';
+  }
   function renderNavUi(d) {
-    var stg = STAGE[d.stage], tr = navTrack();
-    var turn;
+    var stg = STAGE[d.stage], tr = navTrack(), turn;
+    var spareTxt = d.spare >= 0 ? R(d.spare) + ' min spare' : 'no way home';
+    var leaveTxt = d.stay > 0 ? 'leave by ' + lmst(d.t + d.stay) : 'overdue by ' + hm(-d.stay);
     if (d.home) turn = icon('check') + '<div><div class="to">Crew home</div><div class="big">' + lmst(d.t) + '<small>LMST</small></div></div>';
-    else if (NAV.phase === 'at') turn = icon('check') + '<div><div class="to">Arrived · ' + d.tgt.name + '</div><div class="big">Station work<small>' + hm(NAV.tAt + DWELL - d.t) + ' left</small></div></div>';
+    else if (d.at) turn = icon('check') + '<div><div class="to">Arrived · ' + d.tgt.name + ' · ' + hm(d.t - NAV.tAt) + ' on station</div><div class="big">Max stay ' +
+      (d.stay > 0 ? hm(d.stay) : '0:00') + '<small>' + leaveTxt + '</small></div></div>';
     else {
       var ah = G.posOn(tr, Math.min(tr.t1, d.t + 2)), ra = G.dist(d.p, ah) > 2 ? bearingTo(d.p, ah) - NAV.hd : 0;
       turn = '<svg viewBox="0 0 34 34" aria-hidden="true"><g transform="translate(17 17) rotate(' + (ra * 180 / Math.PI).toFixed(0) + ')"><path d="M0 -13L9 7L0 2L-9 7Z" fill="#E3B21B"/></g></svg>' +
         '<div><div class="to">To ' + d.tgt.name + '</div><div class="big">' + R(d.rem.m) + ' m<small>' + R(d.rem.min) + ' min · ETA ' + lmst(d.eta) + '</small></div></div>';
     }
     $('#nv-turn').innerHTML = turn;
+    // the return buttons are static elements, so a click is never lost to a re-render
+    var urgent = d.at && d.stay < CAUTION;
+    [$('#nv-return'), $('#nd-return')].forEach(function (bt) {
+      bt.hidden = !d.at;
+      bt.className = 'btn ' + (urgent ? 'btn-abort' : 'btn-go') + (bt.id === 'nv-return' ? ' nv-return' : '');
+      bt.lastChild.textContent = d.at && d.stay <= 0 ? 'Start return now' : 'Start return';
+    });
+    $('#nd-end').hidden = !d.home;
     var se = $('#nv-stage');
     se.style.background = stg.bg; se.style.color = stg.fg;
-    se.innerHTML = icon(d.stage === 'green' ? 'check' : 'warn') + stg.word + '<span class="num">' + R(d.ttb) + ' / ' + d.lim.L + ' min to base</span>';
+    se.innerHTML = icon(d.stage === 'green' ? 'check' : 'warn') + stg.word + '<span class="num">' + spareTxt + '</span>';
     $('#nv-mapname').textContent = 'Map: ' + BASE_LBL[NAV.base];
-    var L = d.lim.L;
-    $('#nv-legend').innerHTML =
-      '<div><i style="background:' + STAGE.green.tint + ';border-color:' + STAGE.green.c + '"></i>Home in time · up to ' + Math.max(0, L - CAUTION) + ' min</div>' +
-      '<div><i style="background:' + STAGE.yellow.tint + ';border-color:' + STAGE.yellow.c + '"></i>Head home soon · ' + Math.max(0, L - CAUTION) + '–' + L + ' min</div>' +
-      '<div><i style="background:' + STAGE.red.tint + ';border-color:' + STAGE.red.c + '"></i>ABORT · beyond ' + L + ' min (' + d.lim.by + ')</div>';
+    $('#nv-legend').innerHTML = '<b>Can the crew go there and still get home?</b>' +
+      '<div><i style="background:' + STAGE.green.tint + ';border-color:' + STAGE.green.c + '"></i>Yes, ' + CAUTION + '+ min to spare</div>' +
+      '<div><i style="background:' + STAGE.yellow.tint + ';border-color:' + STAGE.yellow.c + '"></i>Yes, under ' + CAUTION + ' min to spare</div>' +
+      '<div><i style="background:' + STAGE.red.tint + ';border-color:' + STAGE.red.c + '"></i>No: ABORT if the crew is here</div>' +
+      '<div><i style="border:0;border-top:2px dashed #2B2D2F;height:0"></i>60 min from base, fixed</div>' +
+      '<span class="cap">From here, with ' + hm(Math.max(0, d.lim.B)) + ' of ' + (LS <= SUNSET ? 'life support' : 'daylight') + ' left</span>';
     function row(l, cap, v, unit, sk) { return '<div><dt>' + l + '<span class="cap">' + cap + '</span></dt><dd>' + numCell(v, unit) + '</dd><dd>' + (sk ? src(sk) : '') + '</dd></div>'; }
-    $('#nav-data').innerHTML =
-      '<div class="nd-stage" style="background:' + stg.bg + ';color:' + stg.fg + '"><span>' + stg.word + '</span><span class="num">' + R(d.ttb) + ' of ' + L + ' min</span></div>' +
-      '<dl class="nd">' +
-      row('Next target', d.home ? 'arrived' : d.tgt.name, d.home ? 0 : R(d.rem.m), 'm') +
-      row('Time to target', d.home ? 'arrived' : 'ETA ' + lmst(d.eta) + ' LMST', d.home ? 0 : R(d.rem.min), 'min', 'GRID') +
+    var stayRow = d.home || NAV.phase === 'ret' ? '' :
+      row(d.at ? 'Max stay here' : 'Max stay at target', d.at ? 'then start the return · ' + leaveTxt : 'if you arrive at ' + lmst(NAV.out.t1) + ' LMST', d.stay > 0 ? hm(d.stay) : '0:00', '', 'ASSUME');
+    $('#nd-body').innerHTML =
+      '<div class="nd-stage" style="background:' + stg.bg + ';color:' + stg.fg + '"><span>' + stg.word + '</span><span class="num">' + spareTxt + '</span></div>' +
+      (d.home ? '' : profileSVG(d)) +
+      '<dl class="nd">' + stayRow +
+      row('Next target', d.home ? 'arrived' : d.tgt.name, d.home || d.at ? 0 : R(d.rem.m), 'm') +
+      row('Time to target', d.home || d.at ? 'arrived' : 'ETA ' + lmst(d.eta) + ' LMST', d.home || d.at ? 0 : R(d.rem.min), 'min', 'GRID') +
       row('Time to base', 'from here · walking ' + st.walk.toFixed(1) + ' km/h', R(d.ttb), 'min', 'GRID') +
-      row('Return limit', 'tightest of 60 min, life support, sunset: ' + d.lim.by, L, 'min', 'xEVA') +
+      row('Return limit here', 'set by the ' + d.lim.by + ' · tightest of 60 min, life support, sunset', d.lim.L, 'min', 'xEVA') +
       row('Reserve', 'life support left at arrival home', hm(d.reserve), '', 'ASSUME') +
-      row('Life support', 'assumption: 6:00 EVA', hm(d.ls), '', 'ASSUME') +
+      row('Life support', 'assumption: 6:00 EVA', hm(Math.max(0, d.ls)), '', 'ASSUME') +
       row('Time to sunset', 'sunset 17:41 LMST', hm(d.sun), '', 'REMS') +
       row('Radiation dose', 'information only, never a gate', d.dose.toFixed(2), 'mSv', 'RAD') +
       row('Slope here', '10 m baseline · limit 20°', d.slope.toFixed(1), '°', 'DEM') +
+      row('Elevation here', 'synthetic test terrain', R(d.z), 'm', 'DEM') +
       row('Nearest protected zone', d.zone.name, Math.max(0, R(d.zone.d)), 'm', 'PP') +
-      row('Distance to habitat', 'straight line', R(d.baseD), 'm') +
-      '</dl>' + (d.home ? '<div class="nav-done"><button class="btn btn-dark" id="nav-end2">' + icon('close') + 'End navigation</button></div>' : '');
+      '</dl>';
     $('#hdr-clock').textContent = lmst(d.t) + ' LMST';
   }
 
@@ -2436,8 +2535,10 @@ body.nav .console, body.nav #plan-controls { display: none; }
     opts = opts || {};
     stop(true);
     NAVSEL = i;
-    NAV.on = true; NAV.target = i; NAV.out = G.track(navLeg(i).cells, walkK(), 0); NAV.ret = null;
-    NAV.phase = 'out'; NAV.t = 0; NAV.playing = !opts.pause; NAV.hd = null; NAV.swapped = !!opts.swap;
+    if (opts.t0 != null) NAVT0 = opts.t0;
+    NAV.t0 = NAVT0; SPF.pR = null;
+    NAV.on = true; NAV.target = i; NAV.out = G.track(navLeg(i).cells, walkK(), NAV.t0); NAV.ret = null;
+    NAV.phase = 'out'; NAV.t = NAV.t0; NAV.playing = !opts.pause; NAV.hd = null; NAV.swapped = !!opts.swap;
     if (opts.zoom != null) NAV.zoomI = Math.max(0, Math.min(ZOOMS.length - 1, opts.zoom));
     if (opts.base && BASES.indexOf(opts.base) >= 0) NAV.base = opts.base;
     document.body.classList.add('nav');
@@ -2450,6 +2551,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
       navTextures();
       ld.remove();
       if (opts.t) { while (NAV.t < opts.t && NAV.phase !== 'home') { navAdvance(0.25); navPose(0.05); } }
+      if (opts.ret) { navReturn(); if (opts.t2) while (NAV.t < opts.t2 && NAV.phase !== 'home') { navAdvance(0.25); navPose(0.05); } }
       navLast = performance.now();
       navFrame(1, true);
       navRaf = requestAnimationFrame(navLoop);
@@ -2478,7 +2580,10 @@ body.nav .console, body.nav #plan-controls { display: none; }
     ['k-data', 'k-zin', 'k-zout', 'k-map'].forEach(function (id) { $('#' + id).addEventListener('click', function () { navKey(id); }); });
     $('#nav-pause').addEventListener('click', function () { if (NAV.phase === 'home') return; NAV.playing = !NAV.playing; syncNavPause(); });
     $('#nav-end').addEventListener('click', navEnd);
-    $('#nav-data').addEventListener('click', function (e) { if (e.target.closest('#nav-end2')) navEnd(); });
+    $('#nd-end').addEventListener('click', navEnd);
+    $('#nd-return').addEventListener('click', navReturn);
+    $('#nv-return').addEventListener('click', navReturn);
+    $('#np-t0').addEventListener('click', function (e) { var bb = e.target.closest('button'); if (!bb) return; NAVT0 = +bb.dataset.t0; renderNavPick(); });
     $$('#nav-controls .seg button').forEach(function (bb) {
       bb.addEventListener('click', function () { NAV.speedX = +bb.dataset.nx; $$('#nav-controls .seg button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === bb)); }); });
     });
@@ -2486,6 +2591,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
       if (!NAV.on || e.target.closest('input, select, textarea')) return;
       var map = { '1': 'k-data', '2': 'k-zin', '3': 'k-zout', '4': 'k-map' };
       if (map[e.key]) { e.preventDefault(); navKey(map[e.key]); }
+      if (e.key === 'r' || e.key === 'R') { e.preventDefault(); navReturn(); }
       if (e.key === ' ' && NAV.phase !== 'home') { e.preventDefault(); NAV.playing = !NAV.playing; syncNavPause(); }
     });
   }
@@ -2517,8 +2623,9 @@ body.nav .console, body.nav #plan-controls { display: none; }
       if (q.get('y')) window.scrollTo(0, +q.get('y'));
       if (q.get('layers') === '1') $('#btn-layers').click();
       var ns = +(q.get('pick') || q.get('nav') || 0);
+      if (q.get('t0') != null) NAVT0 = +q.get('t0');
       if (ns >= 1 && ns <= 4) { NAVSEL = ns - 1; renderNavPick(); renderOverlay(); }
-      if (q.get('nav') && ns >= 1 && ns <= 4) navStart(ns - 1, { t: +(q.get('t') || 0), swap: q.get('swap') === '1', pause: q.get('pause') === '1', zoom: q.get('zoom') != null ? +q.get('zoom') : null, base: q.get('navbase') });
+      if (q.get('nav') && ns >= 1 && ns <= 4) navStart(ns - 1, { t0: q.get('t0') != null ? +q.get('t0') : null, ret: q.get('ret') === '1', t2: +(q.get('t2') || 0), t: +(q.get('t') || 0), swap: q.get('swap') === '1', pause: q.get('pause') === '1', zoom: q.get('zoom') != null ? +q.get('zoom') : null, base: q.get('navbase') });
     }, 30);
   }
   init();
