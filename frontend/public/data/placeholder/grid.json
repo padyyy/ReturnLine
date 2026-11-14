@@ -7,16 +7,16 @@
  "nx": 341,
  "ny": 341,
  "origin_m": {
-  "x": 8141620,
-  "y": -283700
+  "x": 8141740,
+  "y": -283530
  },
  "origin_is": "north-west corner of cell (row 0, col 0), projected metres",
  "order": "row 0 = north, columns west to east, index = row * nx + col",
  "bbox_deg": [
-  137.3540539,
-  -4.8437194,
-  137.4115827,
-  -4.7861906
+  137.3560784,
+  -4.8408514,
+  137.4136072,
+  -4.7833226
  ],
  "files": {
   "ttb_penalized": "ttb_penalized.f32",

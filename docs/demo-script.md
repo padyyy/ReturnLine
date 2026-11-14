@@ -52,6 +52,8 @@ About 85 seconds after Start, subtitles on every beat. Each beat waits for its l
 
 ## Data checks the real grid must pass
 
+Status 2026-11-14 evening: checked on the DEM-based fallback grid (`pipeline/time_grid.py`) with `frontend/scripts/find-scenario.mjs`. The story holds with an 80 m zone buffer and the placeholder positions listed in `../pipeline/README.md` (warning 5:05, injury 5:06: protected 56 min against 49 min through Drill site B, home 5:55). It did not hold with 40 m. The 1 m ridge mask is still missing, so check 1 (no ridge crossing) is open.
+
 The story is only true if the real data allow it. The sketch showed that a random layout usually does not; positions had to be tuned. Check these on the real grid before building beats 3 to 6, and pick the scenario station by them.
 
 1. **Beat 1:** every point of the route to and from the target is at most 60 min from the habitat (zones penalized); 10 m slope at most 20°; no ridge crossing; home before sunset with reserve.

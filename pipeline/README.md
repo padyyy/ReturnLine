@@ -110,6 +110,39 @@ Dasselbe Muster trägt die DEM-Arbeit. Die Funktionen `gdal_path`, `pick_overvie
 4. Danach prüfen, ob die geplanten Stopps unter der Grat-Regel erreichbar sind (offene Prüfung aus `docs/mission-scenario.md`).
 5. Optional für die Anzeige: Hangneigung und Schummerung als Bilder, wieder mit JSON-Grenzen.
 
+## Zeit-Grid (Fallback für die Routing-Engine): `time_grid.py`
+
+Stand 14.11.2026, abends. Das ist der geplante Python-Fallback für die Engine. Er schreibt genau die Dateien der Grid-Spezifikation in `shared/data-contract.md`, sodass die Konsole sie ohne Codeänderung lädt. Sobald die Engine eigene Dateien im selben Format liefert, ersetzen sie diese.
+
+```sh
+.venv/Scripts/python pipeline/time_grid.py      # etwa 15 s, liest rund 20 MB per Range Request
+```
+
+- **Ausgabe nach `frontend/public/data/`:**
+  - `grid.json`
+  - `ttb_penalized.f32`, `ttb_allowed.f32`
+  - `ptr_penalized.i32`, `ptr_allowed.i32`
+  - `elev_10m.f32`, `slope_10m.f32` (je 475 × 476 Zellen, je 0,9 MB)
+  - `routes.json` (Habitat ↔ jede Station entlang der Zeiger)
+- **Höhe:** 4-m-Übersicht des DEM, gemittelt auf 10-m-Zellen. Die Zellen liegen auf dem 1-m-Pixelraster des DEM. Die Hangneigung kommt aus diesem Raster.
+- **Gesperrt:** keine Daten oder Hang über 20° (`slope_block_deg`).
+  - Lücke: Die 1-m-Grat-Maske fehlt. Sie braucht das 1-m-DEM; schmale Boxwork-Rücken sind bei 4 m nicht sichtbar.
+- **Gehzeit:** 1,5 km/h auf ebenem Boden, am Hang verlangsamt mit `exp(−3,5 · |Δh/Strecke|)`. Das ist dieselbe symmetrische Tobler-Form wie in beiden Design-Sketches und eine gekennzeichnete Annahme, keine belegte Funktion. Weil sie symmetrisch ist, ist der Weg A→B so lang wie B→A. Deshalb reicht eine Suche vom Habitat aus.
+- **Suche:** Dijkstra vom Habitat, 16 Nachbarn, keine Ecken über gesperrte Zellen.
+  - „penalized“: Zonen ×20, Ring von `zone_clearance_m` um jede Zone ×3.
+  - „allowed“: Zonen sind normaler Boden (für ABORT).
+  - Gespeichert ist immer die echte Gehzeit entlang des gewählten Wegs, nie die bestrafte Kostensumme.
+- **Eingaben:** Habitat, Stationen, Zonen und Konstanten aus `frontend/public/data/`, sonst aus `…/placeholder/`. Solange das Platzhalter sind, steht das in `grid.json` unter `placeholder_inputs`.
+- **Datenprüfung für den Demo-Ablauf:** `frontend/scripts/find-scenario.mjs` (Node, etwa 30 s) prüft auf diesem Grid viele Kombinationen aus Habitat, Szenario-Station, Drift-Zone und ABORT-Zone mit derselben Logik wie die Konsole.
+  - Bedingungen: Plan heim vor 6:00, Drift auf 10 m möglich, nach der Verletzung ist der geschützte Weg zu lang und der Weg durch die Zone reicht.
+  - Mit 40 m Zonenpuffer trug keine Kombination (höchstens 1,9 min Unterschied). Mit 80 m trugen fünf.
+  - Gewählt (Platzhalter, in `frontend/scripts/make-placeholder-data.mjs`): Habitat 137.384902° O, 4.812105° S; Stationen auf Curiositys Wegpunkten der Sols 4596 (Szenario), 4609, 4667, 4839; Drill site A bei Sol 4633 (Drift), Drill site B bei Sol 4818 (ABORT); Puffer 80 m.
+- **Ergebnis in der Konsole, voller Demo-Lauf:**
+  - 5:05 Warnung „Crew 10 m from Drill site A“, Umleitung +1 min.
+  - 5:06 Verletzung: geschützter Weg 56 min ✗, durch die Zone 49 min ✓.
+  - ABORT mit 157 m in Drill site B, protokolliert. Crew um 5:55 zu Hause, 5 min Reserve.
+- **Reihenfolge bei Änderungen:** `npm run data:placeholder` (in `frontend/`), dann `.venv/Scripts/python pipeline/time_grid.py`, dann `node scripts/find-scenario.mjs` zur Kontrolle.
+
 ## Stolperstellen
 
 - **Deployment:** Entschieden am 14.11.: Das 1-m-Overlay (`ortho_gale_1m.jpg` und `.json`) ist in der `.gitignore` freigegeben und liegt im Repo, damit GitHub Pages und die Offline-Demo nicht vom USGS-Server abhängen. Andere erzeugte Dateien in `frontend/public/maps/` bleiben ignoriert; wer ein neues Overlay ausliefern will, gibt es dort gezielt frei.
