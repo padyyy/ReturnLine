@@ -64,6 +64,7 @@ Read-only inset in the console, five values: next target, time to base, reserve 
 - The cuff's hardware keys (data, zoom, base map) only change the crew's own view.
 - The demo starts only after habitat control picks a target in the picker and presses Start (as in the navigation sketch); the EVA goes habitat → target station → habitat. Where navigation view and HUD appear per beat: `demo-script.md`.
 - Open: in the navigation draft the return area does not shrink yet.
+- Crew view design rules (later the same day): three tabs. Values; Cuff, the forearm display with the hardware-key frame and two switchable modes, the five values (default) and a navigation map after Alex's draft; HUD, a compass ring with minimap and the warning status. Details: `demo-script.md`, "Crew view".
 
 ## Operating area
 

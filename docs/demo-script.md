@@ -28,7 +28,12 @@ File names marked in code font are proposals until the grid spec in `../shared/`
 
 ## Crew view
 
-The console stays the main view, because every decision is habitat control's. The crew display panel (bottom left of the map) becomes the **crew view** with three read-only skins of the same data: console skin (five values), cuff tablet (heading-up map, data sheet with the elevation profile, four hardware keys) and helmet HUD (compass with base and target, stage ring, EVA time, sunset, dose, life support, warnings). During the demo the skin switches by itself as listed in the table, so each beat shows what the crew sees at that moment. A control above the panel lets the viewer pick a skin by hand or open the crew view full size in the navigation sketch's layout (tablet left, HUD and data sheet right); it changes only the view, never the EVA.
+The console stays the main view, because every decision is habitat control's. The crew display panel (bottom left of the map) becomes the **crew view** with three read-only tabs (team design rules of 2026-11-14):
+- **Values:** the five values as the console shows them.
+- **Cuff:** the forearm display in its hardware frame (keys DATA, ZOOM+, ZOOM−, MAP), so it is clearly what the crew sees on the arm and distinct from the HUD. Two modes: the five values (default) and the navigation map (heading up, return stages, zones, route, crew arrow, scale). DATA and MAP switch the mode, MAP again switches the base (orthophoto or plain), ZOOM changes the scale; the keys change only the view.
+- **HUD:** the helmet HUD: compass ring with a heading-up minimap (base and target at their bearing), stage ring, EVA time, sunset, dose, life support, and up to three warnings.
+
+ During the demo the skin switches by itself as listed in the table, so each beat shows what the crew sees at that moment. A control above the panel lets the viewer pick a skin by hand or open the crew view full size in the navigation sketch's layout (tablet left, HUD and data sheet right); it changes only the view, never the EVA.
 
 ## Demo button timeline
 

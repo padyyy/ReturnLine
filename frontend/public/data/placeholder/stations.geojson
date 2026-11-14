@@ -8,15 +8,15 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     137.379686,
-     -4.804189
+     137.38045,
+     -4.80251
     ]
    },
    "properties": {
     "n": 1,
     "name": "Station 1",
     "reason": "Placeholder: reason from the NASA boxwork blog posts",
-    "sol": 4600,
+    "sol": 4591,
     "image": null,
     "elev_m": null
    }
@@ -26,15 +26,15 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     137.379842,
-     -4.806893
+     137.379812,
+     -4.806891
     ]
    },
    "properties": {
     "n": 2,
     "name": "Station 2",
     "reason": "Placeholder: reason from the NASA boxwork blog posts",
-    "sol": 4650,
+    "sol": 4647,
     "image": null,
     "elev_m": null
    }
@@ -44,15 +44,15 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     137.381004,
-     -4.808008
+     137.38157,
+     -4.808716
     ]
    },
    "properties": {
     "n": 3,
     "name": "Station 3",
     "reason": "Placeholder: reason from the NASA boxwork blog posts",
-    "sol": 4711,
+    "sol": 4673,
     "image": null,
     "elev_m": null
    }
@@ -62,15 +62,15 @@
    "geometry": {
     "type": "Point",
     "coordinates": [
-     137.382628,
-     -4.807883
+     137.382671,
+     -4.807785
     ]
    },
    "properties": {
     "n": 4,
     "name": "Station 4",
     "reason": "Placeholder: reason from the NASA boxwork blog posts",
-    "sol": 4823,
+    "sol": 4820,
     "image": null,
     "elev_m": null
    }
