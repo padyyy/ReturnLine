@@ -87,6 +87,10 @@ const inZone = (p, zones) => zones.some((zn) => dist(p, zn) <= BUFFER);
 // candidate places: waypoints deduplicated to 25 m
 const sites = [];
 for (const p of wp) if (cellOf(p.lon, p.lat) >= 0 && !blocked[cellOf(p.lon, p.lat)] && sites.every((q) => dist(p, q) > 25)) sites.push(p);
+// optional: only these sols may be protected zones (real drill sites), e.g. ZONE_SOLS=4633,4818
+const ZONE_SOLS = process.env.ZONE_SOLS ? process.env.ZONE_SOLS.split(',').map(Number) : null;
+const zoneSites = ZONE_SOLS ? ZONE_SOLS.map((s) => wp.find((p) => p.sol === s)).filter(Boolean) : sites;
+if (ZONE_SOLS && zoneSites.length !== ZONE_SOLS.length) console.log(`warning: not every ZONE_SOLS entry is a waypoint sol in src/boxwork-path.js`);
 // habitat candidates: open, gentle cells 350-1200 m from the waypoint centre, every 60 m
 const ctr = { lon: lonOf(cc - C0), lat: latOf(cr - R0) };
 const habs = [];
@@ -114,8 +118,8 @@ for (const h of habs) {
     // ABORT zone B: a site on the later part of the direct way; drift zone A: a site beside its early part
     const late = r0.slice(Math.floor(r0.length * 0.35));
     const early = r0.slice(1, Math.floor(r0.length * 0.45));
-    const Bs = sites.filter((q) => q !== S && dist(q, S) > BUFFER + 25 && late.some((p) => dist(p, q) < 15));
-    const As = sites.filter((q) => q !== S && dist(q, S) > BUFFER + 25 && early.some((p) => { const d = dist(p, q) - BUFFER; return d > WARN + 8 && d < 70; }));
+    const Bs = zoneSites.filter((q) => q !== S && dist(q, S) > BUFFER + 25 && late.some((p) => dist(p, q) < 15));
+    const As = zoneSites.filter((q) => q !== S && dist(q, S) > BUFFER + 25 && early.some((p) => { const d = dist(p, q) - BUFFER; return d > WARN + 8 && d < 70; }));
     for (const B of Bs.slice(0, 3)) for (const A of As.slice(0, 3)) {
       if (A === B || dist(A, B) < 2 * BUFFER + 20) continue;
       const zones = [A, B];
