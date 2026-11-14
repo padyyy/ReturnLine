@@ -1,0 +1,51 @@
+/* Tokens from DESIGN.md (Field Book). Fonts follow once the self-hosted files are in the app. */
+:root {
+  --cover: #E3B21B;
+  --paper: #EDF0E6;
+  --graphite: #2B2D2F;
+  --red: #C8361F;
+  --map-ground: #8E918B;
+}
+
+html, body { height: 100%; margin: 0; }
+body {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: var(--paper);
+  color: var(--graphite);
+  font: 400 15px/1.4 "Segoe UI", system-ui, sans-serif;
+}
+
+.band {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px max(16px, env(safe-area-inset-left, 0px));
+  background: var(--cover);
+  border-bottom: 1.5px solid var(--graphite);
+}
+.brand { font-size: 19px; font-weight: 800; }
+.status { flex: 1; min-width: 0; font-variant-numeric: tabular-nums; }
+.play {
+  height: 34px;
+  padding: 0 14px;
+  border: 1.5px solid var(--graphite);
+  border-radius: 2px;
+  background: var(--graphite);
+  color: var(--paper);
+  font: 600 14px/1 inherit;
+  cursor: pointer;
+}
+.play:focus-visible { outline: 2px solid #2459A8; outline-offset: 2px; }
+
+#map { min-height: 0; }
+.leaflet-container { background: var(--map-ground); font: inherit; }
+
+.map-message {
+  padding: 10px 12px;
+  max-width: 320px;
+  background: var(--paper);
+  border: 1.5px solid var(--red);
+  color: var(--red);
+  font-weight: 600;
+}

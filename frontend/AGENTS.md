@@ -2,10 +2,15 @@
 
 ## Stand und Zweck
 - Vorgesehener Bereich für Benutzeroberfläche und Darstellung.
-- Geplant (13.11.2026): statische Web-App mit Vite und Leaflet 1.9.4, kein UI-Framework, GitHub Pages. JavaScript oder TypeScript entscheidet der Tech Lead beim Kickoff.
+- Statische Web-App mit Vite 7.3.7 und Leaflet 1.9.4, kein UI-Framework, GitHub Pages. Sprache: JavaScript (Entscheidung des Tech Leads am 14.11.2026).
 - Eine Seite: die Habitat-Konsole mit eingebettetem, schreibgeschütztem Crew-Display. Inhalt und Demo-Drehbuch: `../docs/mission-scenario.md`, Design: `../docs/preparation/design-brief.md`.
 - Design-Sketch (14.11.2026, alle sechs Beats, synthetische Daten): `../docs/design/habitat-console-sketch.html`, Erläuterung und übertragbare Tokens in `../docs/design/README.md`. Vorlage für Layout, Zustände und Wortlaut, kein Code zum Übernehmen.
-- Bisher existiert nur `.gitkeep`; Build-System und Startbefehle sind noch nicht eingerichtet.
+- Stand 14.11.2026 (Meilenstein „Der Punkt wandert über das echte Orthofoto“): Karte mit Mars-CRS, Orthofoto-Overlay und einem Punkt, der Curiositys Wegpunkte der Boxwork-Kampagne abfährt (1,5 km/h, Zeitraffer ×60). Noch keine Konsole.
+
+## Einstiegspunkte und Befehle
+- `index.html` (Kopfband, Kartenfläche), `src/main.js` (Mars-CRS, Overlay, Animation), `src/boxwork-path.js` (Demo-Pfad, Platzhalter bis zur Route aus der Engine), `src/style.css` (Tokens aus `../DESIGN.md`), `vite.config.js` (`base: './'` für GitHub Pages).
+- `npm install`, dann `npm run dev` (Entwicklung), `npm run build` (nach `dist/`), `npm run preview` (Build ansehen, Port 4173).
+- Das Orthofoto kommt nicht aus Git: `public/maps/ortho_gale_1m.jpg` und `.json` erzeugt `../pipeline/ortho_overlay.py` (siehe `../pipeline/README.md`). Fehlt es, zeigt die Karte einen Hinweis statt eines Fehlers.
 
 ## Umsetzung
 - Lies vor der Implementierung `../docs/architecture.md` und die vereinbarten Schnittstellen in `../shared/`, soweit vorhanden.

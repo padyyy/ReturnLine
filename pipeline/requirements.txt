@@ -1,0 +1,4 @@
+# Offline data pipeline (Python 3.11). Versions as installed and tested on 2026-11-14.
+rasterio==1.4.4
+numpy==2.4.6
+pillow==13.0.0
