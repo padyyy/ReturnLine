@@ -26,6 +26,7 @@ export function buildModel(d) {
     grid: d.grid,
     radio: d.radio,
     ortho: d.ortho,
+    hasSlopeLayer: !!d.slopeLayer,
     comparison: d.comparison,
   };
 }

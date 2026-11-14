@@ -149,3 +149,16 @@ Stand 14.11.2026, abends. Das ist der geplante Python-Fallback für die Engine. 
 - **Dateigröße:** 6,3 MB bei 1 m. Für schwache Verbindungen zusätzlich eine 2-m-Version erzeugen.
 - **Netz:** Auf Patricks Rechner fängt ein Proxy oder Virenscanner TLS für einige NASA-Seiten ab. Der USGS-Bucket auf S3 und `mars.nasa.gov` (MMGIS) gingen am 14.11. ohne Probleme. Zertifikatsprüfungen nie abschalten.
 - **Quellenangabe:** Das Orthofoto auf der Projektseite mit dem USGS-Datensatz zitieren (Link oben).
+
+## Mapping → Frontend vorbereiten (ohne Routing)
+
+`mapping_grid.py` liest das vorhandene echte `frontend/public/data/grid.json` unverändert. `mapping_bridge.py` bietet JSON-Anfragen für Gridbeschreibung, Zell-/Koordinatenabfragen, Abtastung weiterer GeoTIFFs durch den bestehenden GeoMapper und den Export von `slope_10m.png` + `.json` auf exakt diesem Grid.
+
+```sh
+.venv/Scripts/python pipeline/mapping_bridge.py --request '{"action":"describe"}'
+.venv/Scripts/python pipeline/mapping_bridge.py --request '{"action":"export_slope"}'
+```
+
+Ausgabe: ein RGBA-Pixel pro Gridzelle, NoData transparent, Klassen bis 10°, 10–20° und über 20°. Numerische Dateien und Routing bleiben unverändert. Das bestehende Orthofoto behält seine eigenen georeferenzierten Grenzen. Installation: `pipeline/requirements.txt`, sie enthält seit dem 14.11. auch pyproj und SciPy für `sample_raster`. Farben: Vermessungspapier bis 10°, Graphit 10–20°, Rot über 20° (gesperrt).
+
+Vollständige Schnittstelle, Node.js-Aufruf, Quellen/Annahmen, Zellformeln und noch offene Frontend-Schritte: [MAPPING.md](MAPPING.md). Nach Datenteam-Auftrag wurde nichts in `frontend/src/` geändert. Die Konsole zeigt den Hang-Layer im Layers-Menü (Terrain → „Slope, 10 m baseline“).

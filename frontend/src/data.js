@@ -28,9 +28,16 @@ export async function loadData() {
     load('curiosity_comparison.json', { placeholder: false }),
     fetchJson('maps/ortho_gale_1m.json').catch(() => null),
   ]);
+  // slope display layer (pipeline/mapping_bridge.py); optional, display only
+  let slopeLayer = await fetchJson('data/slope_10m.json').catch(() => null);
   if (!scenario || !stations || !routes) throw new Error('scenario, stations and routes are required');
   const grid = await loadGrid(missing, placeholders);
-  return { scenario, stations, zones, routes, traverse, radio, comparison, ortho, grid, placeholders, missing };
+  // the slope image must cover exactly the grid it was made from, one pixel per cell
+  if (slopeLayer && grid && (slopeLayer.width_px !== grid.header.nx || slopeLayer.height_px !== grid.header.ny)) {
+    console.warn('slope layer does not match grid.json; not drawn');
+    slopeLayer = null;
+  }
+  return { scenario, stations, zones, routes, traverse, radio, comparison, ortho, grid, slopeLayer, placeholders, missing };
 }
 
 // Time-to-base grids and return pointers from the routing engine (grid spec in shared/).

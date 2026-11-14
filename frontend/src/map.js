@@ -45,6 +45,8 @@ export function createMap(el, data, model) {
   creditsControl(data).addTo(map);
   // panes: orthophoto, return area, vectors (overlayPane 400), crew dot above the routes
   map.createPane('base').style.zIndex = 250;
+  map.createPane('slope').style.zIndex = 300;
+  map.getPane('slope').style.pointerEvents = 'none';
   map.createPane('area').style.zIndex = 350;
   map.createPane('grid').style.zIndex = 360;
   map.getPane('grid').style.pointerEvents = 'none';
@@ -75,7 +77,14 @@ export function createMap(el, data, model) {
     routes: L.layerGroup().addTo(map),
     markers: L.layerGroup().addTo(map),
     crew: L.layerGroup().addTo(map),
+    slope: L.layerGroup(), // off by default; switched on in the Layers menu
   };
+  // slope display layer from the pipeline (one pixel per grid cell, its own bounds); display only
+  if (data.slopeLayer) {
+    const s = data.slopeLayer;
+    L.imageOverlay(`${BASE}${s.image_path}`, s.bounds, { pane: 'slope', opacity: s.layer?.opacity ?? 0.6, className: 'slope-img', interactive: false })
+      .addTo(layers.slope);
+  }
 
   if (data.traverse) {
     data.traverse.features.forEach((f) => {
