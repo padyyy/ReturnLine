@@ -27,7 +27,7 @@
 Updated on 2026-11-13 after the concept merge: the C# work is an **offline routing engine** (Dijkstra from the habitat, return pointers, two variants, routes, Curiosity comparison), not live A\* in a backend. See `docs/architecture.md`.
 
 ### Alex
-- Frontend Development – JavaScript/TypeScript (tech lead decides at kickoff)
+- Frontend Development – JavaScript (decided by the tech lead on 2026-11-14)
 - Presentation (pitch, video)
 ### Michael
 - Routing Engine (offline Dijkstra) – C#
@@ -37,7 +37,7 @@ Updated on 2026-11-13 after the concept merge: the C# work is an **offline routi
 - Routing Engine (offline Dijkstra) – C#; writes the one-page grid spec in hour 1
 - Flexible Support Across Development Tasks
 ### Magnus
-- Frontend Development – JavaScript/TypeScript
+- Frontend Development – JavaScript
 - Data Analysis & Preparation – Python
 ### Patrick
 - Flexible frontend and data work where needed

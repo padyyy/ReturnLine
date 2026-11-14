@@ -29,7 +29,7 @@ Team "Houston, we have a map" at the NASA Space Apps Challenge 2026, challenge "
 
 Made on 2026-11-08 and 2026-11-09:
 - Site: Gale crater, Mount Sharp boxwork region.
-- Architecture: offline Python pipeline producing image overlays and GeoJSON, static web app with Vite, TypeScript and Leaflet 1.9.4, no backend, no 3D globe, no ML.
+- Architecture: offline Python pipeline producing image overlays and GeoJSON, static web app with Vite and Leaflet 1.9.4 (language: JavaScript, decided on 2026-11-14), no backend, no 3D globe, no ML.
 - Team skills: web frontend, Python, design and pitch. Nobody knows GIS, so keep the GIS side simple.
 
 Corrected after the review of 2026-11-12 (details and sources in `docs/preparation/preparations.md`):
@@ -54,7 +54,7 @@ Made on 2026-11-13, after Patrick switched teams (details in `docs/preparation/k
   - Paul: A\* pathfinding (C#), flexible support.
   - Magnus: frontend (JavaScript), data analysis and preparation (Python).
   - Patrick: flexible frontend and backend where needed.
-- **Roles reconciled with the architecture:** the C# work is an offline routing engine (Dijkstra from the habitat, return pointers, two variants, routes, leave-one-out comparison), not a backend. Fallback at Saturday 18:00: scikit-image `MCP_Geometric` in Python. No backend. JavaScript or TypeScript is the tech lead's call at kickoff.
+- **Roles reconciled with the architecture:** the C# work is an offline routing engine (Dijkstra from the habitat, return pointers, two variants, routes, leave-one-out comparison), not a backend. Fallback at Saturday 18:00: scikit-image `MCP_Geometric` in Python. No backend. Frontend language: JavaScript, decided by the tech lead on 2026-11-14.
 
 Council verdict of 2026-11-13, accepted by the team (full German text in `docs/preparation/council-urteil-prototyp.md`, summary in `docs/preparation/preparations.md`):
 - The demo is a scripted EVA rehearsal run by habitat control, not a game. No free steering of the astronaut, no score. A demo button plays six beats with English subtitles. The script is built first; what is not in it is not built.

@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-- Static web app with Vite and Leaflet 1.9.4, no UI framework, pinned and bundled. JavaScript or TypeScript is the tech lead's call at kickoff.
+- Static web app with Vite and Leaflet 1.9.4, no UI framework, pinned and bundled. JavaScript, decided by the tech lead on 2026-11-14.
 - Static build hosted on GitHub Pages. No backend.
 - Map data is produced ahead of time and shipped as static files:
   - an offline Python pipeline (numpy, scikit-image, tifffile or rasterio) crops the data and computes slope, the ridge mask and the overlays,
@@ -84,7 +84,7 @@ Success for the hackathon: a submitted demo, video and project page by the Heilb
 - One crew display component with two skins, no HUD over photos.
 - The six-beat demo script in `docs/preparation/preparations.md`, built first; anything not in the script is not built.
 
-**Undecided:** JavaScript or TypeScript; the exact slope penalty function and the zone buffer radius (both labeled assumptions, set at kickoff).
+**Undecided:** the exact slope penalty function and the zone buffer radius (both labeled assumptions, set at kickoff).
 
 ## Brand Commitments
 

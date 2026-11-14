@@ -48,7 +48,7 @@ Grundlage sind die beiden Entscheidungspapiere `konzeptabgleich-returnline.md` u
 - [ ] Umfang in 15 Minuten gegen das Council-Urteil bestätigt: Pflichtliste, Reihenfolge nach dem Freeze, Streichliste.
 - [ ] Neues Repo angelegt, alle fünf haben Zugriff, Regeln für Branches und Pull Requests abgesprochen, GitHub Pages aktiviert. (Magnus)
 - [ ] Kanban-Board steht, die Issues sind aus dem Drehbuch abgeleitet. (Paul)
-- [ ] JavaScript oder TypeScript entschieden. (Magnus)
+- [x] JavaScript oder TypeScript entschieden. (Magnus) Stand 14.11.: JavaScript.
 - [ ] Standort von Habitat und Rover als Koordinate festgelegt. Von dort rechnet der Dijkstra.
 - [ ] Grid-Spezifikation auf einer Seite: Ausschnitt, 10-m-Zellen (etwa 470 × 470), Zeilenordnung, float32 little-endian, Kodierung der Rückweg-Zeiger, Dateinamen. (Paul)
 - [ ] Annahmen festgelegt und benannt: Hangabschlag (Tobler-Form, skaliert auf 1,5 km/h), Puffer-Radius der Schutzzonen, Verletzungsfaktor 0,5, EVA-Dauer 6 h plus 1 h Reserve.
