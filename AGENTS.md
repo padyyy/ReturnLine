@@ -77,3 +77,10 @@
 - Read this main file and applicable module instructions as the source of project rules; the skill does not replace them.
 - Compare Git state and local functionality with the relevant documentation. Update verified gaps within the task scope; for review-only requests, report findings without edits.
 - Codex team members can use `$team-state-sync` when the repository skill is discovered. Other AI tools must load this main file and the linked skill instructions through their own project-instruction mechanism.
+
+## 9. AI Contribution Log
+- For every project task, follow [.agents/skills/ai-contribution-log/SKILL.md](.agents/skills/ai-contribution-log/SKILL.md) and record contributions in `docs/ai-log/`.
+- Record task start, substantive changes, findings, recommendations, objections, decisions, checks, and completion, including contributions that do not change code.
+- This logging requirement also applies to review-only tasks; an explicit user instruction prohibiting file writes takes precedence. In that case, provide the proposed log entries in the response.
+- Keep entries factual and free of secrets. Do not attribute existing work to an AI without evidence or claim that a proposal is an accepted team decision.
+- Load this workflow in each participating AI tool; sharing these files does not create an automatic recorder.

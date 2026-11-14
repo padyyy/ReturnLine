@@ -45,7 +45,7 @@ Belege jeden Befund durch konkrete Dateipfade und, wo sinnvoll, Symbole oder Zei
 
 ## Dokumentation gezielt nachführen
 
-Der normale Skill-Aufruf umfasst das Aktualisieren belegter Dokumentationslücken in den geprüften Bereichen. Bei einem reinen Review- oder Berichtsauftrag melde nur Befunde und ändere keine Dateien.
+Der normale Skill-Aufruf umfasst das Aktualisieren belegter Dokumentationslücken in den geprüften Bereichen. Bei einem reinen Review- oder Berichtsauftrag melde nur Befunde und ändere keine Produkt- oder Bestandsdokumentation. Das von der Haupt-`AGENTS.md` verlangte KI-Beitragslog wird separat geführt; ein ausdrückliches Schreibverbot hat Vorrang.
 
 - Dokumentiere Modulzweck, wichtige Pfade und Schnittstellen in der zuständigen Modul-`AGENTS.md`; ausführliche Nutzung, API-Details oder Setup gehören in die passenden Projektdokumente.
 - Ersetze nachweislich überholte Starttexte und entferne belegte veraltete Angaben. Erfinde keine Architekturentscheidungen oder ausführbaren Befehle.
@@ -66,3 +66,5 @@ Berichte knapp:
 4. **Offen:** nicht geprüfte Bereiche, unklare Entscheidungen oder fehlende Vergleichsbasis.
 
 Bei unverändertem Stand keine wiederholten Änderungen oder künstlichen Befunde erzeugen. Dieser Skill verteilt sich nicht selbst auf andere KI-Systeme; jedes Teammitglied muss die Projektanweisungen beziehungsweise den Skill in seinem Agent-Werkzeug laden.
+
+Protokolliere den Abgleich und wesentliche Befunde gemäß `../ai-contribution-log/SKILL.md` im KI-Beitragslog. Log-Ereignisse selbst lösen keinen weiteren Abgleich und keine weitere Protokollierung aus.
