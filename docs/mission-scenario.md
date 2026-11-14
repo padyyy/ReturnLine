@@ -42,7 +42,7 @@ A demo button plays these beats from precomputed data, each with a one-line Engl
 
 The 30-second video uses beats 3, 5 and 6.
 
-**Per-beat script (to write first, Alex and Patrick):** one page; for each beat what is on screen, which number is shown, which file it comes from, which simulation time applies, and the English subtitle. Paul derives the Kanban issues from it. Put it next to this file as `demo-script.md`.
+**Per-beat script (to write first, Alex and Patrick):** one page; for each beat what is on screen, which number is shown, which file it comes from, which simulation time applies, and the English subtitle. Paul derives the Kanban issues from it. Draft of 2026-11-14: `demo-script.md` (next to this file), including the data checks the real grid must pass.
 
 ## Pitch
 
