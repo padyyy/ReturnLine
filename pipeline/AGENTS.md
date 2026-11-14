@@ -3,6 +3,7 @@
 ## Stand und Zweck
 - Offline-Datenpipeline in Python (Komponente 1 in `../docs/architecture.md`). Erzeugt Bild-Overlays mit JSON-Grenzen und später Grids für Frontend und Routing-Engine.
 - Ablageort `pipeline/` ist ein Vorschlag vom 14.11.2026; die Struktur entscheidet der Tech Lead.
+- Mapping-Vorbereitung: `mapping_grid.py` adaptiert das vorhandene echte Grid ohne neue Projektion; `mapping_bridge.py` liefert JSON-Abfragen und den Hang-Layer-Export. Schnittstelle und offene Frontend-Arbeit: `MAPPING.md`. Keine Änderungen an Routing oder `frontend/src/`.
 - Vorhanden: `ortho_overlay.py` (Orthofoto-Ausschnitt per Range Request, Ausgabe nach `../frontend/public/maps/`). Anleitung, Prüfungen und nächste Schritte: `README.md`.
 
 ## Umsetzung

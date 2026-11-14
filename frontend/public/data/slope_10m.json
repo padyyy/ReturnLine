@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "generator": "pipeline/mapping_bridge.py",
+  "created_utc": "2026-11-14T19:36:52.547205+00:00",
+  "image": "slope_10m.png",
+  "image_path": "data/slope_10m.png",
+  "grid_file": "grid.json",
+  "grid_id": "mars-eqc-76ee605d6394f17a713f",
+  "grid": {
+    "grid_id": "mars-eqc-76ee605d6394f17a713f",
+    "projection": "mars_eqc",
+    "mars_radius_m": 3396190.0,
+    "lat_ts": 0,
+    "lon_0": 0,
+    "origin_m": {
+      "x": 8140783.492786024,
+      "y": -282731.075189438
+    },
+    "cell_m": 10.0,
+    "nx": 475,
+    "ny": 476,
+    "row_order": "north_to_south",
+    "bounds": [
+      [
+        -4.8501483297557,
+        137.33994154226008
+      ],
+      [
+        -4.769844250631072,
+        137.42007691533613
+      ]
+    ],
+    "coordinate_order": "lon,lat",
+    "bounds_order": "[[south,west],[north,east]]",
+    "index_formula": "row * nx + column",
+    "sample_position": "cell_center",
+    "binary_order": "row-major",
+    "byte_order": "little-endian",
+    "nodata_json": null,
+    "files": {
+      "ttb_penalized": "ttb_penalized.f32",
+      "ttb_allowed": "ttb_allowed.f32",
+      "ptr_penalized": "ptr_penalized.i32",
+      "ptr_allowed": "ptr_allowed.i32",
+      "elev": "elev_10m.f32",
+      "slope": "slope_10m.f32"
+    },
+    "source": {
+      "source": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/MSL_Gale_DEM_Mosaic_1m_v3.tif",
+      "level_m": 4.0,
+      "nodata": -32767.0
+    },
+    "placeholder": false,
+    "placeholder_inputs": [
+      "habitat and constants (scenario.json)",
+      "stations",
+      "zones"
+    ]
+  },
+  "bounds": [
+    [
+      -4.8501483297557,
+      137.33994154226008
+    ],
+    [
+      -4.769844250631072,
+      137.42007691533613
+    ]
+  ],
+  "width_px": 475,
+  "height_px": 476,
+  "pixels_per_cell": 1,
+  "pixel_origin": "northwest",
+  "sample_position": "cell_center",
+  "nodata": "transparent where elevation or slope is missing or slope is outside 0..90 degrees",
+  "source": {
+    "source": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/MSL_Gale_DEM_Mosaic_1m_v3.tif",
+    "level_m": 4.0,
+    "nodata": -32767.0
+  },
+  "numeric_file": "slope_10m.f32",
+  "terrain_sha256": {
+    "elev": "4122296a0ed229b7ca99132c92ba550f198edf4ec0030b29a68f6986af40aec0",
+    "slope": "e2b9cd79989e1f3920921362f11f68c88e2983e7188c473a13dfaa0624ffc2f4"
+  },
+  "placeholder": false,
+  "placeholder_inputs": [
+    "habitat and constants (scenario.json)",
+    "stations",
+    "zones"
+  ],
+  "thresholds_deg": [
+    10,
+    20
+  ],
+  "thresholds_role": "assumption: display classes from shared/data-contract.md",
+  "legend": [
+    {
+      "label": "up to 10 degrees",
+      "rgba": [
+        104,
+        151,
+        104,
+        255
+      ]
+    },
+    {
+      "label": "over 10 to 20 degrees",
+      "rgba": [
+        230,
+        174,
+        59,
+        255
+      ]
+    },
+    {
+      "label": "over 20 degrees",
+      "rgba": [
+        200,
+        54,
+        31,
+        255
+      ]
+    }
+  ],
+  "layer": {
+    "id": "slope",
+    "name": "Slope",
+    "priority": 10,
+    "opacity": 0.6,
+    "visible": false
+  },
+  "use": "display only; read numeric slope from the binary grid, never from this image",
+  "valid_cells": 226100,
+  "missing_cells": 0
+}
