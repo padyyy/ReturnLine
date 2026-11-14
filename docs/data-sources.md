@@ -25,6 +25,7 @@ Numbers found while scouting before kickoff are not used as-is. They are recompu
 - `planetarymaps.usgs.gov` redirects (302) to `asc-pds-services.s3.us-west-2.amazonaws.com`. Use `curl -L` or the S3 URL. Range requests work.
 - DEM and orthophoto: equirectangular, center longitude 0, R = 3,396,190 m, so lon° = x / 59274.70 at 1 m.
 - The GDAL command-line tools are not installed. tifffile or rasterio read windows.
+- Files used so far (bucket prefix `https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/`): `MSL_Gale_Orthophoto_Mosaic_25cm_v3.tif` with `.tif.ovr` (overview factors 4–256, factor 4 = 1 m), `MSL_Gale_DEM_Mosaic_1m_v3.tif` with `.tif.ovr`. `pipeline/ortho_overlay.py` reads the orthophoto window over range requests; see `pipeline/README.md`.
 
 ## Other useful sources
 

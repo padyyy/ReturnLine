@@ -1,0 +1,7 @@
+# Offline data pipeline (Python 3.11). Versions as installed and tested on 2026-11-14.
+rasterio==1.4.4
+numpy==2.4.6
+pillow==13.0.0
+# GeoMapper (backend/geoMapper, pipeline/mapping_bridge.py sample_raster), installed and tested on 2026-11-14
+pyproj==3.7.2
+scipy==1.17.1

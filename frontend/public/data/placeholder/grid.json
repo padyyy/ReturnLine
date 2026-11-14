@@ -1,0 +1,40 @@
+{
+ "note": "PLACEHOLDER until the pipeline and the routing engine deliver real files (flat ground, no slope, no ridges; the grid search stands in for the routing engine)",
+ "generator": "frontend/scripts/make-placeholder-data.mjs",
+ "placeholder": true,
+ "crs": "+proj=eqc +lat_ts=0 +lon_0=0 +R=3396190 +units=m (Mars 2000 sphere, as the USGS Gale DEM)",
+ "cell_m": 10,
+ "nx": 341,
+ "ny": 341,
+ "origin_m": {
+  "x": 8141740,
+  "y": -283530
+ },
+ "origin_is": "north-west corner of cell (row 0, col 0), projected metres",
+ "order": "row 0 = north, columns west to east, index = row * nx + col",
+ "bbox_deg": [
+  137.3560784,
+  -4.8408514,
+  137.4136072,
+  -4.7833226
+ ],
+ "files": {
+  "ttb_penalized": "ttb_penalized.f32",
+  "ttb_allowed": "ttb_allowed.f32",
+  "ptr_penalized": "ptr_penalized.i32",
+  "ptr_allowed": "ptr_allowed.i32"
+ },
+ "dtype": {
+  "ttb": "float32 little-endian, minutes to the habitat, +Infinity where unreachable",
+  "ptr": "int32 little-endian, index of the next cell towards the habitat, -1 at the habitat and where unreachable"
+ },
+ "habitat_cell": 58140,
+ "walk_speed_kmh": 1.5,
+ "slope_penalty": "none (placeholder: flat ground)",
+ "zone_penalty_factor": 20,
+ "zone_clearance_m": 30,
+ "zone_clearance_factor": 3,
+ "neighbours": 16,
+ "source": "placeholder",
+ "date": "2026-11-14"
+}

@@ -110,6 +110,9 @@ data/raw/*
 # Generated map assets
 frontend/public/maps/*
 !frontend/public/maps/.gitkeep
+# the display overlay ships with the app (decided 2026-11-14); regenerate with pipeline/ortho_overlay.py
+!frontend/public/maps/ortho_gale_1m.jpg
+!frontend/public/maps/ortho_gale_1m.json
 
 # ==========================================
 # Temporary files
@@ -118,3 +121,8 @@ frontend/public/maps/*
 *.log
 .cache/
 tmp/
+
+# ==========================================
+# Local design tool state (Impeccable)
+# ==========================================
+.impeccable/

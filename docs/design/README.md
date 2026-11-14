@@ -1,6 +1,6 @@
 # Design sketch: habitat console
 
-`habitat-console-sketch.html` is the design reference for the one page we build in `frontend/`: the habitat console with the read-only crew display inside. It was made at the event on 2026-11-14 from `docs/preparation/design-brief.md` ("Field Book") and `docs/mission-scenario.md`. No code from it has to go into the app. Take the layout, tokens, states and wording from it.
+`habitat-console-sketch.html` is the design reference for the one page we build in `frontend/`: the habitat console with the read-only crew display inside. It was made at the event on 2026-11-14 from `docs/preparation/design-brief.md` ("Field Book") and `docs/mission-scenario.md`. Take the layout, tokens, states and wording from it. Its markup and CSS may be reused in the app; its synthetic data generator and the in-browser route search must not go into the product, which reads precomputed files.
 
 ## Open it
 
@@ -33,7 +33,7 @@ Replace before anyone shows a screenshot as a result: orthophoto overlay, time-t
 - **Numbers:** all values sit right-aligned in one Mono column; every value has a source chip or the label "assumption".
 - **Mars distances:** the sketch draws in metres on a flat grid. In Leaflet use only `map.distance()`; `latlng.distanceTo()` and `L.circle` use Earth's radius.
 
-The direction contract for this surface is in `.impeccable/surfaces/docs-design-habitat-console-sketch-html.md`.
+The Impeccable working files (direction contract, review screenshots) stay local in `.impeccable/`, which is not versioned. Everything the team needs is in `DESIGN.md` and in this file.
 
 ## Navigation and HUD sketch (work in progress)
 

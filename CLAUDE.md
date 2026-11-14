@@ -29,7 +29,7 @@ Team "Houston, we have a map" at the NASA Space Apps Challenge 2026, challenge "
 
 Made on 2026-11-08 and 2026-11-09:
 - Site: Gale crater, Mount Sharp boxwork region.
-- Architecture: offline Python pipeline producing image overlays and GeoJSON, static web app with Vite, TypeScript and Leaflet 1.9.4, no backend, no 3D globe, no ML.
+- Architecture: offline Python pipeline producing image overlays and GeoJSON, static web app with Vite and Leaflet 1.9.4 (language: JavaScript, decided on 2026-11-14), no backend, no 3D globe, no ML.
 - Team skills: web frontend, Python, design and pitch. Nobody knows GIS, so keep the GIS side simple.
 
 Corrected after the review of 2026-11-12 (details and sources in `docs/preparation/preparations.md`):
@@ -43,7 +43,7 @@ Made on 2026-11-13, after Patrick switched teams (details in `docs/preparation/k
 - **Priority order instead of weighted optimization:** crew safety (the four hard rules, can say NO-GO) → planetary protection (protected zones are avoided while safety allows; every entry is shown and logged) → science (the 4–5 stops are the goal).
 - **Site:** Gale crater, boxwork region, confirmed.
 - **Name and slogan:** product name "ReturnLine", slogan "Explore Mars. Return Safely. Preserve the Evidence."
-- **Views (revised by the council the same day):** one page, the habitat console. It contains a read-only crew display with five values. A forearm cuff skin of the same component comes after feature freeze. No HUD over rover photos.
+- **Views (revised by the council the same day):** one page, the habitat console. It contains a read-only crew display with five values. A forearm cuff skin of the same component comes after feature freeze (changed on 2026-11-14, see below). No HUD over rover photos.
 - **Roles:**
   - Team coordinator: Paul. Schedule, milestones, short meetings, Kanban board, blockers.
   - Tech lead: Magnus. Architecture, interfaces, technical decisions.
@@ -54,7 +54,7 @@ Made on 2026-11-13, after Patrick switched teams (details in `docs/preparation/k
   - Paul: A\* pathfinding (C#), flexible support.
   - Magnus: frontend (JavaScript), data analysis and preparation (Python).
   - Patrick: flexible frontend and backend where needed.
-- **Roles reconciled with the architecture:** the C# work is an offline routing engine (Dijkstra from the habitat, return pointers, two variants, routes, leave-one-out comparison), not a backend. Fallback at Saturday 18:00: scikit-image `MCP_Geometric` in Python. No backend. JavaScript or TypeScript is the tech lead's call at kickoff.
+- **Roles reconciled with the architecture:** the C# work is an offline routing engine (Dijkstra from the habitat, return pointers, two variants, routes, leave-one-out comparison), not a backend. Fallback at Saturday 18:00: scikit-image `MCP_Geometric` in Python. No backend. Frontend language: JavaScript, decided by the tech lead on 2026-11-14.
 
 Council verdict of 2026-11-13, accepted by the team (full German text in `docs/preparation/council-urteil-prototyp.md`, summary in `docs/preparation/preparations.md`):
 - The demo is a scripted EVA rehearsal run by habitat control, not a game. No free steering of the astronaut, no score. A demo button plays six beats with English subtitles. The script is built first; what is not in it is not built.
@@ -63,6 +63,12 @@ Council verdict of 2026-11-13, accepted by the team (full German text in `docs/p
 - On screen: "Habitat control" instead of "IV", plain words like "Head home now". Never "validated", always "compared with Curiosity".
 - Radio check along the route only, by sampling the DEM profile. No full viewshed.
 - Checkpoints: Sat 14:00 dot on the real orthophoto; Sat 18:00 deployed on GitHub Pages and grid or fallback; Sat 22:30 feature freeze with all six beats on real data; Sun 11:00 hard freeze; Sun 13:00 video recorded; Sun 14:30 everything submitted.
+
+Made on 2026-11-14 by the team (details in `docs/mission-scenario.md`):
+- Frontend language: JavaScript.
+- Every action is controlled from the habitat only; the crew displays stay read-only.
+- The forearm cuff skin is a fixed feature. A navigation view (forearm tablet, heading-up map, hardware keys) and a helmet HUD (not over photos) are built as well. Draft: `docs/design/navigation-hud-sketch.html` (Alex).
+- The amber return stage (`#D9A300`) stays for now against DESIGN.md's "no yellow for status"; revisit if time allows.
 
 ## Learnings from the 2026-11-13 council
 

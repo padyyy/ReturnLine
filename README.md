@@ -12,6 +12,7 @@ Team "Houston, we have a map" · NASA Space Apps Challenge 2026, challenge "Inte
 |---|---|
 | `frontend/` | Static web app: habitat console with crew display (Vite, Leaflet 1.9.4) |
 | `backend/` | No server. Reserved, see `backend/AGENTS.md` |
+| `pipeline/` | Offline Python data pipeline, e.g. the orthophoto overlay; see `pipeline/README.md` |
 | `data/` | Small, versioned sample data and data structures |
 | `shared/` | Data contracts, e.g. the grid spec |
 | `docs/` | Architecture, mission scenario, data sources, roles, Scrum, Git workflow |
@@ -27,4 +28,24 @@ Before kickoff we chose the challenge and site and researched NASA data sources 
 
 ## Setup
 
-Follows once the tech lead has fixed the stack at kickoff.
+Needs Node 20 or newer and Python 3.11.
+
+```sh
+# web app (the orthophoto overlay is committed in frontend/public/maps/)
+cd frontend
+npm install
+npm run dev
+# until the pipeline and the engine deliver data/, the console runs on marked
+# placeholder files in public/data/placeholder/ (regenerate: npm run data:placeholder)
+
+# only to regenerate the overlay, e.g. for a new extent
+py -3.11 -m venv .venv
+.venv/Scripts/python -m pip install -r pipeline/requirements.txt
+.venv/Scripts/python pipeline/ortho_overlay.py
+```
+
+Details: `pipeline/README.md` and `frontend/AGENTS.md`.
+
+## Deployment
+
+Every push to `main` builds `frontend/` and publishes it to GitHub Pages (`.github/workflows/deploy-pages.yml`), at https://padyyy.github.io/ReturnLine/. One-time repo setting: Settings > Pages > Build and deployment > Source: GitHub Actions. The workflow can also be started by hand under Actions.

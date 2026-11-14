@@ -38,7 +38,7 @@ There is **no backend**. The browser never computes a route; it looks up precomp
 
 ### 3. Static web app
 
-- Vite and Leaflet 1.9.4, no UI framework, pinned and bundled. JavaScript or TypeScript: the tech lead's call at kickoff.
+- Vite and Leaflet 1.9.4, no UI framework, pinned and bundled. JavaScript, decided by the tech lead (Magnus) on 2026-11-14.
 - Hosted on GitHub Pages. Deploy early, by Saturday 18:00.
 - One page: the habitat console, with a read-only crew display inside.
 - The way home from any cell is a few lines of code that follow the return pointers. The injury event multiplies walking times by a factor; no recomputation.
