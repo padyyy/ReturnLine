@@ -61,7 +61,9 @@ Read-only inset in the console, five values: next target, time to base, reserve 
 - The forearm cuff skin is a fixed feature, no longer after feature freeze.
 - Built as well: a navigation view (the forearm tablet: heading-up map, data sheet with the elevation profile, four hardware keys) and a helmet HUD (compass with base and target at their bearing, return-stage colour and word, EVA time, time to sunset, dose, life support, up to three warnings). Draft: `design/navigation-hud-sketch.html` (Alex, branch `navigation-view-/-hud`).
 - The amber return stage (`#D9A300`, under 15 min to spare) stays for now, although DESIGN.md keeps yellow out of status colours. Revisit if time allows.
-- Open: whether the cuff's hardware keys (data, zoom, base map) only change the crew's own view, which fits "read-only", or count as actions. In the draft the return area does not shrink yet.
+- The cuff's hardware keys (data, zoom, base map) only change the crew's own view.
+- The demo starts only after habitat control picks a target in the picker and presses Start (as in the navigation sketch); the EVA goes habitat → target station → habitat. Where navigation view and HUD appear per beat: `demo-script.md`.
+- Open: in the navigation draft the return area does not shrink yet.
 
 ## Operating area
 
