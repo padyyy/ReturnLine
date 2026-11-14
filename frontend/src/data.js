@@ -32,8 +32,9 @@ export async function loadData() {
   let slopeLayer = await fetchJson('data/slope_10m.json').catch(() => null);
   if (!scenario || !stations || !routes) throw new Error('scenario, stations and routes are required');
   const grid = await loadGrid(missing, placeholders);
-  // the slope image must cover exactly the grid it was made from, one pixel per cell
-  if (slopeLayer && grid && (slopeLayer.width_px !== grid.header.nx || slopeLayer.height_px !== grid.header.ny)) {
+  // the slope image must cover exactly the grid it was made from (pixels_per_cell pixels per cell edge)
+  const ppc = slopeLayer?.pixels_per_cell || 1;
+  if (slopeLayer && grid && (slopeLayer.width_px !== grid.header.nx * ppc || slopeLayer.height_px !== grid.header.ny * ppc)) {
     console.warn('slope layer does not match grid.json; not drawn');
     slopeLayer = null;
   }

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "pipeline/mapping_bridge.py",
-  "created_utc": "2026-11-14T19:55:12.194737+00:00",
+  "created_utc": "2026-11-14T20:41:51.114882+00:00",
   "image": "slope_10m.png",
   "image_path": "data/slope_10m.png",
   "grid_file": "grid.json",
@@ -67,11 +67,12 @@
       137.42007691533613
     ]
   ],
-  "width_px": 475,
-  "height_px": 476,
-  "pixels_per_cell": 1,
+  "width_px": 1900,
+  "height_px": 1904,
+  "pixels_per_cell": 4,
   "pixel_origin": "northwest",
   "sample_position": "cell_center",
+  "smoothing": "bilinear between cell centres, then classified",
   "nodata": "transparent where elevation or slope is missing or slope is outside 0..90 degrees",
   "source": {
     "source": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/MSL_Gale_DEM_Mosaic_1m_v3.tif",

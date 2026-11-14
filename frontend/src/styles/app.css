@@ -141,5 +141,5 @@ button.cuff-key:focus-visible { outline: 2px solid var(--cover); outline-offset:
 .ly-key { display: grid; gap: 3px; margin: 2px 0 4px 24px; font-size: 12.5px; }
 .ly-key span { display: flex; align-items: center; gap: 7px; }
 .ly-key .sw { width: 14px; height: 10px; border: 1px solid var(--graphite); flex: none; }
-/* slope cells stay sharp when the map is zoomed in, so classes do not blend at their edges */
-.slope-img { image-rendering: pixelated; }
+/* the slope image is already smooth (interpolated before classifying); let the browser scale it smoothly too */
+.slope-img { image-rendering: auto; }

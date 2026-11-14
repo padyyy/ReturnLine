@@ -60,12 +60,33 @@ def query(grid, request):
     return dict(grid_id=grid.grid_id, points=results)
 
 
-def export_slope(grid, output):
-    """Export a display image only, leaving grid and all numeric/routing files intact."""
+def bilinear_upsample(values, k):
+    """k output pixels per cell edge. Values sit at cell centres; each output pixel takes the bilinear
+    blend of the four nearest cell centres (clamped at the border). NaN stays NaN where it is involved.
+    Display only: the numeric grid and its 10 m baseline are unchanged."""
+    ny, nx = values.shape
+    ys = np.clip((np.arange(ny * k) + 0.5) / k - 0.5, 0, ny - 1)
+    xs = np.clip((np.arange(nx * k) + 0.5) / k - 0.5, 0, nx - 1)
+    y0 = np.floor(ys).astype(int); x0 = np.floor(xs).astype(int)
+    y1 = np.minimum(y0 + 1, ny - 1); x1 = np.minimum(x0 + 1, nx - 1)
+    fy = (ys - y0)[:, None]; fx = (xs - x0)[None, :]
+    a, b = values[y0][:, x0], values[y0][:, x1]
+    c, d = values[y1][:, x0], values[y1][:, x1]
+    return (1 - fy) * ((1 - fx) * a + fx * b) + fy * ((1 - fx) * c + fx * d)
+
+
+def export_slope(grid, output, upsample=4):
+    """Export a display image only, leaving grid and all numeric/routing files intact.
+    The 10 m slope values are interpolated between cell centres (upsample pixels per cell edge)
+    before they are classified, so class borders are smooth curves instead of 10 m steps."""
+    if type(upsample) is not int or not 1 <= upsample <= 8:
+        raise ValueError('upsample must be an integer from 1 to 8')
     slope, elev = grid.read_float('slope'), grid.read_float('elev')
     valid = np.isfinite(slope) & np.isfinite(elev) & (slope >= 0) & (slope <= 90)
-    rgba = np.zeros((grid.rows, grid.columns, 4), dtype=np.uint8)
-    masks = [valid & (slope <= 10), valid & (slope > 10) & (slope <= 20), valid & (slope > 20)]
+    fine = bilinear_upsample(np.where(valid, slope, np.nan), upsample) if upsample > 1 else np.where(valid, slope, np.nan)
+    fine_valid = np.isfinite(fine)
+    rgba = np.zeros((fine.shape[0], fine.shape[1], 4), dtype=np.uint8)
+    masks = [fine_valid & (fine <= 10), fine_valid & (fine > 10) & (fine <= 20), fine_valid & (fine > 20)]
     for mask, color in zip(masks, COLORS):
         rgba[mask] = color
     output.mkdir(parents=True, exist_ok=True)
@@ -75,8 +96,9 @@ def export_slope(grid, output):
         schema_version=1, generator=GENERATOR, created_utc=datetime.now(timezone.utc).isoformat(),
         image=image.name, image_path='data/' + image.name, grid_file='grid.json',
         grid_id=grid.grid_id, grid=grid.describe(), bounds=grid.bounds,
-        width_px=grid.columns, height_px=grid.rows, pixels_per_cell=1,
+        width_px=grid.columns * upsample, height_px=grid.rows * upsample, pixels_per_cell=upsample,
         pixel_origin='northwest', sample_position='cell_center',
+        smoothing='bilinear between cell centres, then classified' if upsample > 1 else 'none',
         nodata='transparent where elevation or slope is missing or slope is outside 0..90 degrees',
         source=grid.header.get('source'), numeric_file=grid.header['files']['slope'],
         terrain_sha256={
@@ -132,7 +154,7 @@ def execute(request, data_dir, output):
     if action == 'query':
         return query(grid, request)
     if action == 'export_slope':
-        return export_slope(grid, output)
+        return export_slope(grid, output, request.get('upsample', 4))
     if action == 'sample_raster':
         return sample_raster(grid, request)
     raise ValueError(f'Unknown action: {action}')

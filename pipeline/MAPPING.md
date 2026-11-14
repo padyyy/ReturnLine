@@ -33,7 +33,7 @@ Spalten laufen nach Osten, Zeilen nach Süden. West-/Nordrand sind eingeschlosse
 | `data/grid.json` | Bestehender Header mit CRS, Ursprung, Zellgröße, nx/ny und numerischen Dateinamen |
 | `data/elev_10m.f32` | Bestehende Höhen, float32 little-endian in m, zeilenweise |
 | `data/slope_10m.f32` | Bestehende Hangneigung, float32 little-endian in Grad, zeilenweise |
-| `data/slope_10m.png` | Neuer RGBA-Layer, **475×476 Pixel**, genau ein Pixel pro Gridzelle |
+| `data/slope_10m.png` | RGBA-Layer, **1900×1904 Pixel**, 4 Pixel pro Zellkante (2,5 m): die 10-m-Hangwerte werden zwischen den Zellmitten bilinear interpoliert und erst dann eingefärbt, damit die Klassengrenzen glatt statt treppig sind. Die Daten bleiben der Hang über 10 m. |
 | `data/slope_10m.json` | Neue Bildgrenzen, Grid-ID/Geometrie, Anzeigepriorität, Deckkraft, Legende und Quellen |
 | `maps/ortho_gale_1m.jpg` + `.json` | Bestehendes Orthofoto mit **seinen eigenen** tatsächlichen Grenzen |
 
@@ -52,7 +52,7 @@ Beispiel aus `slope_10m.json` (gekürzt):
   "grid_id": "mars-eqc-76ee605d6394f17a713f",
   "width_px": 475,
   "height_px": 476,
-  "pixels_per_cell": 1,
+  "pixels_per_cell": 4,
   "bounds": [[-4.8501483297557,137.33994154226008],[-4.769844250631072,137.42007691533613]],
   "layer": {"id":"slope","name":"Slope","priority":10,"opacity":0.6,"visible":false}
 }
@@ -68,7 +68,7 @@ Aus dem Repository-Wurzelordner. Installation einmal pro Rechner: `.venv/Scripts
 .venv/Scripts/python pipeline/mapping_bridge.py --request '{"action":"describe"}'
 .venv/Scripts/python pipeline/mapping_bridge.py --request '{"action":"query","points":[{"column":266,"row":250}]}'
 .venv/Scripts/python pipeline/mapping_bridge.py --request '{"action":"query","points":[{"lon":137.38,"lat":-4.81}]}'
-.venv/Scripts/python pipeline/mapping_bridge.py --request '{"action":"export_slope"}'
+.venv/Scripts/python pipeline/mapping_bridge.py --request '{"action":"export_slope"}'   # optional "upsample": 1..8 (Standard 4)
 ```
 
 Alternativ einen Request über stdin übergeben. `--data-dir` wählt einen anderen Ordner mit `grid.json` und Terrain-Binärdateien. `--out-dir` gilt nur für den Bildexport. Der Standardexport schreibt **nur** `slope_10m.png` und `slope_10m.json` und verändert weder Terrain noch Stationen, Szenario, Zonen, Routen, Zeiten oder Zeiger.
@@ -110,7 +110,7 @@ Nur eine lokale Werkzeug-Schnittstelle; nicht ungeprüft als öffentliches Uploa
 
 ## Auftrag an das Frontend-Team
 
-Stand 14.11. abends: Die Schritte 1–3 und 6 sind in `frontend/src/` umgesetzt. Die Hang-Ebene wird nur gezeichnet, wenn ihre Pixelgröße zu `nx`/`ny` aus `grid.json` passt; sie liegt unter Rückkehrbereich, Routen und Markern, ist beim Start aus und zeigt die Zellen scharf (ohne Glättung). Schritt 4 ist nicht nötig, Schritt 5 ist offen (die Konsole lädt `elev_10m.f32` und `slope_10m.f32` nicht; Höhe und Hang entlang der Routen kommen aus `routes.json`). Ursprüngliche Schritte:
+Stand 14.11. abends: Die Schritte 1–3 und 6 sind in `frontend/src/` umgesetzt. Die Hang-Ebene wird nur gezeichnet, wenn ihre Pixelgröße zu `nx`/`ny` aus `grid.json` passt; sie liegt unter Rückkehrbereich, Routen und Markern, ist beim Start aus und wird glatt skaliert; die Glättung geschieht schon beim Export (seit 14.11., 21:45; vorher ein Pixel pro Zelle mit scharfer Darstellung). Schritt 4 ist nicht nötig, Schritt 5 ist offen (die Konsole lädt `elev_10m.f32` und `slope_10m.f32` nicht; Höhe und Hang entlang der Routen kommen aus `routes.json`). Ursprüngliche Schritte:
 
 1. `data/slope_10m.json` zusätzlich laden, `schema_version`, Gridgeometrie, Bildabmessungen und Grenzen mit `grid.json` vergleichen; inkonsistente Layer nicht zeichnen. Fehlt der Hang-Layer, bleibt die bestehende Karte nutzbar.
 2. `image_path` relativ zu `import.meta.env.BASE_URL` laden und bei Bildfehler einen verständlichen Hinweis anzeigen.
@@ -127,7 +127,7 @@ Stand 14.11. abends: Die Schritte 1–3 und 6 sind in `frontend/src/` umgesetzt.
 
 4. Für Zellmarker die **bereits vorhandenen** Funktionen `cellCenter(g, index)` und `cellIndex(g, position)` aus `model.js` verwenden. Zellenpolygone aus deren Zellgrenzen zeichnen. Rasterwerte niemals aus dem PNG auslesen.
 5. Für einzelne Messwerte die Binärdateien aus `header.files.elev/slope` laden, Länge `nx*ny*4` prüfen und Little Endian explizit dekodieren. Diese Dateien stehen aktuell im Vertrag, werden von `data.js` noch nicht geladen. NaN/Infinity als fehlend behandeln.
-6. Karte, Cuff und HUD müssen dieselbe Zellzuordnung verwenden. Kein neues Grid aus Bildpixeln ableiten. Für das grobe Hangbild ist Nearest-Neighbor-Darstellung sinnvoll, damit Zellklassen beim Skalieren nicht optisch gemischt werden.
+6. Karte, Cuff und HUD müssen dieselbe Zellzuordnung verwenden. Kein neues Grid aus Bildpixeln ableiten. Für das grobe Hangbild ist Nearest-Neighbor-Darstellung sinnvoll, damit Zellklassen beim Skalieren nicht optisch gemischt werden. (Ersetzt am 14.11. abends: Der Export interpoliert die Hangwerte vor dem Einfärben, die Klassen bleiben so scharf getrennt und die Grenzen glatt.)
 
 ## Prüfstand und Grenzen
 
