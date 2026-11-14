@@ -33,4 +33,4 @@ Replace before anyone shows a screenshot as a result: orthophoto overlay, time-t
 - **Numbers:** all values sit right-aligned in one Mono column; every value has a source chip or the label "assumption".
 - **Mars distances:** the sketch draws in metres on a flat grid. In Leaflet use only `map.distance()`; `latlng.distanceTo()` and `L.circle` use Earth's radius.
 
-The direction contract for this surface is in `.impeccable/surfaces/docs-design-habitat-console-sketch-html.md`.
+The Impeccable working files (direction contract, review screenshots) stay local in `.impeccable/`, which is not versioned. Everything the team needs is in `DESIGN.md` and in this file.
