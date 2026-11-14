@@ -19,6 +19,22 @@ There is **no backend**. The browser never computes a route; it looks up precomp
 
 ## Components
 
+`backend/terrain_costs.py` now converts multi-feature `TerrainCell` grids into
+the A* cost grid. Fixed, configurable slope/roughness reference limits and
+nonnegative weights combine with a valid-data-fraction penalty. Missing data
+and cells outside configured passability limits are blocked. Absolute elevation
+is retained but not penalized; directional climbing costs are not implemented.
+Thresholds require team selection; the model is not calibrated to travel time.
+A standalone TIFF test pipeline now exists in `backend/dem_demo.py`; CSV and frontend integration are still absent.
+
+Implementation update: on explicit user request, `backend/astar.py` provides
+standalone offline A* in Python (standard library, Python >= 3.10). It accepts
+a rectangular positive cost-per-metre grid, `None` for blocked cells, and
+zero-based `(row, column)` endpoints. It returns a path and total cost or `None`
+if unreachable. Optional diagonals cannot cross blocked corners. It is not yet
+connected to the pipeline or frontend and does not generate return-pointer
+grids. The C# sections below describe the earlier planned architecture.
+
 ### 1. Offline data pipeline (Python)
 
 - numpy, scikit-image, tifffile (rasterio optional; the GDAL command-line tools are not available).
