@@ -4,6 +4,7 @@ import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { compareRouteTimes, loadInputs } from '../scripts/check-route-times.mjs';
 const scenario = { walk_speed_kmh: 3.6, injury_factor: 0.5 };
 const track = {
@@ -66,11 +67,11 @@ test('loader only falls back for missing scenario, never routes or invalid JSON'
 });
 test('offline CLI produces valid JSON on real routes, and rejects unknown flags', () => {
   const script = new URL('../scripts/check-route-times.mjs', import.meta.url);
-  const output = execFileSync(process.execPath, [script.pathname, '--json'], { encoding: 'utf8' });
+  const output = execFileSync(process.execPath, [fileURLToPath(script), '--json'], { encoding: 'utf8' });
   const rows = JSON.parse(output);
   assert.ok(rows.length > 0 && rows.length % 3 === 0);
   assert.ok(rows.every((r) => Number.isFinite(r.modelMinutes)));
-  assert.throws(() => execFileSync(process.execPath, [script.pathname, '--invalid'], { stdio: 'pipe' }));
+  assert.throws(() => execFileSync(process.execPath, [fileURLToPath(script), '--invalid'], { stdio: 'pipe' }));
 });
 
 test('injury midpoint is measured by distance, not half of travel time', () => {
