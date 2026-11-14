@@ -48,11 +48,15 @@ The direction contract for this surface is in `.impeccable/surfaces/docs-design-
 - **Why the area stays large at first:** with 6 h of life support, the 60-minute rule is the tighter limit for most of the EVA. For testing, the planner can start the EVA clock at hour 3:00 or 4:30.
 - **Navigation, top right:** helmet HUD. The compass rose turns with the heading (heading = walking direction). Base and target sit on the rim at their bearing and move inside once within 250 m. The ring takes the stage colour and word. Corners show EVA time, time to sunset, radiation dose and life support; up to three warnings sit below, including the countdown to the return.
 - **Navigation, bottom right:** the data sheet, or the small map after key 1.
-- **Data sheet:** one component for the tablet screen and the small panel. It never scrolls: the stage bar, two key tiles (target and the stay or the way home), the elevation profile of the current leg and nine values in a 3 × 3 grid. Type sizes follow the size of the panel (CSS container query units). On a small panel the captions under the values go first, then the profile shrinks to a strip without axis labels.
+- **Data sheet:** one component for the tablet screen and the small panel. It never scrolls: the stage bar, two key tiles (target and the stay or the way home), the elevation profile of the current leg and nine values in a 3 × 3 grid. Type sizes follow the size of the panel (CSS container query units). On a small panel the source chips and captions go first, the End navigation button keeps only its icon, the profile shrinks to a strip and then goes, and only then the least important values (elevation, zone, slope, then the middle row).
 - **Test terrain:** stronger relief than the console sketch (about 100 m range, routes up to about 7°), so slope and the elevation profile mean something.
 
 URL parameters change the view only: `?grid=1`, `?base=slope`, `?ridges=1`, `?assume=1`, `?layers=1`. Navigation always starts from the button.
 
 The yellow stage breaks DESIGN.md's rule that yellow is never a status colour. It is a separate amber (`#D9A300`), and every stage also carries its words.
+
+**Colours and logo (navigation sketch only):** the page around the map takes its colours from the team logo: warm light paper (`#FCF9F5`, ground `#F2EBE3`) and Mars orange `#E8622C` for the brand (logo, switch, turn arrow, compass pointer; never a status). The map and the helmet HUD keep the field-book colours of the console sketch so they stay as readable as before. The logo is redrawn as a vector mark in the header (and as the favicon), so it stays sharp at any size.
+
+**Info boxes and compass:** the map key on the planning map and the return-stage key on the tablet map are closed by default and open from an info button (click again, Escape or a click elsewhere closes them). The tablet compass shows an upright N with an orange pointer on the rim that points north.
 
 The navigation sketch also breaks DESIGN.md's "square by default" rule on purpose: the team asked for a rounder look. Cards have a 14 to 18 px radius, buttons and tiles 10 to 12 px, the tablet bezel 34 px. Everything else in DESIGN.md still holds: no shadows, hairline borders, the pencil colours with one meaning each. The crew marker in the elevation profile is graphite now, because red stays for findings and ABORT.

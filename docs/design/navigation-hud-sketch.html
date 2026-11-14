@@ -4,16 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ReturnLine Navigation and HUD</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 48'%3E%3Ccircle cx='22' cy='27' r='15' fill='%23E5602A'/%3E%3Cpath d='M-1 27A23 7 0 0 0 45 27' transform='rotate(-18 22 27)' fill='none' stroke='%232B2D2F' stroke-width='3.4' stroke-linecap='round'/%3E%3Cpath d='M43.9 19.9s-5.3-5.6-5.3-9.4a5.3 5.3 0 0 1 10.6 0c0 3.8-5.3 9.4-5.3 9.4z' fill='%23E8622C'/%3E%3C/svg%3E">
 <meta name="description" content="Design sketch of ReturnLine navigation: plan on the habitat console, pick a station and the stay, start the route, then follow it on the forearm tablet with a helmet HUD. Terrain, routes and numbers are synthetic.">
 <style>
 @font-face { font-family: "Atkinson Hyperlegible Next"; src: url("fonts/AtkinsonHyperlegibleNext-wght.ttf") format("truetype"); font-weight: 200 800; font-display: swap; }
 @font-face { font-family: "Atkinson Hyperlegible Mono"; src: url("fonts/AtkinsonHyperlegibleMono-wght.ttf") format("truetype"); font-weight: 200 800; font-display: swap; }
 
 :root {
-  --cover: #E3B21B;
-  --paper: #EDF0E6;
-  --paper-2: #E3E7DA;
-  --paper-3: #D6DCCB;
+  --cover: #E8622C;
+  --cover-tint: rgba(232,98,44,.10);
+  --paper: #FCF9F5;
+  --paper-2: #F2EBE3;
+  --paper-3: #E6DCD1;
   --graphite: #2B2D2F;
   --graphite-2: #51575B;
   --graphite-3: #80878B;
@@ -51,7 +53,7 @@ body {
   caret-color: var(--blue);
   height: 100vh;
   display: grid;
-  grid-template-rows: 56px minmax(0, 1fr);
+  grid-template-rows: 62px minmax(0, 1fr);
   grid-template-columns: minmax(0, 1fr);
   overflow: hidden;
 }
@@ -92,7 +94,7 @@ svg.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none;
 .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
 .switch .track { width: 36px; height: 21px; border: 1.5px solid var(--graphite); border-radius: 999px; position: relative; transition: background-color .15s; }
 .switch .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--graphite); transition: transform .2s var(--ease); }
-.switch input:checked + .track { background: var(--graphite); }
+.switch input:checked + .track { background: var(--cover-tint); border-color: var(--cover); }
 .switch input:checked + .track::after { transform: translateX(14px); background: var(--cover); }
 .switch input:focus-visible + .track { outline: 2px solid var(--blue); outline-offset: 2px; }
 .src {
@@ -105,22 +107,23 @@ svg.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none;
 
 /* ---------- header band ---------- */
 .band {
-  background: var(--cover); color: var(--graphite);
+  background: var(--paper); color: var(--graphite);
   display: flex; align-items: center; gap: 22px;
   padding: 0 var(--pad);
-  border-bottom: 1.5px solid var(--graphite);
+  border-bottom: 1px solid var(--rule-2);
   min-width: 0;
 }
 .brand { display: flex; align-items: center; gap: 10px; flex: none; }
-.brand svg { width: 26px; height: 26px; }
-.wordmark { font-weight: 800; font-size: 21px; letter-spacing: -.01em; }
-.meta { display: flex; align-items: center; gap: 18px; min-width: 0; padding-left: 22px; border-left: 1.5px solid rgba(43,45,47,.35); height: 30px; }
-.meta-item { white-space: nowrap; font-size: 14.5px; }
-.meta-item b { font-weight: 700; }
-.meta .num { font-size: 15px; font-weight: 600; }
-.tag-sketch { font: 700 12.5px/1 var(--f-text); border: 1.5px solid var(--graphite); padding: 5px 8px; white-space: nowrap; }
+.brand .mark { width: 40px; height: 38px; }
+.wordmark { font: 800 18px/1 var(--f-text); letter-spacing: .2em; white-space: nowrap; color: var(--graphite); }
+.wordmark .wm-b { color: var(--cover); margin-left: .5em; }
+.meta { display: flex; align-items: center; gap: 18px; min-width: 0; padding-left: 22px; border-left: 1px solid var(--rule-2); height: 30px; color: var(--graphite-2); }
+.meta-item { white-space: nowrap; font-size: 14px; }
+.meta-item b { font-weight: 700; color: var(--graphite); }
+.meta .num { font-size: 15px; font-weight: 600; color: var(--graphite); }
+.tag-sketch { font: 700 12px/1 var(--f-text); border: 1px solid var(--rule-2); color: var(--graphite-2); border-radius: 999px; padding: 6px 10px; white-space: nowrap; }
 .controls { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-.band .btn { border-color: var(--graphite); }
+
 .menu { position: relative; }
 .popover {
   position: absolute; top: calc(100% + 8px); right: 0; z-index: 30;
@@ -147,10 +150,14 @@ svg.ov .lbl-num { font-family: var(--f-num); font-size: 12.5px; font-weight: 600
 svg.ov .tick { font-family: var(--f-num); font-size: 10.5px; fill: var(--graphite); paint-order: stroke; stroke: var(--paper); stroke-width: 4.5px; stroke-linejoin: round; }
 
 /* legend */
+.keybox { position: absolute; top: 16px; right: 16px; z-index: 6; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.info-btn { display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 13px 0 10px; border: 1.5px solid var(--graphite); border-radius: 999px; background: rgba(252,249,245,.96); color: var(--graphite); font: 700 13px/1 var(--f-text); cursor: pointer; }
+.info-btn:hover { background: var(--paper-2); }
+.info-btn[aria-expanded="true"] { background: var(--graphite); color: var(--paper); }
 .legend {
-  position: absolute; top: 16px; right: 16px; z-index: 5; width: 236px;
-  background: rgba(237,240,230,.95); border: 1.5px solid var(--graphite); border-radius: 14px;
-  padding: 10px 12px 8px;
+  width: 250px;
+  background: rgba(252,249,245,.97); border: 1.5px solid var(--graphite); border-radius: 14px;
+  padding: 12px 14px 10px;
 }
 .legend.is-off { display: none; }
 .legend h2 { margin: 0 0 6px; font-size: 13.5px; font-weight: 700; }
@@ -302,11 +309,12 @@ body.nav .console, body.nav #plan-controls { display: none; }
 .key[aria-pressed="true"] .kn { color: var(--graphite); border-color: var(--graphite); }
 .nav-right { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 14px; min-height: 0; min-width: 0; }
 .hud-panel, .mini { background: var(--paper); border: 1px solid var(--rule-2); border-radius: 18px; }
+.mini { min-height: 230px; }
 .panel-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0; padding: 12px 16px 4px; font-size: 14.5px; font-weight: 800; }
 .panel-h .cap { font-weight: 400; }
 .hud-panel { padding-bottom: 12px; }
 #hud { padding: 0 6px; }
-#hud svg { display: block; width: 100%; height: auto; max-height: 40vh; }
+#hud svg { display: block; width: 100%; height: auto; max-height: min(42vh, calc(100vh - 560px)); min-height: 220px; }
 #hud text { font-family: var(--f-num); }
 .hud-line { display: flex; justify-content: space-between; gap: 8px; margin: 4px 14px 0; }
 .hud-line span { font: 700 13.5px/1 var(--f-num); background: var(--paper-2); border-radius: 999px; padding: 8px 12px; white-space: nowrap; }
@@ -330,11 +338,12 @@ body.nav .console, body.nav #plan-controls { display: none; }
 .nv-turn .to { font-weight: 600; font-size: 14px; color: #C9CDC2; }
 .nv-turn .big { font: 700 26px/1.15 var(--f-num); }
 .nv-turn .big small { font: 600 14px var(--f-num); color: var(--cover); margin-left: 8px; }
-.nv-north { position: absolute; top: 14px; left: 14px; width: 46px; height: 46px; background: rgba(237,240,230,.95); border: 1.5px solid var(--graphite); border-radius: 50%; }
+.nv-north { position: absolute; top: 14px; left: 14px; width: 48px; height: 48px; background: rgba(252,249,245,.96); border: 1.5px solid var(--graphite); border-radius: 50%; }
 .nv-mapname { position: absolute; top: 68px; left: 14px; font: 600 11.5px/1 var(--f-text); background: rgba(237,240,230,.94); border-radius: 999px; padding: 5px 10px; }
 .nv-stage { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-weight: 800; font-size: 16px; white-space: nowrap; border-radius: 999px; }
 .nv-stage .num { font-weight: 700; font-size: 15px; }
-.nv-legend { position: absolute; bottom: 14px; left: 14px; max-width: 290px; background: rgba(237,240,230,.96); border: 1.5px solid var(--graphite); border-radius: 14px; padding: 10px 12px; font-size: 12.5px; line-height: 1.3; }
+.nv-keybox { position: absolute; bottom: 14px; left: 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.nv-legend { max-width: 290px; background: rgba(237,240,230,.97); border: 1.5px solid var(--graphite); border-radius: 14px; padding: 10px 12px; font-size: 12.5px; line-height: 1.3; }
 .nv-legend b { display: block; margin-bottom: 4px; }
 .nv-legend div { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
 .nv-legend i { width: 22px; height: 12px; border: 2px solid; border-radius: 4px; flex: none; }
@@ -342,10 +351,10 @@ body.nav .console, body.nav #plan-controls { display: none; }
 .nv-scale { position: absolute; bottom: 14px; right: 14px; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
 .nv-scale .bar { height: 7px; border: 1.5px solid var(--graphite); border-top: 0; background: linear-gradient(90deg, var(--graphite) 0 50%, var(--paper) 50% 100%); }
 .nv-scale span { font: 600 11.5px/1 var(--f-num); background: rgba(237,240,230,.92); border-radius: 6px; padding: 3px 6px; }
-.mini .nv-legend, .mini .nv-mapname, .mini .nv-turn .to { display: none; }
+.mini .nv-keybox, .mini .nv-mapname, .mini .nv-turn .to { display: none; }
 .mini .nv-turn { padding: 6px 12px 6px 8px; top: 8px; border-radius: 12px; } .mini .nv-turn .big { font-size: 17px; } .mini .nv-turn > svg { width: 24px; height: 24px; }
 .mini .nv-stage { font-size: 13px; padding: 6px 12px; bottom: 8px; }
-.mini .nv-north { width: 34px; height: 34px; top: 8px; left: 8px; }
+.mini .nv-north { width: 36px; height: 36px; top: 8px; left: 8px; }
 .mini .nv-scale { top: 10px; bottom: auto; right: 8px; }
 
 /* data view: one component on the tablet screen and in the small panel, sized by its container, never scrolls */
@@ -365,7 +374,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
 .dt-l { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: clamp(11px, 1.7cqh, 15px); font-weight: 600; color: var(--graphite-2); white-space: nowrap; }
 .dt-l > span { overflow: hidden; text-overflow: ellipsis; }
 .dt-l .src { font-size: 9.5px; padding: 2px 4px; border-radius: 5px; }
-.dt-v { font: 700 clamp(15px, 4cqh, 34px)/1.12 var(--f-num); white-space: nowrap; }
+.dt-v { font: 700 clamp(15px, 4cqh, 34px)/1.12 var(--f-num); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dt-v .u { font-size: .58em; font-weight: 600; margin-left: .25em; }
 .dt-s { font-size: clamp(10.5px, 1.55cqh, 14px); color: var(--graphite-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dv-hero .dt { background: var(--graphite); color: var(--paper); }
@@ -382,6 +391,10 @@ body.nav .console, body.nav #plan-controls { display: none; }
 @container dv (max-height: 460px) { .dv-grid .dt-s { display: none; } }
 @container dv (max-height: 330px) { .dv-prof { display: none; } .dv-in { grid-template-rows: auto auto auto; align-content: start; } }
 @container dv (max-width: 420px) { .dv-hero .dt-s { display: none; } }
+@container dv (max-width: 520px) { .dv-grid .src { display: none; } .dv-top .btn span { display: none; } .dv-top .btn { padding: 0 10px; } }
+@container dv (max-height: 255px) { .dv-grid .dt:nth-child(n+7) { display: none; } }
+@container dv (max-height: 205px) { .dv-grid .dt:nth-child(n+4) { display: none; } .dv-hero .dt-s { display: none; } }
+@container dv (max-height: 150px) { .dv-grid { display: none; } }
 
 /* planning: picker options */
 .np-opt { display: flex; align-items: center; gap: 10px; padding: 8px var(--pad) 0; flex-wrap: wrap; }
@@ -449,15 +462,28 @@ body.nav .console, body.nav #plan-controls { display: none; }
     <symbol id="i-cross" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></symbol>
     <symbol id="i-arrow" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4"/></symbol>
     <symbol id="i-warn" viewBox="0 0 16 16"><path d="M8 2.2L14.6 13.6H1.4z"/><path d="M8 6.4v3.4M8 11.6v.2"/></symbol>
+    <linearGradient id="rl-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F7A26B"/><stop offset=".5" stop-color="#E5602A"/><stop offset="1" stop-color="#9E3613"/></linearGradient>
+    <clipPath id="rl-clip"><circle cx="22" cy="27" r="15"/></clipPath>
+    <symbol id="rl-mark" viewBox="0 0 50 48">
+      <path d="M-1 27A23 7 0 0 1 45 27" transform="rotate(-18 22 27)" fill="none" stroke="#E8622C" stroke-opacity=".45" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="22" cy="27" r="15" fill="url(#rl-grad)"/>
+      <g clip-path="url(#rl-clip)" fill="none" stroke-linecap="round">
+        <path d="M5 20c5-2.5 10 .5 15-1s10-3.5 17-1" stroke="#FBD9BE" stroke-opacity=".6" stroke-width="2"/>
+        <path d="M5 35c6 2 11-1.5 17 0s10 2.5 16 0" stroke="#7A2A0E" stroke-opacity=".45" stroke-width="2.4"/>
+      </g>
+      <path d="M-1 27A23 7 0 0 0 45 27" transform="rotate(-18 22 27)" fill="none" stroke="#2B2D2F" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M43.9 19.9s-5.3-5.6-5.3-9.4a5.3 5.3 0 0 1 10.6 0c0 3.8-5.3 9.4-5.3 9.4z" fill="#E8622C"/>
+      <circle cx="43.9" cy="10.5" r="2" fill="#FCF9F5"/>
+    </symbol>
     <symbol id="i-info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 7.3v4M8 4.8v.2"/></symbol>
     <symbol id="i-close" viewBox="0 0 16 16"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></symbol>
   </defs>
 </svg>
 
 <header class="band">
-  <div class="brand">
-    <svg viewBox="0 0 26 26" aria-hidden="true"><rect x="3" y="15" width="7" height="7" fill="#2B2D2F"/><path d="M10 18.5c6 0 12-3 12-8.5S17.5 3 13 3 6.5 6 6.5 9.5" fill="none" stroke="#2B2D2F" stroke-width="2.4" stroke-linecap="round"/><path d="M3.6 8.4l2.9 1.6 1.6-2.9" fill="none" stroke="#2B2D2F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span class="wordmark">ReturnLine</span>
+  <div class="brand" role="img" aria-label="ReturnLine">
+    <svg class="mark" viewBox="0 0 50 48" aria-hidden="true"><use href="#rl-mark"/></svg>
+    <span class="wordmark" aria-hidden="true">RETURN<span class="wm-b">LINE</span></span>
   </div>
   <div class="meta">
     <span class="meta-item"><b>EVA 07</b></span>
@@ -513,7 +539,9 @@ body.nav .console, body.nav #plan-controls { display: none; }
           <div class="attrib">Terrain, routes and numbers are synthetic stand-ins. The build uses the USGS Gale orthophoto (25 cm) and DEM (1 m).</div>
         </div>
       </div>
-      <aside class="legend" aria-label="Map key">
+      <div class="keybox">
+      <button type="button" class="info-btn" id="btn-key" aria-expanded="false" aria-controls="legend"><svg class="i"><use href="#i-info"/></svg>Map key</button>
+      <aside class="legend" id="legend" hidden aria-label="Map key">
         <h2>Map key</h2>
         <ul>
           <li><svg viewBox="0 0 34 18"><rect x="1" y="2" width="32" height="14" fill="rgba(31,107,69,.16)" stroke="#1F6B45" stroke-width="2.2"/></svg>Return area: there and home in time (straight line, placeholder)</li>
@@ -525,6 +553,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
           <li><svg viewBox="0 0 34 18"><circle cx="17" cy="9" r="7.5" fill="#EDF0E6" stroke="#2459A8" stroke-width="1.6"/><text x="17" y="12.4" text-anchor="middle" font-size="9.5" font-weight="700" fill="#2459A8" font-family="Atkinson Hyperlegible Mono, monospace">1</text></svg>Science station, click to pick</li>
         </ul>
       </aside>
+      </div>
     </div>
     <section class="budget" id="budget" aria-label="EVA plan">
       <div class="clock">
@@ -573,7 +602,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
           <div class="nv-turn" id="nv-turn"></div>
           <svg class="nv-north" id="nv-north" viewBox="0 0 44 44" aria-label="North"></svg>
           <div class="nv-mapname" id="nv-mapname"></div>
-          <div class="nv-legend" id="nv-legend"></div>
+          <div class="nv-keybox"><div class="nv-legend" id="nv-legend" hidden></div><button type="button" class="info-btn" id="nv-key" aria-expanded="false" aria-controls="nv-legend"><svg class="i"><use href="#i-info"/></svg>Return stages</button></div>
           <div class="nv-stage" id="nv-stage"></div>
           <div class="nv-scale" id="nv-scale"><div class="bar"></div><span></span></div>
         </div>
@@ -582,7 +611,8 @@ body.nav .console, body.nav #plan-controls { display: none; }
   </section>
   <aside class="nav-right">
     <section class="hud-panel" aria-label="Helmet HUD">
-      <h2 class="panel-h">Helmet HUD <span class="cap">sketch · heading = walking direction</span></h2>
+       <!-- <span class="cap">sketch · heading = walking direction</span> -->
+      <h2 class="panel-h">Helmet HUD</h2>
       <div id="hud"></div>
       <div class="hud-line" id="hud-line"></div>
       <ul class="hud-warn" id="hud-warn" aria-live="polite"></ul>
@@ -592,7 +622,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
       <div class="mini-body" id="nav-mini">
         <div class="nvdata dv" id="nav-data">
           <div class="dv-in">
-            <div class="dv-top"><div class="dv-stage" id="dv-stage"></div><button class="btn btn-dark" id="nd-end" hidden><svg class="i"><use href="#i-close"/></svg><span>End navigation</span></button></div>
+            <div class="dv-top"><div class="dv-stage" id="dv-stage"></div><button class="btn btn-dark" id="nd-end" hidden aria-label="End navigation"><svg class="i"><use href="#i-close"/></svg><span>End navigation</span></button></div>
             <div class="dv-hero" id="dv-hero"></div>
             <div class="dv-prof"><div class="dv-prof-h" id="dv-prof-h"></div><div class="dv-prof-box" id="dv-prof-box"></div></div>
             <div class="dv-grid" id="dv-grid"></div>
@@ -1361,6 +1391,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     $('#ly-zones').addEventListener('change', function (e) { st.showZones = e.target.checked; renderOverlay(); });
     $('#ly-ridges').addEventListener('change', function (e) { st.ridges = e.target.checked; syncLayers(); });
     $('#ly-trav').addEventListener('change', function (e) { st.showTrav = e.target.checked; renderOverlay(); });
+    infoBox('#btn-key', '#legend');
     $('#btn-assume').addEventListener('click', function () { var a = $('#assume'); if (a.hidden) openAssume(); else closeAssume(); });
     $('#assume-close').addEventListener('click', closeAssume);
     // pick a station in the list or on the map
@@ -1395,6 +1426,14 @@ body.nav .console, body.nav #plan-controls { display: none; }
     stage.addEventListener('mouseleave', function () { $('#readout').textContent = ''; });
     var rt = 0;
     window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { if (!NAV.on) relayout(); }, 180); });
+  }
+  // info boxes: a button opens the key, a second press, Escape or a click elsewhere closes it
+  function infoBox(btnSel, boxSel) {
+    var btn = $(btnSel), box = $(boxSel);
+    function set(open) { box.hidden = !open; btn.setAttribute('aria-expanded', String(open)); }
+    btn.addEventListener('click', function (e) { e.stopPropagation(); set(box.hidden); });
+    document.addEventListener('click', function (e) { if (!box.hidden && !box.contains(e.target)) set(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
   }
   function openAssume() { $('#assume').hidden = false; $('#btn-assume').setAttribute('aria-expanded', 'true'); var f = $('#assume input, #assume select'); if (f) f.focus(); }
   function closeAssume() { if ($('#assume').hidden) return; $('#assume').hidden = true; $('#btn-assume').setAttribute('aria-expanded', 'false'); }
@@ -1615,7 +1654,9 @@ body.nav .console, body.nav #plan-controls { display: none; }
     $('#nv-scale .bar').style.width = (Ls * s).toFixed(1) + 'px';
     $('#nv-scale span').textContent = Ls + ' m';
     // north indicator
-    $('#nv-north').innerHTML = '<g transform="translate(22 22) rotate(' + (-b * 180 / Math.PI).toFixed(1) + ')"><path d="M0 -8L5 4H-5z" fill="#2B2D2F"/><text y="-9" text-anchor="middle" font-size="11" font-weight="800" fill="#2B2D2F" font-family="Atkinson Hyperlegible Next, sans-serif">N</text><path d="M0 16V5" stroke="#2B2D2F" stroke-width="1.4"/></g>';
+    var na = (-b * 180 / Math.PI).toFixed(1);
+    $('#nv-north').innerHTML = '<text x="22" y="26.5" text-anchor="middle" font-size="13" font-weight="800" fill="#2B2D2F" font-family="Atkinson Hyperlegible Next, sans-serif">N</text>' +
+      '<g transform="rotate(' + na + ' 22 22)"><path d="M22 2.5L26.5 9.5H17.5Z" fill="#E8622C"/></g>';
   }
 
   // ---------- helmet HUD ----------
@@ -1734,7 +1775,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     else if (d.at) turn = icon('check') + '<div><div class="to">At Stn ' + sn.n + ' · ' + sn.name + '</div><div class="big">Return in ' + hm(stayLeft) + '<small>leave ' + lmst(NAV.tLeave) + '</small></div></div>';
     else {
       var ah = G.posOn(tr, Math.min(tr.t1, d.t + 2)), ra = G.dist(d.p, ah) > 2 ? bearingTo(d.p, ah) - NAV.hd : 0;
-      turn = '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="#3A3D40"/><g transform="translate(20 20) rotate(' + (ra * 180 / Math.PI).toFixed(0) + ')"><path d="M0 -12L8 7L0 2L-8 7Z" fill="#E3B21B"/></g></svg>' +
+      turn = '<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="#3A3D40"/><g transform="translate(20 20) rotate(' + (ra * 180 / Math.PI).toFixed(0) + ')"><path d="M0 -12L8 7L0 2L-8 7Z" fill="#E8622C"/></g></svg>' +
         '<div><div class="to">To ' + d.tgt.name + '</div><div class="big">' + R(d.rem.m) + ' m<small>' + R(d.rem.min) + ' min · ETA ' + lmst(d.eta) + '</small></div></div>';
     }
     $('#nv-turn').innerHTML = turn;
@@ -1755,7 +1796,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     ds.innerHTML = icon(d.stage === 'green' ? 'check' : 'warn') + '<span>' + stg.word + '</span><span class="num">' + spareTxt + '</span>';
     var A, B;
     if (d.home) {
-      A = tile('Habitat', 'Crew home', '', 'arrived ' + lmst(d.t) + ' LMST', '');
+      A = tile('Crew home', lmst(d.t), '', 'arrived at the habitat · EVA ' + hm(d.t), '');
       B = tile('Reserve', hm(d.reserve), '', 'life support left at arrival', 'ASSUME');
     } else if (d.at) {
       A = tile('Return starts in', hm(stayLeft), '', 'at Stn ' + sn.n + ' · ' + hm(d.t - NAV.out.t1) + ' of ' + hm(NAV.stay) + ' on station', 'ASSUME');
@@ -1849,6 +1890,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     navFrame(0, true);
   }
   function navWire() {
+    infoBox('#nv-key', '#nv-legend');
     ['k-data', 'k-zin', 'k-zout', 'k-map'].forEach(function (id) { $('#' + id).addEventListener('click', function () { if (NAV.on) navKey(id); }); });
     $('#nav-pause').addEventListener('click', function () { if (NAV.phase === 'home') return; NAV.playing = !NAV.playing; syncNavPause(); });
     $('#nav-end').addEventListener('click', navEnd);
