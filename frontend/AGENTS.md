@@ -37,3 +37,10 @@
 - Berücksichtige Ladezustände, leere Ergebnisse, Fehler und verständliche Eingaben.
 - Lege keine Geheimnisse im Browser-Code ab.
 - Wortlaut auf dem Bildschirm: „Habitat control“, klare Worte wie „Head home now“, nie „validated“, sondern „compared with Curiosity“.
+
+## Eigenständige Reisezeitberechnung (lokal, noch nicht in der Konsole verdrahtet)
+- `src/route-duration.js`: `estimateDuration(segments, options)` validiert ein Abschnittsarray und berechnet Geländezeiten und Ereignisse ohne Imports, UI, Standortdaten oder Dateizugriff. `src/route-duration-input.js`: `parseRoute`-Adapter für geordnete A*-Knoten `{x,y,elevation_m,roughness_m}` in `{nodes:[...]}` auf einem 1-m-Raster; erzeugt N−1 Abschnitte mit Rauigkeit des Ausgangsknotens und 1 m bzw. √2 m Distanz. Richtungssteigung wird aus Höhendifferenz und Distanz abgeleitet; richtungsloses `slope_deg` aus dem A*-Kostenmodell wird nicht als Tobler-Steigung verwendet.
+- Steigung im Rechenkern: Tobler-Kurve, auf Basisgeschwindigkeit bei 0° normiert; Rauigkeit als separate Modellannahme. Keine Änderung der bestehenden Engine-Zeiten.
+- `route-duration.md`: Einheiten, Formeln, Quellen, Modellannahmen, Ereignisverlauf und Grenzen. `examples/route-duration.mjs`: ausführbarer Aufruf.
+- `test/route-duration.test.js`, `npm test`: Unit-Tests mit dem eingebauten Node-Testläufer, ohne zusätzliche Abhängigkeiten.
+- Bestehende Engine-Zeiten werden nicht erneut mit Geländefaktoren verrechnet. Dieses vorläufige Format ersetzt nicht `shared/data-contract.md`; Integration und Geländekalibrierung sind offen.
