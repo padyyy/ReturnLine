@@ -1,0 +1,1974 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ReturnLine Habitat Console</title>
+<meta name="description" content="Design sketch of the ReturnLine habitat console: one rehearsed Marswalk at the Gale crater boxwork, six scripted beats. Terrain, routes and numbers are synthetic.">
+<style>
+@font-face { font-family: "Atkinson Hyperlegible Next"; src: url("fonts/AtkinsonHyperlegibleNext-wght.ttf") format("truetype"); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: "Atkinson Hyperlegible Mono"; src: url("fonts/AtkinsonHyperlegibleMono-wght.ttf") format("truetype"); font-weight: 200 800; font-display: swap; }
+
+:root {
+  --cover: #E3B21B;
+  --paper: #EDF0E6;
+  --paper-2: #E3E7DA;
+  --paper-3: #D6DCCB;
+  --graphite: #2B2D2F;
+  --graphite-2: #51575B;
+  --graphite-3: #80878B;
+  --rule: rgba(43, 45, 47, .15);
+  --rule-2: rgba(43, 45, 47, .32);
+  --red: #C8361F;
+  --blue: #2459A8;
+  --green: #1F6B45;
+  --red-tint: rgba(200, 54, 31, .09);
+  --blue-tint: rgba(36, 89, 168, .09);
+  --green-tint: rgba(31, 107, 69, .10);
+  --on-cover-2: #4A4320;
+  --f-text: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+  --f-num: "Atkinson Hyperlegible Mono", ui-monospace, "Cascadia Mono", monospace;
+  --t-cap: 12.5px;
+  --t-body: 15px;
+  --t-big: 22px;
+  --t-poster: clamp(96px, 8.4vw, 164px);
+  --col-a: 54px;
+  --col-v: 104px;
+  --col-s: 66px;
+  --pad: 20px;
+  --ease: cubic-bezier(.16, 1, .3, 1);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--paper);
+  color: var(--graphite);
+  font: 400 var(--t-body)/1.4 var(--f-text);
+  font-feature-settings: "tnum" 1;
+  -webkit-font-smoothing: antialiased;
+  caret-color: var(--blue);
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 56px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+}
+::selection { background: var(--cover); color: var(--graphite); }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+* { scrollbar-width: thin; scrollbar-color: rgba(43,45,47,.35) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(43,45,47,.3); }
+.num { font-family: var(--f-num); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+.cap { font-size: var(--t-cap); color: var(--graphite-2); line-height: 1.35; }
+svg.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- buttons and controls ---------- */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 38px; padding: 0 14px;
+  border: 1.5px solid var(--graphite); border-radius: 2px;
+  background: transparent; color: var(--graphite);
+  font: 600 14px/1 var(--f-text); cursor: pointer; white-space: nowrap;
+  transition: background-color .15s, color .15s, transform .1s;
+}
+.btn:hover { background: rgba(43,45,47,.07); }
+.btn:active { transform: translateY(1px); }
+.btn[disabled] { cursor: default; opacity: .45; transform: none; }
+.btn-dark { background: var(--graphite); color: var(--paper); }
+.btn-dark:hover { background: #1B1D1E; }
+.btn-go { background: var(--green); border-color: var(--green); color: var(--paper); }
+.btn-go:hover { background: #18573A; }
+.btn-abort { background: var(--red); border-color: var(--red); color: var(--paper); }
+.btn-abort:hover { background: #A92C18; }
+.btn.is-pressed { transform: translateY(1px); }
+.seg { display: inline-flex; gap: 2px; padding: 2px; border: 1.5px solid var(--graphite); border-radius: 3px; }
+.seg button { height: 24px; padding: 0 10px; border: 0; border-radius: 1px; background: transparent; color: var(--graphite); font: 600 12.5px/1 var(--f-text); cursor: pointer; }
+.seg button:hover { background: rgba(43,45,47,.08); }
+.seg button[aria-pressed="true"] { background: var(--graphite); color: var(--paper); }
+.switch { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer; user-select: none; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch .track { width: 34px; height: 20px; border: 1.5px solid var(--graphite); border-radius: 2px; position: relative; transition: background-color .15s; }
+.switch .track::after { content: ""; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 1px; background: var(--graphite); transition: transform .2s var(--ease); }
+.switch input:checked + .track { background: var(--graphite); }
+.switch input:checked + .track::after { transform: translateX(14px); background: var(--cover); }
+.switch input:focus-visible + .track { outline: 2px solid var(--blue); outline-offset: 2px; }
+.src {
+  font: 600 11px/1 var(--f-num); letter-spacing: .02em; color: var(--blue);
+  border: 1px solid currentColor; border-radius: 2px; background: transparent;
+  padding: 3px 5px; cursor: help; white-space: nowrap;
+}
+.src.is-assume { color: var(--graphite-2); border-style: dashed; }
+.src:hover { background: var(--blue-tint); }
+
+/* ---------- header band ---------- */
+.band {
+  background: var(--cover); color: var(--graphite);
+  display: flex; align-items: center; gap: 22px;
+  padding: 0 var(--pad);
+  border-bottom: 1.5px solid var(--graphite);
+  min-width: 0;
+}
+.brand { display: flex; align-items: center; gap: 10px; flex: none; }
+.brand svg { width: 26px; height: 26px; }
+.wordmark { font-weight: 800; font-size: 21px; letter-spacing: -.01em; }
+.meta { display: flex; align-items: center; gap: 18px; min-width: 0; padding-left: 22px; border-left: 1.5px solid rgba(43,45,47,.35); height: 30px; }
+.meta-item { white-space: nowrap; font-size: 14.5px; }
+.meta-item b { font-weight: 700; }
+.meta .num { font-size: 15px; font-weight: 600; }
+.tag-sketch { font: 700 12.5px/1 var(--f-text); border: 1.5px solid var(--graphite); padding: 5px 8px; white-space: nowrap; }
+.controls { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.band .btn { border-color: var(--graphite); }
+.menu { position: relative; }
+.popover {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 30;
+  width: 290px; background: var(--paper); border: 1.5px solid var(--graphite);
+  padding: 14px 16px 12px;
+}
+.popover h3 { margin: 10px 0 6px; font-size: var(--t-cap); font-weight: 700; color: var(--graphite-2); }
+.popover h3:first-child { margin-top: 0; }
+.popover label { display: flex; align-items: center; gap: 9px; padding: 5px 0; font-size: 14px; cursor: pointer; }
+.popover label.is-off { color: var(--graphite-2); cursor: default; }
+.popover input { accent-color: var(--graphite); width: 15px; height: 15px; margin: 0; }
+.popover .cap { display: block; margin-top: 8px; }
+
+/* ---------- console layout ---------- */
+.console { display: grid; grid-template-columns: minmax(0, 1fr) clamp(400px, 31vw, 600px); min-height: 0; }
+.mapcol { display: grid; grid-template-rows: minmax(0, 1fr) auto auto; min-width: 0; min-height: 0; border-right: 1.5px solid var(--graphite); }
+.mapwrap { position: relative; min-height: 0; overflow: hidden; background: #8E918B; }
+.stage { position: absolute; inset: 0; }
+.stage canvas, .stage svg.ov { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.stage canvas.ridges { image-rendering: pixelated; }
+svg.ov text { font-family: var(--f-text); }
+svg.ov .lbl { font-size: 13px; font-weight: 700; paint-order: stroke; stroke: var(--paper); stroke-width: 3.5px; stroke-linejoin: round; }
+svg.ov .lbl-num { font-family: var(--f-num); font-size: 12.5px; font-weight: 600; paint-order: stroke; stroke: var(--paper); stroke-width: 3.5px; stroke-linejoin: round; }
+svg.ov .tick { font-family: var(--f-num); font-size: 10.5px; fill: var(--graphite); paint-order: stroke; stroke: var(--paper); stroke-width: 4.5px; stroke-linejoin: round; }
+.ring { fill: none; stroke: var(--red); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.ring.draw { animation: ringdraw .55s var(--ease) both; }
+.ring-hit { fill: transparent; stroke: none; cursor: pointer; pointer-events: all; }
+g.finding.is-hl .ring { stroke-width: 3.4; }
+g.finding.old .ring { opacity: .4; }
+g.finding.old.is-hl .ring { opacity: 1; }
+@keyframes ringdraw { from { stroke-dashoffset: var(--len); } to { stroke-dashoffset: 0; } }
+
+/* crew display */
+.crew {
+  position: absolute; bottom: 16px; left: 16px; z-index: 6; width: 318px;
+  background: var(--paper); border: 1.5px solid var(--graphite);
+}
+.crew-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px 8px 12px; border-bottom: 1px solid var(--rule-2); }
+.crew-title { font-weight: 700; font-size: 13.5px; white-space: nowrap; }
+.crew-title .ro { font-weight: 400; color: var(--graphite-2); font-size: var(--t-cap); margin-left: 4px; }
+.cd-state { display: flex; align-items: center; gap: 8px; padding: 9px 12px; font-weight: 800; font-size: 15px; letter-spacing: .02em; border-bottom: 1px solid var(--rule); }
+.cd-state .num { margin-left: auto; font-size: 15px; }
+.cd-state.ok { color: var(--green); }
+.cd-state.due { background: var(--graphite); color: var(--cover); }
+.cd-state.home { background: var(--green); color: var(--paper); }
+.cd-warn { display: flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--red-tint); color: var(--red); font-weight: 700; font-size: 13.5px; border-bottom: 1px solid var(--rule); }
+.cd-vals { margin: 0; padding: 4px 12px 8px; }
+.cd-vals > div { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 10px; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+.cd-vals > div:last-child { border-bottom: 0; }
+.cd-vals dt { font-size: 13.5px; font-weight: 600; }
+.cd-vals dt .cap { display: block; font-weight: 400; }
+.cd-vals dd { margin: 0; text-align: right; font-family: var(--f-num); font-size: var(--t-big); font-weight: 600; line-height: 1.1; }
+.cd-fill { padding: 14px 12px 12px; background: var(--red); color: var(--paper); }
+.cd-fill .instr { font-size: 26px; font-weight: 800; line-height: 1.08; letter-spacing: -.005em; }
+.cd-fill .route { margin-top: 10px; font-size: 14px; font-weight: 600; }
+.cd-compact { display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px 12px 10px; gap: 6px; }
+.cd-compact div { font-size: 11.5px; color: var(--graphite-2); line-height: 1.2; }
+.cd-compact b { display: block; font: 600 18px/1.15 var(--f-num); color: var(--graphite); }
+
+/* cuff skin */
+.crew[data-skin="cuff"] { background: transparent; border: 0; box-shadow: none; width: 300px; }
+.crew[data-skin="cuff"] .crew-head { background: var(--paper); border: 1.5px solid var(--graphite); margin-bottom: 10px; }
+.cuff { position: relative; padding: 0 18px; }
+.cuff-strap { height: 18px; margin: 0 34px; background: transparent; border: 1.5px solid var(--graphite); }
+.cuff-strap.top { border-bottom: 0; }
+.cuff-strap.bottom { border-top: 0; }
+.cuff-body { position: relative; background: var(--graphite); padding: 14px 40px; }
+.cuff-keys { position: absolute; top: 18px; bottom: 18px; display: flex; flex-direction: column; justify-content: space-between; }
+.cuff-keys.l { left: 7px; } .cuff-keys.r { right: 7px; }
+.cuff-key { width: 26px; height: 40px; background: var(--graphite); border: 1.5px solid #C9CDC2; display: grid; place-items: center; }
+.cuff-key span { writing-mode: vertical-rl; transform: rotate(180deg); font: 700 8.5px/1 var(--f-num); letter-spacing: .08em; color: #C9CDC2; }
+.cuff-screen { background: var(--paper); color: var(--graphite); padding: 8px 10px 6px; }
+.cuff-state { font: 800 15px/1.1 var(--f-num); letter-spacing: .04em; padding-bottom: 6px; border-bottom: 2px solid #161718; display: flex; justify-content: space-between; }
+.cuff-state.abort { background: var(--red); color: var(--paper); margin: -8px -10px 0; padding: 8px 10px 7px; border: 0; flex-direction: column; gap: 3px; }
+.cuff-state.abort .sub { font-size: 11.5px; letter-spacing: .03em; }
+.cuff-row.pending span { font-size: 10.5px; }
+.cuff-row.pending { padding: 8px 0; flex-direction: column; align-items: flex-start; gap: 4px; }
+.cuff-row { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0; border-bottom: 1px solid rgba(22,23,24,.25); }
+.cuff-row:last-child { border-bottom: 0; }
+.cuff-row span { font: 700 11px/1 var(--f-num); letter-spacing: .06em; }
+.cuff-row b { font: 700 25px/1 var(--f-num); }
+.cuff-note { margin-top: 8px; color: var(--paper); background: rgba(43,45,47,.82); font-size: 11.5px; padding: 6px 8px; }
+
+/* legend */
+.legend {
+  position: absolute; top: 16px; right: 16px; z-index: 5; width: 236px;
+  background: rgba(237,240,230,.95); border: 1.5px solid var(--graphite);
+  padding: 10px 12px 8px;
+}
+.legend.is-off { display: none; }
+.legend h2 { margin: 0 0 6px; font-size: 13.5px; font-weight: 700; }
+.legend ul { list-style: none; margin: 0; padding: 0; }
+.legend li { display: grid; grid-template-columns: 34px 1fr; align-items: center; gap: 8px; font-size: 12.5px; line-height: 1.25; padding: 3px 0; }
+.legend svg { width: 34px; height: 18px; overflow: visible; }
+
+.mapfoot { position: absolute; left: 350px; right: 16px; bottom: 12px; z-index: 5; display: flex; align-items: flex-end; gap: 14px; pointer-events: none; }
+.readout { font: 600 12px/1.3 var(--f-num); background: rgba(237,240,230,.94); border: 1px solid var(--rule-2); padding: 5px 8px; min-height: 26px; }
+.readout:empty { display: none; }
+.scale { display: flex; flex-direction: column; gap: 3px; }
+.scale .bar { height: 7px; border: 1.5px solid var(--graphite); border-top: 0; background: linear-gradient(90deg, var(--graphite) 0 50%, var(--paper) 50% 100%); }
+.scale span { font: 600 11.5px/1 var(--f-num); background: rgba(237,240,230,.9); padding: 2px 4px; align-self: flex-start; }
+.attrib { margin-left: auto; font-size: 11.5px; background: rgba(237,240,230,.9); padding: 4px 7px; color: var(--graphite); max-width: 52%; text-align: right; }
+.banner {
+  position: absolute; z-index: 7; top: 16px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; font-weight: 700; font-size: 16px; white-space: nowrap;
+  background: var(--graphite); color: var(--paper);
+}
+.banner .num { color: var(--cover); }
+.banner.event { background: var(--red); }
+.banner.event .num { color: var(--paper); }
+.summary {
+  position: absolute; z-index: 8; right: 16px; top: 16px;
+  width: min(430px, calc(100% - 32px)); background: var(--paper); border: 1.5px solid var(--graphite);
+}
+.summary header { background: var(--green); color: var(--paper); padding: 14px 18px; }
+.summary header h2 { margin: 0; font-size: var(--t-big); font-weight: 800; }
+.summary header p { margin: 3px 0 0; font-size: 14px; }
+.summary dl { margin: 0; padding: 6px 18px 4px; }
+.summary dl > div { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--rule); }
+.summary dt { font-weight: 600; }
+.summary dt .cap { display: block; font-weight: 400; }
+.summary dd { margin: 0; font: 600 18px/1.2 var(--f-num); text-align: right; }
+.summary dd.red { color: var(--red); }
+.summary dd.txt { font: 700 15px/1.3 var(--f-text); }
+.summary .slogan { margin: 0; padding: 14px 18px 16px; font-size: 18px; font-weight: 800; letter-spacing: -.005em; }
+.summary .slogan span { display: block; font-size: var(--t-cap); font-weight: 400; color: var(--graphite-2); margin-top: 4px; letter-spacing: 0; }
+
+/* subtitles */
+.subs { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px; background: var(--graphite); color: var(--paper); padding: 10px var(--pad); min-height: 62px; }
+.subs-beat { font: 700 15px/1.2 var(--f-text); color: var(--paper); white-space: nowrap; }
+.subs-beat span { color: var(--cover); }
+.subs-text { font-size: 20px; font-weight: 600; line-height: 1.3; text-wrap: balance; }
+.transport { display: flex; align-items: center; gap: 6px; }
+.transport button { width: 34px; height: 34px; display: grid; place-items: center; border: 1.5px solid rgba(237,240,230,.55); background: transparent; color: var(--paper); border-radius: 2px; cursor: pointer; }
+.transport button:hover { border-color: var(--paper); background: rgba(237,240,230,.08); }
+.transport .dots { display: flex; gap: 4px; margin: 0 6px; }
+.transport .dots button { width: 24px; height: 24px; font: 700 12px/1 var(--f-num); }
+.transport .dots button[aria-current="step"] { background: var(--cover); border-color: var(--cover); color: var(--graphite); }
+
+/* time budget */
+.budget { display: grid; grid-template-columns: 230px minmax(0, 1fr) 270px; gap: 20px; align-items: center; padding: 12px var(--pad) 12px; background: var(--paper); border-top: 1.5px solid var(--graphite); }
+.clock .row1 { display: flex; align-items: baseline; gap: 10px; }
+.clock .eva { font: 700 30px/1 var(--f-num); }
+.clock .lbl { font-weight: 700; font-size: 13px; }
+.clock .cap { margin: 4px 0 8px; }
+.budget-bar svg { width: 100%; height: 90px; display: block; overflow: visible; }
+.budget-bar text { font-family: var(--f-num); font-size: 11px; fill: var(--graphite); }
+.budget-bar .t-lbl { font-family: var(--f-text); font-size: 12px; font-weight: 700; }
+.budget-sum { font-family: var(--f-num); font-size: 13.5px; line-height: 1.55; }
+.budget-sum .row { display: flex; justify-content: space-between; gap: 8px; }
+.budget-sum .row.total { border-top: 1.5px solid var(--graphite); margin-top: 2px; padding-top: 2px; font-weight: 700; }
+.budget-sum .row.over { color: var(--red); font-weight: 700; }
+.budget-sum .k { font-family: var(--f-text); }
+
+/* ---------- right column ---------- */
+.logcol { position: relative; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.verdict { padding: 16px var(--pad) 18px; border-bottom: 1.5px solid var(--graphite); }
+.v-label { font-size: var(--t-cap); color: var(--graphite-2); }
+.v-label b { color: var(--graphite); font-weight: 700; }
+.v-line { display: flex; align-items: baseline; gap: 14px; margin-top: 2px; }
+.v-word { font-size: var(--t-poster); font-weight: 800; line-height: .86; letter-spacing: -.035em; }
+.v-word.go { color: var(--green); }
+.v-word.abort, .v-word.nogo { color: var(--red); }
+.v-word.nodata { color: var(--graphite-2); }
+.v-count { font-weight: 800; font-size: var(--t-big); letter-spacing: .01em; }
+.v-sub { margin: 10px 0 0; font-size: 17px; font-weight: 600; line-height: 1.35; }
+.v-facts { margin: 10px 0 0; padding: 0; list-style: none; }
+.v-facts li { display: grid; grid-template-columns: 20px 1fr auto; gap: 8px; align-items: baseline; padding: 5px 0; border-top: 1px solid var(--rule); font-size: 14px; }
+.v-facts li .num { font-weight: 700; }
+.v-facts li.bad { color: var(--red); }
+.v-facts li.good .num { color: var(--green); }
+.v-facts svg.i { transform: translateY(3px); }
+.constraint { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 9px 12px; border: 1.5px solid var(--graphite); font-size: 14px; font-weight: 600; }
+.constraint .trig { flex: 1; }
+.constraint .act { flex: 1.1; font-weight: 800; }
+.constraint.warn { border-color: var(--red); color: var(--red); background: var(--red-tint); }
+.v-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.v-status { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--graphite-2); }
+.v-status.ok { color: var(--green); }
+.v-status.red { color: var(--red); }
+
+.sect-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0; padding: 12px var(--pad) 6px; font-size: 15px; font-weight: 800; }
+.sect-h .cap { font-weight: 400; }
+.rows { list-style: none; margin: 0; padding: 0 var(--pad) 8px; }
+.row4 { display: grid; grid-template-columns: var(--col-a) minmax(0, 1fr) var(--col-v) var(--col-s); gap: 0 10px; align-items: start; padding: 7px 0; border-top: 1px solid var(--rule); }
+.row4 .a { padding-top: 1px; }
+.row4 .l { font-weight: 600; font-size: 14.5px; line-height: 1.3; }
+.row4 .l .cap { display: block; font-weight: 400; margin-top: 1px; }
+.row4 .v { text-align: right; font: 600 17px/1.25 var(--f-num); }
+.nc { display: grid; grid-template-columns: minmax(0, 1fr) 6.4ch; align-items: baseline; }
+.nc .ni { justify-self: end; white-space: nowrap; }
+.nc .nf { justify-self: start; white-space: nowrap; }
+.nc .nu { padding-left: .35ch; font-size: .76em; font-weight: 600; }
+.nc .nu.tight { padding-left: 0; font-size: 1em; }
+.cd-vals dd .nc { grid-template-columns: auto 6.4ch; justify-content: end; }
+.row4 .v small { display: block; font: 400 11px/1.3 var(--f-text); color: var(--graphite-2); }
+.row4 .s { text-align: right; padding-top: 2px; }
+.row4.fail .v, .row4.fail .l { color: var(--red); }
+.stat { display: inline-flex; align-items: center; gap: 4px; font: 700 12.5px/1 var(--f-text); }
+.stat.fired { color: var(--red); }
+.stat.pass { color: var(--green); }
+.stat.fail { color: var(--red); }
+.stat.info { color: var(--graphite-2); }
+
+.log { flex: 1; min-height: 0; display: flex; flex-direction: column; border-top: 1.5px solid var(--graphite); }
+.log ol { flex: 1; min-height: 0; overflow-y: auto; list-style: none; margin: 0; padding: 0 var(--pad) 14px; }
+.lg { position: relative; }
+.lg .a { font: 600 13px/1.3 var(--f-num); color: var(--graphite); padding-top: 2px; }
+.lg .a small { display: block; font: 400 10.5px/1.3 var(--f-text); color: var(--graphite-2); }
+.lg.is-planned .l, .lg.is-planned .a, .lg.is-planned .v { color: var(--graphite-2); }
+.lg-title { display: flex; align-items: center; gap: 7px; }
+.badge { display: inline-grid; place-items: center; width: 21px; height: 21px; border-radius: 50%; border: 1.5px solid var(--blue); color: var(--blue); font: 700 11.5px/1 var(--f-num); flex: none; background: var(--paper); }
+.badge.done { background: var(--blue); color: var(--paper); }
+.lg-media { display: flex; gap: 10px; align-items: center; margin-top: 7px; }
+.lg-media .cap { margin: 0; }
+.lg-media canvas { width: 84px; height: 54px; border: 1px solid var(--rule-2); flex: none; background: var(--paper-3); }
+.lg.finding .l { color: var(--red); }
+.lg.finding { cursor: pointer; }
+.lg.finding .ring-wrap { position: absolute; left: -8px; top: 0; width: calc(var(--col-a) + 10px); height: 34px; pointer-events: none; overflow: visible; }
+.lg.finding.is-hl { background: var(--red-tint); }
+.lg.decision .l::before { content: ""; }
+.lg.decision .l { color: var(--graphite); }
+.lg.is-new { animation: rowin .5s var(--ease) both; }
+@keyframes rowin { from { background: rgba(227,178,27,.35); } to { background: transparent; } }
+
+/* assumptions panel */
+.assume {
+  position: absolute; inset: 0; z-index: 20; background: var(--paper);
+  display: flex; flex-direction: column; border-left: 1.5px solid var(--graphite);
+}
+.assume[hidden] { display: none; }
+.assume-h { display: flex; align-items: center; justify-content: space-between; padding: 14px var(--pad); border-bottom: 1.5px solid var(--graphite); background: var(--paper-2); }
+.assume-h h2 { margin: 0; font-size: 18px; font-weight: 800; }
+.assume-body { overflow-y: auto; padding: 4px var(--pad) 20px; }
+.as { padding: 14px 0; border-bottom: 1px solid var(--rule); }
+.as-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.as-top label { font-weight: 700; }
+.as-top output { font: 700 16px/1 var(--f-num); }
+.as input[type=range] { width: 100%; margin: 10px 0 6px; accent-color: var(--graphite); }
+.as-src { display: flex; align-items: center; gap: 8px; }
+.as-note { font-size: var(--t-cap); color: var(--graphite-2); margin: 14px 0 0; }
+
+.tip {
+  position: fixed; z-index: 50; max-width: 300px; pointer-events: none;
+  background: var(--graphite); color: var(--paper); font-size: 12.5px; line-height: 1.4;
+  padding: 8px 10px;
+}
+.tip b { color: var(--cover); }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; font: 600 14px var(--f-num); color: var(--graphite); background: var(--paper-3); }
+
+@media (max-width: 1500px) {
+  :root { --pad: 16px; --col-a: 48px; --col-v: 98px; --col-s: 64px; }
+  .mapfoot { left: 314px; }
+  .meta-item.site { display: none; }
+  .budget { grid-template-columns: 200px minmax(0, 1fr) 240px; }
+  .subs-text { font-size: 18px; }
+  .legend { width: 214px; }
+  .crew { width: 282px; bottom: 12px; left: 12px; }
+  .crew[data-skin="cuff"] { width: 270px; }
+  .cd-vals > div { padding: 4px 0; }
+  .cd-vals dd { font-size: 19px; }
+  .cd-state { padding: 7px 12px; }
+  .cuff-row b { font-size: 21px; }
+}
+@media (max-width: 1180px) {
+  .tag-sketch { display: none; }
+  .controls .btn .t { display: none; }
+}
+@media (max-width: 1100px) {
+  body { height: auto; overflow: auto; grid-template-rows: auto auto; }
+  .band { flex-wrap: wrap; gap: 8px 14px; padding: 10px 16px; }
+  .meta { border-left: 0; padding-left: 0; height: auto; flex-wrap: wrap; gap: 4px 12px; order: 3; width: 100%; }
+  .tag-sketch { display: inline-block; }
+  .controls { margin-left: auto; }
+  .console { grid-template-columns: 1fr; }
+  .mapcol { border-right: 0; }
+  .mapwrap { height: 72vh; min-height: 420px; }
+  .logcol { overflow: visible; border-top: 1.5px solid var(--graphite); }
+  .log ol { max-height: none; overflow: visible; }
+  .assume { position: fixed; inset: 0; z-index: 60; }
+}
+@media (max-width: 700px) {
+  :root { --t-big: 19px; --col-a: 44px; --col-v: 92px; --col-s: 56px; }
+  .console { display: flex; flex-direction: column; }
+  .mapcol, .logcol, .mapwrap { display: contents; }
+  .stage { order: 1; } .subs { order: 2; } .verdict { order: 3; border-top: 1.5px solid var(--graphite); } .crew { order: 4; } .budget { order: 5; }
+  .logcol > .sect-h { order: 6; } #rules { order: 7; } #info { order: 8; } .legend { order: 9; } .log { order: 10; }
+  .mapfoot { left: 16px; }
+  .meta-item.site { display: inline; }
+  .controls { width: 100%; margin-left: 0; justify-content: space-between; order: 2; flex-wrap: wrap; gap: 8px; }
+  .controls .switch .t { display: none; }
+  .controls .switch { font-size: 13px; }
+  .mapwrap { display: contents; }
+  .stage { position: relative; inset: auto; height: 62vh; min-height: 360px; overflow: hidden; background: #8E918B; }
+  .crew { position: static; width: auto; margin: 12px 16px 0; box-shadow: none; }
+  .crew[data-skin="cuff"] { width: auto; max-width: 340px; }
+  .legend { position: static; width: auto; margin: 12px 16px; }
+  .legend ul { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  .attrib { display: none; }
+  .banner { white-space: normal; width: calc(100% - 32px); font-size: 14px; }
+  .summary { position: static; width: auto; margin: 0; box-shadow: none; border-width: 1.5px 0 0; }
+  .subs { grid-template-columns: 1fr; gap: 8px; }
+  .subs-text { font-size: 17px; }
+  .budget { grid-template-columns: 1fr; gap: 10px; }
+  .row4 .l { font-size: 14px; }
+  .lg-media canvas { width: 68px; height: 44px; }
+  .row4 .lg-media .cap { display: none; }
+  .stat .w { display: none; }
+  .stat svg.i { width: 18px; height: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ring.draw, .lg.is-new { animation: none; }
+  .switch .track::after, .btn { transition: none; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-play" viewBox="0 0 16 16"><path d="M5 3.2v9.6L12.6 8z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 16 16"><path d="M5 3.5v9M11 3.5v9" stroke-width="2.4"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 16 16"><path d="M11 3.5L5.5 8l5.5 4.5M4 3.5v9"/></symbol>
+    <symbol id="i-next" viewBox="0 0 16 16"><path d="M5 3.5L10.5 8 5 12.5M12 3.5v9"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 16 16"><path d="M8 2.2L14.2 5.4 8 8.6 1.8 5.4z"/><path d="M1.8 8.2L8 11.4l6.2-3.2"/><path d="M1.8 11L8 14.2l6.2-3.2"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 16 16"><path d="M2 4.5h7M12.5 4.5H14M2 11.5h2M7.5 11.5H14"/><circle cx="10.8" cy="4.5" r="1.7"/><circle cx="5.8" cy="11.5" r="1.7"/></symbol>
+    <symbol id="i-check" viewBox="0 0 16 16"><path d="M3 8.4l3.2 3.1L13 4.6"/></symbol>
+    <symbol id="i-cross" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4"/></symbol>
+    <symbol id="i-warn" viewBox="0 0 16 16"><path d="M8 2.2L14.6 13.6H1.4z"/><path d="M8 6.4v3.4M8 11.6v.2"/></symbol>
+    <symbol id="i-info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 7.3v4M8 4.8v.2"/></symbol>
+    <symbol id="i-close" viewBox="0 0 16 16"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></symbol>
+  </defs>
+</svg>
+
+<header class="band">
+  <div class="brand">
+    <svg viewBox="0 0 26 26" aria-hidden="true"><rect x="3" y="15" width="7" height="7" fill="#2B2D2F"/><path d="M10 18.5c6 0 12-3 12-8.5S17.5 3 13 3 6.5 6 6.5 9.5" fill="none" stroke="#2B2D2F" stroke-width="2.4" stroke-linecap="round"/><path d="M3.6 8.4l2.9 1.6 1.6-2.9" fill="none" stroke="#2B2D2F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="wordmark">ReturnLine</span>
+  </div>
+  <div class="meta">
+    <span class="meta-item"><b>EVA 07</b></span>
+    <span class="meta-item site">Gale crater · boxwork, Mount Sharp</span>
+    <span class="meta-item">Sol 5120</span>
+    <span class="meta-item num" id="hdr-clock">09:00 LMST</span>
+    <span class="tag-sketch" title="Terrain, routes and all numbers in this sketch are synthetic">Sketch · synthetic data</span>
+  </div>
+  <div class="controls">
+    <label class="switch"><input type="checkbox" id="tgl-grid" aria-label="100 m survey grid"><span class="track"></span><span class="t">100 m&nbsp;</span>grid</label>
+    <div class="menu">
+      <button class="btn" id="btn-layers" aria-expanded="false" aria-controls="layers"><svg class="i"><use href="#i-layers"/></svg><span class="t">Layers</span></button>
+      <div class="popover" id="layers" hidden>
+        <h3>Base map</h3>
+        <label><input type="radio" name="base" value="ortho" checked> Orthophoto</label>
+        <label><input type="radio" name="base" value="slope"> Slope, 10 m baseline</label>
+        <h3>Science layer, one at a time</h3>
+        <label><input type="radio" name="sci" value="none" checked> None</label>
+        <label class="is-off"><input type="radio" name="sci" value="crism" disabled> CRISM minerals (not in sketch)</label>
+        <label class="is-off"><input type="radio" name="sci" value="themis" disabled> THEMIS thermal inertia (not in sketch)</label>
+        <h3>Always available</h3>
+        <label><input type="checkbox" id="ly-area" checked> Return area and 60-minute line</label>
+        <label><input type="checkbox" id="ly-zones" checked> Protected zones</label>
+        <label><input type="checkbox" id="ly-ridges"> Ridge mask</label>
+        <label><input type="checkbox" id="ly-trav" checked> Curiosity traverse</label>
+      </div>
+    </div>
+    <button class="btn" id="btn-assume" aria-expanded="false" aria-controls="assume"><svg class="i"><use href="#i-sliders"/></svg><span class="t">Assumptions</span></button>
+    <button class="btn btn-dark" id="btn-demo"><svg class="i"><use href="#i-play"/></svg><span>Play demo</span></button>
+  </div>
+</header>
+
+<main class="console">
+  <section class="mapcol" aria-label="Map and timeline">
+    <div class="mapwrap" id="mapwrap">
+      <div class="stage" id="stage">
+        <canvas id="cv-terrain" aria-hidden="true"></canvas>
+        <canvas id="cv-slope" aria-hidden="true" hidden></canvas>
+        <canvas id="cv-ridges" class="ridges" aria-hidden="true" hidden></canvas>
+        <svg class="ov" id="ov" role="img" aria-label="Map of the EVA site with return area, protected zones, route and stations"></svg>
+        <div class="loading" id="loading">Building synthetic terrain…</div>
+        <div class="banner" id="banner" hidden></div>
+        <div class="summary" id="summary" hidden></div>
+        <div class="mapfoot">
+          <div class="scale" id="scale"><div class="bar"></div><span>500 m</span></div>
+          <div class="readout" id="readout" aria-live="off"></div>
+          <div class="attrib">Terrain, routes and numbers are synthetic stand-ins. The build uses the USGS Gale orthophoto (25 cm) and DEM (1 m).</div>
+        </div>
+      </div>
+      <aside class="crew" id="crew" data-skin="console" aria-label="Crew display, read-only">
+        <div class="crew-head">
+          <span class="crew-title">Crew display<span class="ro">read-only</span></span>
+          <div class="seg" role="group" aria-label="Crew display skin">
+            <button type="button" data-skin="console" aria-pressed="true">Console</button>
+            <button type="button" data-skin="cuff" aria-pressed="false">Cuff</button>
+          </div>
+        </div>
+        <div id="crew-body"></div>
+      </aside>
+      <aside class="legend" aria-label="Map key">
+        <h2>Map key</h2>
+        <ul>
+          <li><svg viewBox="0 0 34 18"><rect x="1" y="2" width="32" height="14" fill="rgba(31,107,69,.16)" stroke="#1F6B45" stroke-width="2.2"/></svg>Return area: home in time</li>
+          <li><svg viewBox="0 0 34 18"><path d="M1 9h32" stroke="#2B2D2F" stroke-width="2" stroke-dasharray="6 4"/></svg>60-minute line, fixed</li>
+          <li><svg viewBox="0 0 34 18"><rect x="1" y="2" width="32" height="14" fill="#C9CEC3" stroke="#2B2D2F" stroke-width="1" stroke-dasharray="3 2"/></svg>Pale band: ground lost to life support</li>
+          <li><svg viewBox="0 0 34 18"><defs><pattern id="lg-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0v6" stroke="#2459A8" stroke-width="1.6"/></pattern></defs><rect x="1" y="2" width="32" height="14" fill="url(#lg-hatch)" stroke="#2459A8" stroke-width="1.4"/></svg>Protected zone, drill site</li>
+          <li><svg viewBox="0 0 34 18"><path d="M1 9h32" stroke="#EDF0E6" stroke-width="6"/><path d="M1 9h32" stroke="#2B2D2F" stroke-width="3"/></svg>Planned route</li>
+          <li><svg viewBox="0 0 34 18"><path d="M1 9h32" stroke="#EDF0E6" stroke-width="7"/><path d="M1 9h32" stroke="#C8361F" stroke-width="3.6"/></svg>ABORT route</li>
+          <li><svg viewBox="0 0 34 18"><path d="M1 9h32" stroke="#2B2D2F" stroke-width="1.6" stroke-dasharray="1.5 4" stroke-linecap="round"/></svg>Curiosity traverse</li>
+          <li><svg viewBox="0 0 34 18"><circle cx="17" cy="9" r="7.5" fill="#EDF0E6" stroke="#2459A8" stroke-width="1.6"/><text x="17" y="12.4" text-anchor="middle" font-size="9.5" font-weight="700" fill="#2459A8" font-family="Atkinson Hyperlegible Mono, monospace">1</text></svg>Science station</li>
+          <li><svg viewBox="0 0 34 18"><path d="M5 10.5c0-5 5-8 12-8s12 3 12 7.5-5 7-12 7c-6 0-11-2.5-11.5-6.5 0-1 .5-2.5 1.5-3.5" fill="none" stroke="#C8361F" stroke-width="2" stroke-linecap="round"/></svg>Finding, logged</li>
+        </ul>
+      </aside>
+    </div>
+    <div class="subs" id="subs" aria-live="polite">
+      <div class="subs-beat" id="subs-beat"></div>
+      <div class="subs-text" id="subs-text"></div>
+      <div class="transport">
+        <button type="button" id="tp-prev" aria-label="Previous beat"><svg class="i"><use href="#i-prev"/></svg></button>
+        <div class="dots" id="tp-dots"></div>
+        <button type="button" id="tp-next" aria-label="Next beat"><svg class="i"><use href="#i-next"/></svg></button>
+      </div>
+    </div>
+    <section class="budget" id="budget" aria-label="Time budget">
+      <div class="clock">
+        <div class="row1"><span class="lbl">EVA</span><span class="eva" id="clk-eva">0:00</span></div>
+        <div class="cap" id="clk-cap">09:00 LMST · simulation clock</div>
+        <div class="seg" role="group" aria-label="Time compression">
+          <button type="button" data-x="1" aria-pressed="false">×1</button>
+          <button type="button" data-x="60" aria-pressed="true">×60</button>
+          <button type="button" data-x="240" aria-pressed="false">×240</button>
+        </div>
+      </div>
+      <div class="budget-bar" id="bbar"></div>
+      <div class="budget-sum" id="bsum"></div>
+    </section>
+  </section>
+
+  <section class="logcol" aria-label="Verdict, rules and station log">
+    <div class="verdict" id="verdict" aria-live="polite"></div>
+    <h2 class="sect-h">Safety rules <span class="cap" id="rules-count"></span></h2>
+    <ul class="rows" id="rules"></ul>
+    <ul class="rows" id="info"></ul>
+    <div class="log">
+      <h2 class="sect-h">Station log <span class="cap">newest at the bottom</span></h2>
+      <ol id="log"></ol>
+    </div>
+    <aside class="assume" id="assume" hidden aria-label="Assumptions">
+      <div class="assume-h"><h2>Assumptions</h2><button class="btn" id="assume-close"><svg class="i"><use href="#i-close"/></svg>Close</button></div>
+      <div class="assume-body" id="assume-body"></div>
+    </aside>
+  </section>
+</main>
+<div class="tip" id="tip" role="tooltip" hidden></div>
+
+<script id="rl-gen">
+/* Synthetic data generator for the ReturnLine design sketch.
+   Sketch only: terrain, ridges, zones and every number here are invented so the
+   six beats can be shown. The product loads the precomputed time-to-base grid
+   from the offline C# engine; the browser never computes a route. */
+(function (root) {
+  'use strict';
+  var R_MARS = 3396190;
+  var M_PER_DEG = R_MARS * Math.PI / 180;          // 59274.70 m per degree
+  var W = 3600, H = 2300, CELL = 10;
+  var NX = W / CELL, NY = H / CELL, N = NX * NY;   // 360 x 230 cells of 10 m
+  var CENTER = { lon: 137.381, lat: -4.806 };
+  var SPEED_FLAT = 25;                              // m/min = 1.5 km/h (assumption)
+  var ZONE_PENALTY = 30;                            // cost factor inside zones, "zones penalized"
+
+  // ---------- noise ----------
+  function hash2(x, y, s) {
+    var h = (Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(s, 1442695041)) | 0;
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  }
+  function vnoise(x, y, s) {
+    var xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    var a = hash2(xi, yi, s), b = hash2(xi + 1, yi, s), c = hash2(xi, yi + 1, s), d = hash2(xi + 1, yi + 1, s);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  }
+  function fbm(x, y, s, oct) {
+    var f = 0, amp = 0.5, fr = 1, n = 0;
+    for (var i = 0; i < oct; i++) { f += amp * vnoise(x * fr, y * fr, s + i * 17); n += amp; amp *= 0.5; fr *= 2.03; }
+    return f / n;
+  }
+  function smooth(e0, e1, x) { var t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); }
+
+  // ---------- hand-placed features (metres, x east, y south) ----------
+  var F = {
+    habitat: [1700, 1030],
+    wall: [[1420, 1322], [2620, 1270]],            // northern rim ridge of the boxwork, one gap
+    zoneR: 100,                                     // buffer radius (assumption)
+    zones: [
+      { id: 'A', name: 'Drill site A', c: [1735, 1835] },
+      { id: 'B', name: 'Drill site B', c: [1750, 1305] },
+      { id: 'C', name: 'Drill site C', c: [2060, 1630] }
+    ],
+    stations: [
+      { n: 1, name: 'Rim ridge, west foot', reason: 'Clay-rich ridge wall where the boxwork network begins', c: [1380, 1500] },
+      { n: 2, name: 'Hollow floor', reason: 'Carbonate-cemented floor between two ridges', c: [1560, 1760] },
+      { n: 3, name: 'Ridge crest contact', reason: 'Clay ridge meets the sulfate host rock', c: [1910, 1800] },
+      { n: 4, name: 'Sulfate host outcrop', reason: 'The layer the groundwater moved through', c: [1960, 1470] }
+    ],
+    traverse: [[120, 90], [640, 210], [1100, 270], [1390, 560], [1640, 930], [1750, 1305], [1600, 1420], [1380, 1500],
+      [1450, 1650], [1560, 1760], [1735, 1835], [1910, 1800], [2060, 1630], [1960, 1470], [2200, 1420], [2440, 1560],
+      [2800, 1790], [3180, 2040], [3600, 2260]],
+    scarp: { y: 250, ramp: 1100 },
+    butte: { c: [2700, 700], rx: 230, ry: 140, h: 22 }
+  };
+
+  // ---------- Voronoi boxwork ----------
+  var S = 86, SGX = Math.ceil(W / S) + 2, SGY = Math.ceil(H / S) + 2;
+  var seedX = new Float64Array(SGX * SGY), seedY = new Float64Array(SGX * SGY);
+  for (var gy = 0; gy < SGY; gy++) for (var gx = 0; gx < SGX; gx++) {
+    var k = gy * SGX + gx;
+    seedX[k] = (gx - 1 + 0.5 + (hash2(gx, gy, 11) - 0.5) * 0.8) * S;
+    seedY[k] = (gy - 1 + 0.5 + (hash2(gx, gy, 23) - 0.5) * 0.8) * S;
+  }
+  var NEAR = { i: 0, j: 0, d: 0 };
+  function nearest2(x, y) {
+    var cx = Math.floor(x / S) + 1, cy = Math.floor(y / S) + 1;
+    var b1 = 1e18, b2 = 1e18, i1 = -1, i2 = -1;
+    for (var oy = -1; oy <= 1; oy++) {
+      var yy = cy + oy; if (yy < 0 || yy >= SGY) continue;
+      for (var ox = -1; ox <= 1; ox++) {
+        var xx = cx + ox; if (xx < 0 || xx >= SGX) continue;
+        var k = yy * SGX + xx, dx = x - seedX[k], dy = y - seedY[k], d = dx * dx + dy * dy;
+        if (d < b1) { b2 = b1; i2 = i1; b1 = d; i1 = k; } else if (d < b2) { b2 = d; i2 = k; }
+      }
+    }
+    var ex = seedX[i2] - seedX[i1], ey = seedY[i2] - seedY[i1];
+    NEAR.i = i1; NEAR.j = i2; NEAR.d = (b2 - b1) / (2 * Math.sqrt(ex * ex + ey * ey));
+    return NEAR;
+  }
+  // distance to the nearest closed ridge edge and the nearest open (eroded) edge, checking every
+  // neighbour of the nearest seed so ridge corners stay closed
+  var ED = { closed: 1e9, open: 1e9, i: -1 };
+  function edgeDists(x, y, active) {
+    var cx = Math.floor(x / S) + 1, cy = Math.floor(y / S) + 1, b1 = 1e18, i1 = -1, ox, oy, xx, yy, k, dx, dy, d;
+    for (oy = -1; oy <= 1; oy++) for (ox = -1; ox <= 1; ox++) {
+      yy = cy + oy; xx = cx + ox; if (yy < 0 || yy >= SGY || xx < 0 || xx >= SGX) continue;
+      k = yy * SGX + xx; dx = x - seedX[k]; dy = y - seedY[k]; d = dx * dx + dy * dy;
+      if (d < b1) { b1 = d; i1 = k; }
+    }
+    var ix = i1 % SGX, iy = (i1 - ix) / SGX, dc = 1e9, dop = 1e9;
+    for (oy = -2; oy <= 2; oy++) for (ox = -2; ox <= 2; ox++) {
+      if (!ox && !oy) continue;
+      yy = iy + oy; xx = ix + ox; if (yy < 0 || yy >= SGY || xx < 0 || xx >= SGX) continue;
+      k = yy * SGX + xx;
+      dx = x - seedX[k]; dy = y - seedY[k];
+      var ex = seedX[k] - seedX[i1], ey = seedY[k] - seedY[i1];
+      var de = (dx * dx + dy * dy - b1) / (2 * Math.sqrt(ex * ex + ey * ey));
+      if (de > 30) continue;
+      var isWall = wallEdge(i1, k);
+      if (!active && !isWall) continue;
+      var open = edgeOpen(i1, k);
+      if (open && isWall && dist([x, y], F.zones[1].c) > F.zoneR - 3) open = false;   // the gate is open only inside Drill site B
+      if (open) { if (de < dop) dop = de; } else if (de < dc) dc = de;
+    }
+    ED.closed = dc; ED.open = dop; ED.i = i1;
+    return ED;
+  }
+  function segInfo(px, py, a, b) {
+    var vx = b[0] - a[0], vy = b[1] - a[1], L2 = vx * vx + vy * vy;
+    var t = ((px - a[0]) * vx + (py - a[1]) * vy) / L2;
+    var side = vx * (py - a[1]) - vy * (px - a[0]);
+    var tc = Math.max(0, Math.min(1, t));
+    var dx = px - (a[0] + tc * vx), dy = py - (a[1] + tc * vy);
+    return { t: t, side: side, dist: Math.sqrt(dx * dx + dy * dy) };
+  }
+  function dist(a, b) { var dx = a[0] - b[0], dy = a[1] - b[1]; return Math.sqrt(dx * dx + dy * dy); }
+  function wallEdge(a, b) {           // seeds on opposite sides of the rim line, edge within its span
+    var mx = (seedX[a] + seedX[b]) / 2, my = (seedY[a] + seedY[b]) / 2;
+    var A = segInfo(seedX[a], seedY[a], F.wall[0], F.wall[1]);
+    var B = segInfo(seedX[b], seedY[b], F.wall[0], F.wall[1]);
+    var M = segInfo(mx, my, F.wall[0], F.wall[1]);
+    return A.side * B.side < 0 && M.t > -0.02 && M.t < 1.02 && M.dist < 2 * S;
+  }
+  var gapCache = new Map();
+  var GAP = 0.62;
+  function edgeOpen(i, j) {           // true = break in the ridge, passable
+    var a = Math.min(i, j), b = Math.max(i, j), key = a * 1048576 + b;
+    var v = gapCache.get(key);
+    if (v !== undefined) return v;
+    var mx = (seedX[a] + seedX[b]) / 2, my = (seedY[a] + seedY[b]) / 2;
+    var zb = F.zones[1].c;
+    if (wallEdge(a, b)) {
+      v = dist([mx, my], zb) < F.zoneR * 0.95;     // the only gap in the rim ridge sits inside Drill site B
+    } else if (dist([mx, my], zb) < F.zoneR * 0.9) {
+      v = true;
+    } else if (insideRim(mx, my)) {
+      v = hash2(a, b, 97) < 0.9;                    // sandy trough along the inner side of the rim
+    } else {
+      v = hash2(a, b, 97) < GAP;
+    }
+    gapCache.set(key, v);
+    return v;
+  }
+  function insideRim(x, y) {
+    var m = segInfo(x, y, F.wall[0], F.wall[1]);
+    return m.t > -0.1 && m.t < 1 && m.dist < 200 && segInfo(x, y, F.wall[0], F.wall[1]).side > 0;
+  }
+  function boxworkActive(x, y) {
+    var ex = (x - 1850) / 1300, ey = (y - 1760) / 520;
+    var e = Math.sqrt(ex * ex + ey * ey) + (fbm(x / 420, y / 420, 5, 3) - 0.5) * 0.55;
+    var w = segInfo(x, y, F.wall[0], F.wall[1]);
+    if (dist([x, y], F.wall[0]) < 170) return false;
+    return (e < 1 && y > 1240) || (w.dist < 60 && w.t > -0.03 && w.t < 1.03);
+  }
+
+  // ---------- elevation, slope ----------
+  function elevAt(x, y) {
+    var z = -3652 + 0.026 * y;
+    z += 14 * (fbm(x / 760, y / 760, 3, 3) - 0.5);
+    z += 5 * (fbm(x / 170, y / 170, 7, 2) - 0.5);
+    var b = F.butte, ex = (x - b.c[0]) / b.rx, ey = (y - b.c[1]) / b.ry;
+    var e = Math.sqrt(ex * ex + ey * ey) + (fbm(x / 120, y / 120, 9, 2) - 0.5) * 0.18;
+    z += b.h * smooth(1.0, 0.8, e);
+    var KN = [[1430, 760, 62], [2090, 830, 78], [1860, 600, 52], [1230, 1070, 48], [2330, 1080, 56]];
+    for (var q = 0; q < KN.length; q++) {
+      var kd = Math.sqrt((x - KN[q][0]) * (x - KN[q][0]) + (y - KN[q][1]) * (y - KN[q][1])) / KN[q][2] + (fbm(x / 60, y / 60, 21 + q, 2) - 0.5) * 0.3;
+      z += 9 * smooth(1.0, 0.72, kd);
+    }
+    var sc = F.scarp, ys = sc.y + 40 * Math.sin(x / 380) + 30 * (fbm(x / 300, 1.7, 13, 2) - 0.5);
+    var sw = 34 + 260 * Math.exp(-Math.pow((x - sc.ramp) / 90, 2));
+    z += 18 * (smooth(ys - sw / 2, ys + sw / 2, y) - 1);
+    return z;
+  }
+  var z = new Float32Array(N), slope = new Float32Array(N), shade = new Float32Array(N);
+  var ridge = new Uint8Array(N), blocked = new Uint8Array(N), zoneOf = new Int8Array(N), zoneNear = new Uint8Array(N);
+  for (var cy2 = 0; cy2 < NY; cy2++) for (var cx2 = 0; cx2 < NX; cx2++) {
+    z[cy2 * NX + cx2] = elevAt((cx2 + 0.5) * CELL, (cy2 + 0.5) * CELL);
+  }
+  var az = 315 * Math.PI / 180, alt = 40 * Math.PI / 180;
+  for (var y3 = 0; y3 < NY; y3++) for (var x3 = 0; x3 < NX; x3++) {
+    var i3 = y3 * NX + x3;
+    var xl = Math.max(0, x3 - 1), xr = Math.min(NX - 1, x3 + 1), yu = Math.max(0, y3 - 1), yd = Math.min(NY - 1, y3 + 1);
+    var dzdx = (z[y3 * NX + xr] - z[y3 * NX + xl]) / ((xr - xl) * CELL);
+    var dzdy = (z[yd * NX + x3] - z[yu * NX + x3]) / ((yd - yu) * CELL);
+    var g = Math.sqrt(dzdx * dzdx + dzdy * dzdy);
+    slope[i3] = Math.atan(g) * 180 / Math.PI;
+    var sl = Math.atan(g), aspect = Math.atan2(dzdy, -dzdx);
+    shade[i3] = Math.max(0, Math.sin(alt) * Math.cos(sl) + Math.cos(alt) * Math.sin(sl) * Math.cos(az - aspect + Math.PI / 2));
+    var px = (x3 + 0.5) * CELL, py = (y3 + 0.5) * CELL;
+    zoneOf[i3] = -1;
+    for (var zi = 0; zi < F.zones.length; zi++) {
+      var dz = dist([px, py], F.zones[zi].c);
+      if (dz <= F.zoneR) zoneOf[i3] = zi; else if (dz <= F.zoneR + 45) zoneNear[i3] = 1;
+    }
+    if (edgeDists(px, py, boxworkActive(px, py)).closed < 7.1) ridge[i3] = 1;
+  }
+  function clearAround(c, r) {
+    var x0 = Math.floor((c[0] - r) / CELL), x1 = Math.floor((c[0] + r) / CELL);
+    var y0 = Math.floor((c[1] - r) / CELL), y1 = Math.floor((c[1] + r) / CELL);
+    for (var yy = y0; yy <= y1; yy++) for (var xx = x0; xx <= x1; xx++) ridge[yy * NX + xx] = 0;
+  }
+  clearAround(F.habitat, 20);
+  F.stations.forEach(function (s) { clearAround(s.c, 12); });
+  for (var i4 = 0; i4 < N; i4++) blocked[i4] = (ridge[i4] || slope[i4] > 20) ? 1 : 0;
+
+  function idxOf(p) { return Math.floor(p[1] / CELL) * NX + Math.floor(p[0] / CELL); }
+  function ctr(i) { return [((i % NX) + 0.5) * CELL, (Math.floor(i / NX) + 0.5) * CELL]; }
+
+  // ---------- Dijkstra (8-connected), physical time and penalised cost ----------
+  // 16-neighbour moves keep open-ground areas round instead of octagonal
+  var DX = [1, -1, 0, 0, 1, 1, -1, -1, 1, 2, 2, 1, -1, -2, -2, -1], DY = [0, 0, 1, -1, 1, -1, 1, -1, 2, 1, -1, -2, -2, -1, 1, 2];
+  var DL = [10, 10, 10, 10, 14.1421, 14.1421, 14.1421, 14.1421, 22.3607, 22.3607, 22.3607, 22.3607, 22.3607, 22.3607, 22.3607, 22.3607];
+  function speed(sDeg) { return SPEED_FLAT * Math.exp(-3.5 * Math.abs(Math.tan(sDeg * Math.PI / 180))); }
+  function dijkstra(src, penalty, stopAt) {
+    var cost = new Float64Array(N).fill(Infinity), time = new Float32Array(N).fill(Infinity), ptr = new Int32Array(N).fill(-1);
+    var hk = new Float64Array(N * 4), hv = new Int32Array(N * 4), hn = 0;
+    function push(k, v) { var i = hn++; hk[i] = k; hv[i] = v; while (i > 0) { var p = (i - 1) >> 1; if (hk[p] <= hk[i]) break; var tk = hk[p]; hk[p] = hk[i]; hk[i] = tk; var tv = hv[p]; hv[p] = hv[i]; hv[i] = tv; i = p; } }
+    function pop() { var v = hv[0]; hn--; hk[0] = hk[hn]; hv[0] = hv[hn]; var i = 0; for (;;) { var l = 2 * i + 1, r = l + 1, m = i; if (l < hn && hk[l] < hk[m]) m = l; if (r < hn && hk[r] < hk[m]) m = r; if (m === i) break; var tk = hk[m]; hk[m] = hk[i]; hk[i] = tk; var tv = hv[m]; hv[m] = hv[i]; hv[i] = tv; i = m; } return v; }
+    cost[src] = 0; time[src] = 0; push(0, src);
+    var done = new Uint8Array(N);
+    while (hn > 0) {
+      var kmin = hk[0], u = pop();
+      if (done[u]) continue; done[u] = 1;
+      if (u === stopAt) break;
+      var ux = u % NX, uy = (u - ux) / NX;
+      for (var d = 0; d < 16; d++) {
+        var vx = ux + DX[d], vy = uy + DY[d];
+        if (vx < 0 || vy < 0 || vx >= NX || vy >= NY) continue;
+        var v = vy * NX + vx;
+        if (blocked[v] || done[v]) continue;
+        if (d >= 4 && d < 8 && (blocked[uy * NX + vx] || blocked[vy * NX + ux])) continue; // no corner cutting through ridges
+        if (d >= 8) {
+          var sgx = DX[d] > 0 ? 1 : -1, sgy = DY[d] > 0 ? 1 : -1, c1, c2;
+          if (Math.abs(DX[d]) === 1) { c1 = (uy + sgy) * NX + ux; c2 = (uy + sgy) * NX + vx; }
+          else { c1 = uy * NX + ux + sgx; c2 = vy * NX + ux + sgx; }
+          if (blocked[c1] || blocked[c2]) continue;
+        }
+        var t = DL[d] / speed((slope[u] + slope[v]) / 2);
+        var c = kmin + t * (zoneOf[v] >= 0 ? penalty : (zoneNear[v] && penalty > 1 ? 2.5 : 1));
+        if (c < cost[v]) { cost[v] = c; time[v] = time[u] + t; ptr[v] = u; push(c, v); }
+      }
+    }
+    return { cost: cost, time: time, ptr: ptr, src: src };
+  }
+  function pathFrom(field, i) {        // follow return pointers to the field's source
+    var out = [], guard = 0;
+    while (i >= 0 && guard++ < N) { out.push(i); if (i === field.src) break; i = field.ptr[i]; }
+    return out;
+  }
+  function pathStats(cells) {
+    var maxS = 0, len = 0, zoneM = 0;
+    for (var k = 0; k < cells.length; k++) {
+      maxS = Math.max(maxS, slope[cells[k]]);
+      if (k > 0) {
+        var a = ctr(cells[k - 1]), b = ctr(cells[k]), dl = dist(a, b);
+        len += dl;
+        if (zoneOf[cells[k]] >= 0) zoneM += dl;
+      }
+    }
+    return { maxSlope: maxS, length: len, zoneMetres: zoneM };
+  }
+
+  var hIdx = idxOf(F.habitat);
+  var homePen = dijkstra(hIdx, ZONE_PENALTY, -1);
+  var homeAllow = dijkstra(hIdx, 1, -1);
+
+  // planned legs: habitat -> S1 -> S2 -> S3 -> S4 -> habitat (zones penalised)
+  var stops = [F.habitat].concat(F.stations.map(function (s) { return s.c; })).concat([F.habitat]);
+  var legs = [];
+  for (var li = 0; li < stops.length - 1; li++) {
+    var from = idxOf(stops[li]), to = idxOf(stops[li + 1]);
+    var fld = (to === hIdx) ? homePen : dijkstra(to, ZONE_PENALTY, from);
+    var cells = pathFrom(fld, from);
+    var st = pathStats(cells);
+    legs.push({ cells: cells, minutes: fld.time[from], maxSlope: st.maxSlope, length: st.length, zoneMetres: st.zoneMetres });
+  }
+
+  // ---------- marching squares with chaining ----------
+  function contour(field, factor, limit, minPts) {
+    // values: time * factor; blocked cells take their best neighbour so ridges do not punch holes
+    var val = new Float32Array(N);
+    for (var i = 0; i < N; i++) val[i] = field.time[i] * factor;
+    for (var pass = 0; pass < 2; pass++) {
+      for (var y = 0; y < NY; y++) for (var x = 0; x < NX; x++) {
+        var i2 = y * NX + x;
+        if (!blocked[i2] && isFinite(val[i2])) continue;
+        var best = Infinity;
+        for (var d = 0; d < 8; d++) {
+          var xx = x + DX[d], yy = y + DY[d];
+          if (xx < 0 || yy < 0 || xx >= NX || yy >= NY) continue;
+          var j = yy * NX + xx;
+          if (!blocked[j] && val[j] < best) best = val[j];
+        }
+        if (best < Infinity) val[i2] = best + 0.4 * factor;
+      }
+    }
+    function V(x, y) { if (x < 0 || y < 0 || x >= NX || y >= NY) return 1e9; var v = val[y * NX + x]; return isFinite(v) ? v : 1e9; }
+    // grid corners are cell centres; cells of the marching grid span (x,y)-(x+1,y+1), x,y from -1..NX-1
+    var segs = [], adj = new Map();
+    function ekey(x, y, vert) { return ((y + 1) * (NX + 2) + (x + 1)) * 2 + (vert ? 1 : 0); }
+    function epos(x, y, vert) {
+      var a = V(x, y), b = vert ? V(x, y + 1) : V(x + 1, y);
+      var t = (limit - a) / (b - a); t = Math.max(0, Math.min(1, t));
+      return vert ? [(x + 0.5) * CELL, (y + t + 0.5) * CELL] : [(x + t + 0.5) * CELL, (y + 0.5) * CELL];
+    }
+    function add(k1, k2) {
+      var s = segs.length; segs.push([k1, k2]);
+      [k1, k2].forEach(function (k) { var l = adj.get(k); if (l) l.push(s); else adj.set(k, [s]); });
+    }
+    var pos = new Map();
+    function P(x, y, vert) { var k = ekey(x, y, vert); if (!pos.has(k)) pos.set(k, epos(x, y, vert)); return k; }
+    for (var gy2 = -1; gy2 < NY; gy2++) for (var gx2 = -1; gx2 < NX; gx2++) {
+      var a = V(gx2, gy2) <= limit, b = V(gx2 + 1, gy2) <= limit, c = V(gx2 + 1, gy2 + 1) <= limit, d2 = V(gx2, gy2 + 1) <= limit;
+      var code = (a ? 8 : 0) | (b ? 4 : 0) | (c ? 2 : 0) | (d2 ? 1 : 0);
+      if (code === 0 || code === 15) continue;
+      var T = function () { return P(gx2, gy2, false); }, Rr = function () { return P(gx2 + 1, gy2, true); };
+      var Bb = function () { return P(gx2, gy2 + 1, false); }, Ll = function () { return P(gx2, gy2, true); };
+      switch (code) {
+        case 1: case 14: add(Ll(), Bb()); break;
+        case 2: case 13: add(Bb(), Rr()); break;
+        case 3: case 12: add(Ll(), Rr()); break;
+        case 4: case 11: add(T(), Rr()); break;
+        case 6: case 9: add(T(), Bb()); break;
+        case 7: case 8: add(Ll(), T()); break;
+        case 5: case 10: {
+          var centre = (V(gx2, gy2) + V(gx2 + 1, gy2) + V(gx2 + 1, gy2 + 1) + V(gx2, gy2 + 1)) / 4 <= limit;
+          if ((code === 5) === centre) { add(Ll(), T()); add(Bb(), Rr()); } else { add(Ll(), Bb()); add(T(), Rr()); }
+          break;
+        }
+      }
+    }
+    var used = new Uint8Array(segs.length), rings = [];
+    for (var s0 = 0; s0 < segs.length; s0++) {
+      if (used[s0]) continue;
+      used[s0] = 1;
+      var ring = [segs[s0][0], segs[s0][1]], cur = segs[s0][1], guard = 0;
+      while (guard++ < 200000) {
+        var list = adj.get(cur), nxt = -1;
+        for (var q = 0; q < list.length; q++) if (!used[list[q]]) { nxt = list[q]; break; }
+        if (nxt < 0) break;
+        used[nxt] = 1;
+        cur = segs[nxt][0] === cur ? segs[nxt][1] : segs[nxt][0];
+        ring.push(cur);
+      }
+      if (ring.length >= (minPts || 3)) rings.push(ring.map(function (k) { return pos.get(k); }));
+    }
+    return rings;
+  }
+
+  // ---------- the six-beat scenario, derived from the grid ----------
+  function moveTime(u, v) { return dist(ctr(u), ctr(v)) / speed((slope[u] + slope[v]) / 2); }
+  function chaikin(pts, it) {
+    for (var k = 0; k < it; k++) {
+      var o = [pts[0]];
+      for (var i = 0; i < pts.length - 1; i++) {
+        var a = pts[i], b = pts[i + 1];
+        o.push([a[0] * 0.75 + b[0] * 0.25, a[1] * 0.75 + b[1] * 0.25], [a[0] * 0.25 + b[0] * 0.75, a[1] * 0.25 + b[1] * 0.75]);
+      }
+      o.push(pts[pts.length - 1]); pts = o;
+    }
+    return pts;
+  }
+  function track(cells, factor, t0) {   // timed polyline along cells
+    var pts = [ctr(cells[0])], ts = [t0], t = t0;
+    for (var i = 1; i < cells.length; i++) { t += moveTime(cells[i - 1], cells[i]) * factor; pts.push(ctr(cells[i])); ts.push(t); }
+    return { pts: pts, ts: ts, t0: t0, t1: t, cells: cells, draw: chaikin(pts, 2) };
+  }
+  function posOn(tr, t) {
+    if (t <= tr.ts[0]) return tr.pts[0].slice();
+    for (var i = 1; i < tr.ts.length; i++) if (tr.ts[i] >= t) {
+      var f = (t - tr.ts[i - 1]) / Math.max(1e-6, tr.ts[i] - tr.ts[i - 1]);
+      return [tr.pts[i - 1][0] + (tr.pts[i][0] - tr.pts[i - 1][0]) * f, tr.pts[i - 1][1] + (tr.pts[i][1] - tr.pts[i - 1][1]) * f];
+    }
+    return tr.pts[tr.pts.length - 1].slice();
+  }
+  function scenario() {
+    var dwell = [50, 55, 60];
+    var sched = [], t = 0, tracks = [];
+    for (var i = 0; i < 4; i++) {
+      var tr = track(legs[i].cells, 1, t);
+      tracks.push(tr);
+      t = tr.t1;
+      var arrive = t, leave = i < 3 ? t + dwell[i] : 300;
+      sched.push({ n: i + 1, arrive: arrive, leave: leave });
+      t = leave;
+    }
+    var ret = track(legs[4].cells, 1, 300);
+    var home = ret.t1;
+    // drift: the point of the return leg nearest to Drill site B
+    var zb = F.zones[1].c, best = 0;
+    for (var k = 0; k < ret.pts.length; k++) if (dist(ret.pts[k], zb) < dist(ret.pts[best], zb)) best = k;
+    var tQ = ret.ts[best], tQa = tQ - 2;
+    var qa = posOn(ret, tQa), q = ret.pts[best];
+    var dd = dist(q, zb), rD = F.zoneR + 10;
+    var D = [zb[0] + (q[0] - zb[0]) * rD / dd, zb[1] + (q[1] - zb[1]) * rD / dd];
+    var drift = { t0: tQa, t1: tQ + 1, pts: [] };
+    for (var s2 = 0; s2 <= 16; s2++) {
+      var u = s2 / 16, a1 = 1 - u;
+      drift.pts.push([a1 * a1 * qa[0] + 2 * a1 * u * q[0] + u * u * D[0], a1 * a1 * qa[1] + 2 * a1 * u * q[1] + u * u * D[1]]);
+    }
+    var tD = drift.t1, dIdx = idxOf(D);
+    var reroute = track(pathFrom(homePen, dIdx), 1, tD);
+    var detour = reroute.t1 - home;
+    var tP = tD + 2, P = posOn(reroute, tP), pIdx = idxOf(P);
+    var lsAtP = 360 - tP;
+    var protectedTr = track(pathFrom(homePen, pIdx), 2, tP);
+    var abortTr = track(pathFrom(homeAllow, pIdx), 2, tP);
+    var zoneIn = -1, zoneOut = -1, zoneM = 0;
+    for (var c = 1; c < abortTr.cells.length; c++) {
+      if (zoneOf[abortTr.cells[c]] >= 0) {
+        if (zoneIn < 0) zoneIn = abortTr.ts[c];
+        zoneOut = abortTr.ts[c];
+        zoneM += dist(abortTr.pts[c - 1], abortTr.pts[c]);
+      }
+    }
+    var entryIdx = abortTr.cells.findIndex(function (cc) { return zoneOf[cc] >= 0; });
+    var maxTTB = 0, maxSlope = 0, routeLen = 0;
+    legs.forEach(function (l) { l.cells.forEach(function (cc) { maxTTB = Math.max(maxTTB, homePen.time[cc]); }); maxSlope = Math.max(maxSlope, l.maxSlope); routeLen += l.length; });
+    return {
+      sched: sched, tracks: tracks, ret: ret, home: home, tQa: tQa, tQ: tQ, drift: drift, D: D, tD: tD,
+      reroute: reroute, detour: detour, tP: tP, P: P, lsAtP: lsAtP, protectedTr: protectedTr, abortTr: abortTr,
+      zoneIn: zoneIn, zoneOut: zoneOut, zoneM: zoneM, entry: entryIdx >= 0 ? abortTr.pts[entryIdx] : P,
+      maxTTB: maxTTB, maxSlope: maxSlope, routeLen: routeLen, abortMaxSlope: pathStats(abortTr.cells).maxSlope
+    };
+  }
+
+  function toLonLat(p) { return [CENTER.lon + (p[0] - W / 2) / M_PER_DEG, CENTER.lat - (p[1] - H / 2) / M_PER_DEG]; }
+
+  root.RLGEN = {
+    W: W, H: H, CELL: CELL, NX: NX, NY: NY, N: N, M_PER_DEG: M_PER_DEG, CENTER: CENTER,
+    SPEED_FLAT: SPEED_FLAT, ZONE_PENALTY: ZONE_PENALTY,
+    F: F, z: z, slope: slope, shade: shade, ridge: ridge, blocked: blocked, zoneOf: zoneOf, zoneNear: zoneNear, insideRim: insideRim,
+    nearest2: nearest2, edgeDists: edgeDists, edgeOpen: edgeOpen, wallEdge: wallEdge, boxworkActive: boxworkActive, fbm: fbm, hash2: hash2, segInfo: segInfo,
+    idxOf: idxOf, ctr: ctr, dist: dist, dijkstra: dijkstra, pathFrom: pathFrom, pathStats: pathStats,
+    homePen: homePen, homeAllow: homeAllow, legs: legs, contour: contour, toLonLat: toLonLat, hIdx: hIdx,
+    speed: speed, moveTime: moveTime, chaikin: chaikin, track: track, posOn: posOn, scenario: scenario
+  };
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script id="rl-app">
+(function () {
+  'use strict';
+  var G = window.RLGEN, SC = G.scenario();
+  var LMST0 = 540, SUNSET = 17 * 60 + 41 - LMST0, LS = 360, T45 = 285, BACKUP = 60;
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var R = Math.round;
+  function hm(m) { m = R(m); var neg = m < 0; m = Math.abs(m); return (neg ? '−' : '') + Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0'); }
+  function lmst(t) { var m = R(LMST0 + t); return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+  function numCell(v, unit, cap) {
+    var s = String(v), m = s.match(/^([^0-9]*[0-9]+)([.:][0-9]+)?$/);
+    var ip = m ? m[1] : s, fp = m && m[2] ? m[2] : '';
+    var u = unit ? (unit === '°' ? '<span class="nu tight">°</span>' : '<span class="nu">' + unit + '</span>') : '';
+    return '<span class="nc"><span class="ni">' + ip + '</span><span class="nf">' + fp + u + '</span></span>' + (cap ? '<small>' + cap + '</small>' : '');
+  }
+  function icon(id, cls) { return '<svg class="i' + (cls ? ' ' + cls : '') + '" aria-hidden="true"><use href="#i-' + id + '"/></svg>'; }
+
+  var DETOUR = Math.max(1, R(SC.detour));
+  var PROT = SC.protectedTr.t1 - SC.tP, ABRT = SC.abortTr.t1 - SC.tP;
+  var ZONE_M = R(SC.zoneM / 10) * 10, HOME_ABORT = SC.abortTr.t1;
+  var TURN_LATEST = LS - G.homePen.time[G.idxOf(G.F.stations[3].c)];
+  var RADIO = '1.6 min';
+
+  var SRC = {
+    xEVA: ['NASA EVA', 'NASA, Exploration EVA System Concept of Operations, Rev B, 2020: 60-minute safe-haven rule, suit slope requirement up to 20°, radio-loss procedure.'],
+    DEM: ['USGS', 'Slope at a 10 m baseline from the USGS Gale DEM (1 m), plus a 1 m ridge mask. In this sketch: synthetic terrain.'],
+    REMS: ['REMS', 'Curiosity REMS weather feed, sunrise and sunset per sol; last reading sol 4995 (2026-08-25). The sunset time here is a sketch value.'],
+    RAD: ['Hassler', 'Hassler et al. 2014, Science 343: 0.64 ± 0.12 mSv per day at Gale, measured 2012–13 about 13 km away. Shown as information, never a gate.'],
+    LOO: ['LOO', 'Leave-one-out: for each Curiosity drive over 50 m, route between its endpoints and measure the mean deviation from the real drive, next to a straight line. Sketch values.'],
+    GRID: ['grid', 'Time-to-base grid, 10 m cells, Dijkstra from the habitat with return pointers (offline C# engine). In this sketch: computed on synthetic terrain.'],
+    EWT: ['EWT', 'About 2 km/h in NASA lunar planning (xEVA); 1.5 km/h on Mars is a labeled slowdown after Norcross et al., NASA TP-2009-214796.'],
+    ASSUME: ['assum.', 'Labeled assumption, set at kickoff and adjustable in the Assumptions panel.'],
+    PP: ['COSPAR', 'COSPAR policy for human missions to Mars and NASA NID 8715.129 (2020). Still to be checked against the primary texts.']
+  };
+  function src(k) { return '<button type="button" class="src' + (k === 'ASSUME' ? ' is-assume' : '') + '" data-src="' + k + '">' + SRC[k][0] + '</button>'; }
+
+  var BEATS = [
+    { n: 1, title: 'Plan', sub: 'Habitat control plans the Marswalk. The route avoids every protected drill site, and all four safety rules pass.', t0: 0, t1: 0 },
+    { n: 2, title: 'Time jump', sub: 'Time jump to EVA hour 4:45 at Station 4. The return area still matches the fixed 60-minute line.', t0: T45, t1: T45 },
+    { n: 3, title: 'The area pulls away', sub: 'Life support now sets the limit. The return area shrinks along the terrain and pulls away from the 60-minute line.', t0: T45, t1: SC.tQa },
+    { n: 4, title: 'Deviation caught', sub: 'The crew drifts toward a protected drill site. The console warns, and habitat control reroutes: ' + DETOUR + ' minute extra.', t0: SC.tQa, t1: SC.tP },
+    { n: 5, title: 'Crew member injured', sub: 'A crew member is injured and walking speed halves. Only the way through the protected zone gets them home in time.', t0: SC.tP, t1: SC.tP },
+    { n: 6, title: 'Override, logged', sub: 'Habitat control overrides on purpose. The zone entry is logged: safety first, and the record shows it.', t0: SC.tP, t1: HOME_ABORT }
+  ];
+
+  var st = {
+    beat: 1, t: 0, go: false, reroute: false, abort: false, done: false, keepNote: false,
+    playing: false, skin: 'console', grid: false, base: 'ortho', ridges: false,
+    showArea: true, showZones: true, showTrav: true, speedX: 60, walk: 1.5, sel: null
+  };
+
+  function setBeat(n, atEnd) {
+    var b = BEATS[n - 1];
+    st.beat = n; st.t = atEnd ? b.t1 : b.t0;
+    st.go = n > 1 || !!atEnd;
+    st.reroute = n > 4 || (n === 4 && !!atEnd);
+    st.abort = n === 6 && !!atEnd;
+    st.done = n === 6 && !!atEnd;
+    st.keepNote = false;
+  }
+
+  // ---------- view ----------
+  var stage = $('#stage'), ov = $('#ov');
+  var view = { w: 1, h: 1, s: 1, ox: 0, oy: 0 };
+  function fit() {
+    var r = stage.getBoundingClientRect();
+    view.w = Math.max(1, r.width); view.h = Math.max(1, r.height);
+    view.s = Math.max(view.w / G.W, view.h / G.H);
+    var cx = 1780, cy = 1300;
+    view.ox = Math.min(0, Math.max(view.w - G.W * view.s, view.w / 2 - cx * view.s));
+    view.oy = Math.min(0, Math.max(view.h - G.H * view.s, view.h / 2 - cy * view.s));
+  }
+  function X(x) { return view.ox + x * view.s; }
+  function Y(y) { return view.oy + y * view.s; }
+  function pd(pts) { var o = ''; for (var i = 0; i < pts.length; i++) o += (i ? 'L' : 'M') + X(pts[i][0]).toFixed(1) + ' ' + Y(pts[i][1]).toFixed(1); return o; }
+  function bil(arr, gx, gy) {
+    var NX = G.NX, NY = G.NY;
+    gx = Math.min(NX - 1.001, Math.max(0, gx)); gy = Math.min(NY - 1.001, Math.max(0, gy));
+    var x0 = gx | 0, y0 = gy | 0, fx = gx - x0, fy = gy - y0, i = y0 * NX + x0;
+    var a = arr[i], b = arr[i + 1], c = arr[i + NX], d = arr[i + NX + 1];
+    return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy;
+  }
+
+  // ---------- rasters ----------
+  function renderTerrain() {
+    var cv = $('#cv-terrain'), w = R(view.w), h = R(view.h);
+    cv.width = w; cv.height = h;
+    var ctx = cv.getContext('2d'), img = ctx.createImageData(w, h), d = img.data;
+    var base = new Float32Array(w * h), rh = new Float32Array(w * h);
+    var s = view.s, rw = Math.max(2.6, 1.2 / s) * 1.7, zb = G.F.zones[1].c, zr = G.F.zoneR;
+    for (var y = 0; y < h; y++) {
+      var wy = (y + 0.5 - view.oy) / s;
+      for (var x = 0; x < w; x++) {
+        var wx = (x + 0.5 - view.ox) / s, i = y * w + x;
+        var a = 0.56 + 0.28 * (G.fbm(wx / 230, wy / 230, 31, 4) - 0.5);
+        var sand = G.fbm(wx / 520 + 7, wy / 520, 41, 3);
+        if (sand > 0.56) a -= (sand - 0.56) * 0.85;
+        a += (G.hash2(x, y, 5) - 0.5) * 0.05;
+        base[i] = a * (0.4 + 0.92 * bil(G.shade, wx / 10 - 0.5, wy / 10 - 0.5));
+        var nn = G.nearest2(wx, wy);
+        if (nn.d < rw) {
+          var wall = G.wallEdge(nn.i, nn.j);
+          if (wall || G.boxworkActive(wx, wy)) {
+            var open = G.edgeOpen(nn.i, nn.j);
+            if (open && wall && Math.hypot(wx - zb[0], wy - zb[1]) > zr - 3) open = false;
+            var f = 1 - nn.d / rw;
+            rh[i] = (open ? 0.3 : 1) * f * f;
+          }
+        }
+      }
+    }
+    for (var y2 = 0; y2 < h; y2++) for (var x2 = 0; x2 < w; x2++) {
+      var k = y2 * w + x2;
+      var l = x2 > 0 ? rh[k - 1] : 0, r = x2 < w - 1 ? rh[k + 1] : 0, u = y2 > 0 ? rh[k - w] : 0, dn = y2 < h - 1 ? rh[k + w] : 0;
+      var v = base[k] + rh[k] * 0.16 + (r - l + dn - u) * 0.3;
+      v = Math.min(1, Math.max(0, v));
+      var g = 66 + 156 * v;
+      d[k * 4] = g + 1; d[k * 4 + 1] = g + 2; d[k * 4 + 2] = g - 3; d[k * 4 + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+  function renderSlope() {
+    var cv = $('#cv-slope'), w = R(view.w), h = R(view.h);
+    cv.width = w; cv.height = h;
+    var ctx = cv.getContext('2d'), img = ctx.createImageData(w, h), d = img.data;
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+      var wx = (x + 0.5 - view.ox) / view.s, wy = (y + 0.5 - view.oy) / view.s;
+      var sl = bil(G.slope, wx / 10 - 0.5, wy / 10 - 0.5), hs = bil(G.shade, wx / 10 - 0.5, wy / 10 - 0.5);
+      var c = sl > 20 ? [200, 54, 31] : sl > 10 ? [128, 134, 132] : [226, 230, 218];
+      var m = 0.72 + 0.34 * hs, k = (y * w + x) * 4;
+      d[k] = Math.min(255, c[0] * m); d[k + 1] = Math.min(255, c[1] * m); d[k + 2] = Math.min(255, c[2] * m); d[k + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+  function renderRidges() {
+    var cv = $('#cv-ridges');
+    cv.width = G.NX; cv.height = G.NY;
+    var ctx = cv.getContext('2d'), img = ctx.createImageData(G.NX, G.NY), d = img.data;
+    for (var i = 0; i < G.N; i++) if (G.ridge[i]) { d[i * 4] = 200; d[i * 4 + 1] = 54; d[i * 4 + 2] = 31; d[i * 4 + 3] = 235; }
+    ctx.putImageData(img, 0, 0);
+    cv.style.left = view.ox + 'px'; cv.style.top = view.oy + 'px';
+    cv.style.width = (G.W * view.s) + 'px'; cv.style.height = (G.H * view.s) + 'px';
+    cv.style.right = 'auto'; cv.style.bottom = 'auto';
+  }
+
+  // ---------- derived state ----------
+  function walkK() { return 1.5 / st.walk; }
+  function areaSpec() {
+    var lim = Math.min(60, Math.floor(LS - st.t));
+    if (st.beat >= 6 && st.abort) return { field: G.homeAllow, factor: 2 * walkK(), limit: lim, key: 'a' };
+    if (st.beat >= 5) return { field: G.homePen, factor: 2 * walkK(), limit: lim, key: 'p' };
+    return { field: G.homePen, factor: walkK(), limit: lim, key: 'p' };
+  }
+  var cCache = new Map();
+  function contourOf(field, key, factor, limit) {
+    var k = key + factor.toFixed(3) + '|' + limit;
+    var r = cCache.get(k);
+    if (!r) {
+      r = G.contour(field, factor, limit, 24);
+      cCache.set(k, r);
+      if (cCache.size > 120) cCache.delete(cCache.keys().next().value);
+    }
+    return r;
+  }
+  function onDrift(t) {
+    var p = SC.drift.pts, f = (t - SC.drift.t0) / (SC.drift.t1 - SC.drift.t0) * (p.length - 1);
+    f = Math.max(0, Math.min(p.length - 1, f));
+    var i = Math.floor(f), j = Math.min(p.length - 1, i + 1), u = f - i;
+    return [p[i][0] + (p[j][0] - p[i][0]) * u, p[i][1] + (p[j][1] - p[i][1]) * u];
+  }
+  function crewPos() {
+    var t = st.t, b = st.beat;
+    if (b >= 6 && st.abort) return G.posOn(SC.abortTr, t);
+    if (b >= 5) return SC.P.slice();
+    if (t <= 300) {
+      for (var i = 0; i < 4; i++) {
+        var tr = SC.tracks[i];
+        if (t <= tr.t1) return G.posOn(tr, t);
+        if (t <= SC.sched[i].leave) return G.F.stations[i].c.slice();
+      }
+    }
+    if (b === 4 && t >= SC.tQa) return t <= SC.drift.t1 ? onDrift(t) : G.posOn(SC.reroute, t);
+    return G.posOn(SC.ret, t);
+  }
+  function remaining(tr, t) {   // metres and minutes left on a timed track
+    var m = 0;
+    for (var i = 1; i < tr.ts.length; i++) {
+      if (tr.ts[i] <= t) continue;
+      var a = tr.pts[i - 1], b = tr.pts[i], segL = G.dist(a, b);
+      if (tr.ts[i - 1] < t) segL *= (tr.ts[i] - t) / (tr.ts[i] - tr.ts[i - 1]);
+      m += segL;
+    }
+    return { m: m, min: Math.max(0, tr.t1 - t) };
+  }
+  function phase() {   // where the crew is in the plan
+    var t = st.t;
+    if (st.beat >= 5) return { kind: 'abort' };
+    if (t <= 300) {
+      for (var i = 0; i < 4; i++) {
+        if (t < SC.tracks[i].t1) return { kind: 'walk', leg: i };
+        if (t <= SC.sched[i].leave) return { kind: 'dwell', stn: i };
+      }
+    }
+    return { kind: 'return' };
+  }
+  function homeTime() {
+    if (st.beat >= 5) return HOME_ABORT;
+    if (st.reroute) return SC.reroute.t1;
+    return SC.home;
+  }
+
+  // ---------- map overlay ----------
+  function ringPath(cx, cy, rx, ry, rot) {
+    var pts = [], n = 46, a0 = -2.25, sweep = Math.PI * 2 * 1.12;
+    for (var k = 0; k <= n; k++) {
+      var a = a0 + sweep * k / n, f = 0.94 + 0.13 * (k / n);
+      var x = Math.cos(a) * rx * f, y = Math.sin(a) * ry * f;
+      pts.push([cx + x * Math.cos(rot) - y * Math.sin(rot), cy + x * Math.sin(rot) + y * Math.cos(rot)]);
+    }
+    var len = 0;
+    for (var j = 1; j < pts.length; j++) len += Math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]);
+    return { d: 'M' + pts.map(function (p) { return p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join('L'), len: Math.ceil(len) };
+  }
+  function findings() {
+    var f = [];
+    if (st.beat >= 4 && st.t >= SC.tD - 0.01) f.push({ id: 'drift', p: SC.drift.pts[SC.drift.pts.length - 1], t: SC.tD });
+    if (st.beat >= 5) f.push({ id: 'injury', p: SC.P, t: SC.tP });
+    if (st.abort && st.t >= SC.zoneIn) f.push({ id: 'zone', p: SC.entry, t: SC.zoneIn });
+    return f;
+  }
+  var AVOID = [G.F.habitat].concat(G.F.stations.map(function (q) { return q.c; }), G.F.zones.map(function (q) { return q.c; }));
+  function eastmost(rings, dy) {
+    var best = null, bl = 0;
+    rings.forEach(function (r) { if (r.length > bl) { bl = r.length; best = r; } });
+    if (!best) return null;
+    var e = null, narrow = view.w < 700;
+    best.forEach(function (p) {
+      var sx = X(p[0]), sy = Y(p[1]) + (dy || 0);
+      if (sx < 20 || sy < (narrow ? 40 : view.h * 0.3) || sy > view.h - 70 || sx > view.w - 200) return;
+      if (!narrow && sx < (view.w < 1500 ? 320 : 350) && sy > view.h - 470) return;   // crew display
+      for (var m = 0; m < AVOID.length; m++) if (Math.abs(sx - X(AVOID[m][0])) < 110 && Math.abs(sy - Y(AVOID[m][1])) < 24) return;
+      if (!narrow && sx > view.w - 440 && sy < 330) return;    // map key and label room
+      if (!e || sx > X(e[0])) e = p;
+    });
+    if (!e) best.forEach(function (p) { var sx = X(p[0]), sy = Y(p[1]); if (sx > 20 && sx < view.w - 460 && sy > 40 && sy < view.h - 70 && !(sx < 340 && sy > view.h - 470) && (!e || sy > Y(e[1]))) e = p; });
+    return e;
+  }
+  function label(x, y, txt, cls, anchor, fill) {
+    return '<text class="' + (cls || 'lbl') + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="' + (anchor || 'start') + '" fill="' + (fill || '#2B2D2F') + '">' + txt + '</text>';
+  }
+
+  var drawnRings = new Set(), ringsKey = '';
+  function renderOverlay() {
+    var o = [], L = [], s = view.s, narrow = view.w < 700;
+    o.push('<defs><pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="rgba(237,240,230,.30)"/><path d="M0 0v7" stroke="#2459A8" stroke-width="1.7"/></pattern></defs>');
+    // survey grid
+    if (st.grid) {
+      var x0 = Math.ceil((-view.ox / s) / 100) * 100, x1 = (view.w - view.ox) / s, y0 = Math.ceil((-view.oy / s) / 100) * 100, y1 = (view.h - view.oy) / s, g = '';
+      for (var gx = x0; gx < x1; gx += 100) g += '<path d="M' + X(gx).toFixed(1) + ' 0V' + view.h + '" stroke="rgba(43,45,47,' + (gx % 500 ? 0.18 : 0.34) + ')" stroke-width="1"/>';
+      for (var gy = y0; gy < y1; gy += 100) g += '<path d="M0 ' + Y(gy).toFixed(1) + 'H' + view.w + '" stroke="rgba(43,45,47,' + (gy % 500 ? 0.18 : 0.34) + ')" stroke-width="1"/>';
+      o.push('<g>' + g + '</g>');
+    }
+    // graticule ticks
+    var tk = '', M = G.M_PER_DEG;
+    var tstep = 0.005 * M * s > 100 ? 0.005 : 0.01;
+    for (var lon = 137.360; lon <= 137.4001; lon += tstep) {
+      var wx = G.W / 2 + (lon - G.CENTER.lon) * M, sx = X(wx);
+      if (sx < 30 || sx > view.w - 260) continue;
+      tk += '<path d="M' + sx.toFixed(1) + ' 0v7" stroke="#2B2D2F" stroke-width="1.2"/><text class="tick" x="' + sx.toFixed(1) + '" y="19" text-anchor="middle">' + lon.toFixed(3) + '°E</text>';
+    }
+    for (var lat = -4.780; lat >= -4.8301; lat -= tstep) {
+      var wy = G.H / 2 - (lat - G.CENTER.lat) * M, sy = Y(wy);
+      if (sy < 40 || sy > view.h - (narrow ? 70 : 470)) continue;
+      tk += '<path d="M0 ' + sy.toFixed(1) + 'h7" stroke="#2B2D2F" stroke-width="1.2"/><text class="tick" x="10" y="' + (sy + 3.5).toFixed(1) + '">' + Math.abs(lat).toFixed(3) + '°S</text>';
+    }
+    var ticks = '<g>' + tk + '</g>';
+    // return area and the fixed 60-minute line
+    if (st.showArea) {
+      var A = areaSpec(), area = contourOf(A.field, A.key, A.factor, A.limit);
+      var line = contourOf(G.homePen, 'p', walkK(), 60);
+      var ad = area.map(function (r) { return pd(r) + 'Z'; }).join('');
+      var ld = line.map(function (r) { return pd(r) + 'Z'; }).join('');
+      var same = A.limit >= 60 && A.factor === walkK() && A.key === 'p';
+      if (!same) o.push('<path d="' + ld + ad + '" fill="rgba(237,240,230,.52)" fill-rule="evenodd" stroke="none"/>');
+      o.push('<path d="' + ad + '" fill="rgba(31,107,69,.24)" fill-rule="evenodd" stroke="none"/>');
+      o.push('<path d="' + ld + '" fill="none" stroke="rgba(237,240,230,.85)" stroke-width="4.5"/>');
+      o.push('<path d="' + ld + '" fill="none" stroke="#2B2D2F" stroke-width="2" stroke-dasharray="7 5"/>');
+      o.push('<path d="' + ad + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="5.5"/>');
+      o.push('<path d="' + ad + '" fill="none" stroke="#1F6B45" stroke-width="2.6"/>');
+      var le = eastmost(line), ae = eastmost(area);
+      if (le && area.length) { var big = area.reduce(function (p, r) { return r.length > p.length ? r : p; }, []), bd = 1e9; big.forEach(function (p) { var dd = Math.hypot(X(p[0]) - X(le[0]), Y(p[1]) - Y(le[1])); if (dd < bd && !(X(p[0]) < 340 && Y(p[1]) > view.h - 470)) { bd = dd; ae = p; } }); }
+      if (le) L.push(label(X(le[0]) + 8, Y(le[1]) - 6, same ? 'Return area = 60-minute line' : '60-minute line', 'lbl', 'start'));
+      var aly = ae ? Y(ae[1]) + 16 : 0;
+      if (ae && le && Math.abs(aly - (Y(le[1]) - 6)) < 22 && Math.abs(X(ae[0]) - X(le[0])) < 260) aly = Y(le[1]) + 16;
+      if (ae && !same) L.push(label(X(ae[0]) + 8, aly, 'Return area · ' + A.limit + ' min' + (A.factor > walkK() * 1.5 ? ', injured' : ''), 'lbl', 'start', '#1F6B45'));
+    }
+    // protected zones
+    if (st.showZones) {
+      G.F.zones.forEach(function (z) {
+        var cx = X(z.c[0]), cy = Y(z.c[1]), r = G.F.zoneR * s;
+        o.push('<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + r.toFixed(1) + '" fill="url(#hatch)" stroke="#2459A8" stroke-width="1.8"/>');
+        if (narrow) L.push(label(cx, cy + 5, z.id, 'lbl', 'middle', '#2459A8'));
+        else if (z.id === 'A') L.push(label(cx, cy + r + 16, z.name + ' · protected', 'lbl', 'middle', '#2459A8'));
+        else L.push(label(cx + r + 7, cy + (z.id === 'B' ? -3 : 5), z.name + ' · protected', 'lbl', 'start', '#2459A8'));
+      });
+    }
+    // Curiosity traverse
+    if (st.showTrav) {
+      var tr = G.chaikin(G.F.traverse, 3);
+      o.push('<path d="' + pd(tr) + '" fill="none" stroke="rgba(237,240,230,.7)" stroke-width="3.6" stroke-linecap="round"/>');
+      o.push('<path d="' + pd(tr) + '" fill="none" stroke="#2B2D2F" stroke-width="1.7" stroke-dasharray="1.5 4.5" stroke-linecap="round"/>');
+      var tp = G.F.traverse[3];
+      L.push(label(X(tp[0]) + 10, Y(tp[1]) + 4, 'Curiosity traverse', 'lbl', 'start'));
+    }
+    // planned route
+    var plan = SC.tracks.map(function (t) { return t.draw; }).concat([SC.ret.draw]);
+    var planOp = st.beat >= 5 ? 0.42 : 1;
+    plan.forEach(function (p) {
+      o.push('<path d="' + pd(p) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="6.5" stroke-linejoin="round" opacity="' + planOp + '"/>');
+      o.push('<path d="' + pd(p) + '" fill="none" stroke="#2B2D2F" stroke-width="3" stroke-linejoin="round" opacity="' + planOp + '"/>');
+    });
+    // drift and reroute
+    if (st.beat >= 4 && st.t >= SC.tQa) {
+      var dEnd = st.beat === 4 ? Math.min(st.t, SC.drift.t1) : SC.drift.t1, dp = [];
+      for (var k2 = 0; k2 < SC.drift.pts.length; k2++) {
+        var tt = SC.drift.t0 + (SC.drift.t1 - SC.drift.t0) * k2 / (SC.drift.pts.length - 1);
+        if (tt <= dEnd + 1e-6) dp.push(SC.drift.pts[k2]);
+      }
+      if (dp.length > 1) o.push('<path d="' + pd(dp) + '" fill="none" stroke="#C8361F" stroke-width="2.2" stroke-dasharray="4 3"/>');
+      if (st.reroute && st.beat === 4) {
+        o.push('<path d="' + pd(SC.reroute.draw) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="6.5"/>');
+        o.push('<path d="' + pd(SC.reroute.draw) + '" fill="none" stroke="#2B2D2F" stroke-width="3"/>');
+        var rm = SC.reroute.draw[R(SC.reroute.draw.length * 0.25)];
+        L.push(label(X(rm[0]) - 10, Y(rm[1]) + 18, 'Reroute · +' + DETOUR + ' min', 'lbl', 'end'));
+      }
+    }
+    // ABORT candidates and route
+    if (st.beat === 5 || (st.beat === 6 && !st.abort)) {
+      var pp = SC.protectedTr.draw, ap = SC.abortTr.draw;
+      o.push('<path d="' + pd(pp) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="6"/>');
+      o.push('<path d="' + pd(pp) + '" fill="none" stroke="#2B2D2F" stroke-width="2.6" stroke-dasharray="8 5"/>');
+      o.push('<path d="' + pd(ap) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="7"/>');
+      o.push('<path d="' + pd(ap) + '" fill="none" stroke="#C8361F" stroke-width="3.6" stroke-dasharray="10 5"/>');
+      var pm = pp[R(pp.length * 0.62)], am = ap[R(ap.length * 0.78)];
+      L.push(label(X(pm[0]) - 12, Y(pm[1]) + 4, 'Protected route · ' + R(PROT) + ' min', 'lbl', 'end'));
+      L.push(label(X(am[0]) + 12, Y(am[1]) + 4, 'Through Drill site B · ' + R(ABRT) + ' min', 'lbl', 'start', '#C8361F'));
+    }
+    if (st.beat === 6 && st.abort) {
+      var ar = SC.abortTr.draw;
+      o.push('<path d="' + pd(ar) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="7.5"/>');
+      o.push('<path d="' + pd(ar) + '" fill="none" stroke="#C8361F" stroke-width="3.8"/>');
+      var am2 = ar[R(ar.length * 0.62)];
+      L.push(label(X(am2[0]) - 14, Y(am2[1]) + 4, 'ABORT route · ' + ZONE_M + ' m in zone, logged', 'lbl', 'end', '#C8361F'));
+    }
+    // habitat and stations
+    var h = G.F.habitat, hx = X(h[0]), hy = Y(h[1]);
+    o.push('<rect x="' + (hx - 8).toFixed(1) + '" y="' + (hy - 8).toFixed(1) + '" width="16" height="16" fill="#2B2D2F" stroke="#EDF0E6" stroke-width="2"/>');
+    L.push(label(hx - 14, hy + 5, 'Habitat', 'lbl', 'end'));
+    G.F.stations.forEach(function (sn, i) {
+      var sx2 = X(sn.c[0]), sy2 = Y(sn.c[1]), done = st.t >= SC.sched[i].leave && (st.beat > 1);
+      o.push('<circle cx="' + sx2.toFixed(1) + '" cy="' + sy2.toFixed(1) + '" r="11.5" fill="' + (done ? '#2459A8' : '#EDF0E6') + '" stroke="#2459A8" stroke-width="2"/>');
+      o.push('<text x="' + sx2.toFixed(1) + '" y="' + (sy2 + 4.2).toFixed(1) + '" text-anchor="middle" font-family="Atkinson Hyperlegible Mono, monospace" font-size="12" font-weight="700" fill="' + (done ? '#EDF0E6' : '#2459A8') + '">' + sn.n + '</text>');
+      var right = i >= 2;
+      if (!narrow) L.push(label(right ? sx2 + 17 : sx2 - 17, sy2 + 4.5, 'Stn ' + sn.n, 'lbl', right ? 'start' : 'end', '#2459A8'));
+    });
+    ov.innerHTML = o.join('') + ticks + L.join('') + '<g id="g-rings"></g><g id="g-crew"></g>';
+    ringsKey = '';
+    renderRings();
+    renderCrewMarker();
+  }
+  function renderRings() {
+    var f = findings(), key = f.map(function (x) { return x.id; }).join(',');
+    var g = $('#g-rings');
+    if (!g || key === ringsKey) return;
+    ringsKey = key;
+    g.innerHTML = f.map(function (x, n) {
+      var sz = x.id === 'injury' ? [34, 26] : x.id === 'drift' ? [19, 15] : [27, 20];
+      var rp = ringPath(X(x.p[0]), Y(x.p[1]), sz[0], sz[1], -0.2), fresh = !drawnRings.has(x.id);
+      drawnRings.add(x.id);
+      return '<g class="finding' + (n < f.length - 1 ? ' old' : '') + (st.sel === x.id ? ' is-hl' : '') + '" data-f="' + x.id + '" tabindex="0" role="button" aria-label="Finding on the map: show it in the log">' +
+        '<path class="ring' + (fresh ? ' draw' : '') + '" d="' + rp.d + '" style="--len:' + rp.len + ';stroke-dasharray:' + rp.len + '"/>' +
+        '<circle class="ring-hit" cx="' + X(x.p[0]).toFixed(1) + '" cy="' + Y(x.p[1]).toFixed(1) + '" r="26"/></g>';
+    }).join('');
+  }
+  function renderCrewMarker() {
+    var g = $('#g-crew');
+    if (!g) return;
+    var p = crewPos(), cx = X(p[0]), cy = Y(p[1]), red = st.beat >= 5 && !st.done;
+    var txt = st.done ? 'Crew home' : st.beat >= 5 ? 'Crew · EV2 injured' : 'Crew';
+    var atHome = st.beat === 1 || st.done;
+    g.innerHTML = (atHome ? '' :
+      '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="14" fill="none" stroke="' + (red ? '#C8361F' : '#2B2D2F') + '" stroke-width="1.2" opacity=".55"/>' +
+      '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="7.5" fill="' + (red ? '#C8361F' : '#2B2D2F') + '" stroke="#EDF0E6" stroke-width="2.2"/>' +
+      label(cx + 18, cy - 10, txt, 'lbl', 'start', red ? '#C8361F' : '#2B2D2F'));
+  }
+
+  // ---------- verdict, rules, info ----------
+  function renderVerdict() {
+    var b = st.beat, o = '<div class="v-label">Planner recommendation · decision: <b>Habitat control</b></div>';
+    function word(w, cls, count) { return '<div class="v-line"><span class="v-word ' + cls + '">' + w + '</span>' + (count ? '<span class="v-count">– ' + count + '</span>' : '') + '</div>'; }
+    function constraint(trig, act, warn) { return '<div class="constraint' + (warn ? ' warn' : '') + '"><span class="trig">' + trig + '</span>' + icon('arrow') + '<span class="act">' + act + '</span></div>'; }
+    if (b === 1) {
+      o += word('GO', 'go') + '<p class="v-sub">All four rules pass. The route avoids all three protected zones.</p>';
+      o += st.go ? '<div class="v-status ok">' + icon('check') + 'GO confirmed by habitat control · 09:00</div>'
+        : '<div class="v-actions"><button class="btn btn-go" id="act-go">' + icon('check') + 'Confirm GO</button><button class="btn" id="act-hold">Hold</button></div>';
+    } else if (b === 2 || (b === 3 && st.t < 300)) {
+      o += word('GO', 'go') + '<p class="v-sub">On plan at Station 4. Turnaround at 14:00, latest ' + lmst(TURN_LATEST) + '.</p>';
+      o += '<div class="v-status ok">' + icon('check') + 'GO confirmed 09:00</div>';
+    } else if (b <= 4) {
+      o += word('GO', 'go', '1 constraint') + '<p class="v-sub">Life support now sets the return area. The crew is heading home.</p>';
+      o += constraint('Crew leaves the return area', 'ABORT: return to shelter now');
+      if (b === 4 && st.t >= SC.tD - 0.01) {
+        o += constraint('Crew 10 m from Drill site B', st.reroute ? 'Rerouted: +' + DETOUR + ' min' : 'Reroute around the zone', true);
+        if (!st.reroute) o += '<div class="v-actions"><button class="btn btn-dark" id="act-reroute">' + icon('arrow') + 'Reroute around Drill site B</button></div>';
+        else o += '<div class="v-status">' + icon('check') + 'Reroute sent ' + lmst(SC.tD + 0.5) + ' · home ' + lmst(SC.reroute.t1) + '</div>';
+      }
+    } else if (b === 5 || !st.abort) {
+      o += word('ABORT', 'abort') + '<p class="v-sub">Return to shelter now. EV2 is injured; walking speed is halved.</p>';
+      o += '<ul class="v-facts">' +
+        '<li class="bad">' + icon('cross') + '<span>Protected route home: breaks the 60-minute rule and runs past life support</span><span class="num">' + R(PROT) + ' min</span></li>' +
+        '<li class="good">' + icon('check') + '<span>Through Drill site B: fits. Life support left ' + R(SC.lsAtP) + ' min</span><span class="num">' + R(ABRT) + ' min</span></li></ul>';
+      o += '<div class="v-actions"><button class="btn btn-abort" id="act-abort">' + icon('check') + 'Confirm ABORT through Drill site B</button><button class="btn" id="act-keep">Keep protected route</button></div>';
+      if (st.keepNote) o += '<div class="v-status red">' + icon('warn') + 'Protected route: ' + R(PROT) + ' min. The crew would arrive after life support runs out.</div>';
+    } else if (st.done) {
+      o = '<div class="v-label">EVA closed · decisions: <b>Habitat control</b></div>' + word('HOME', 'go');
+      o += '<p class="v-sub">Closed after the ABORT at ' + lmst(SC.tP) + '. Both crew members inside at ' + lmst(HOME_ABORT) + ', ' + R(LS - HOME_ABORT) + ' min of life support left.</p>';
+      o += '<div class="v-status red">' + icon('check') + 'Override logged · ' + ZONE_M + ' m inside Drill site B · reason: ABORT</div>';
+    } else {
+      o += word('ABORT', 'abort') + '<p class="v-sub">Override confirmed ' + lmst(SC.tP) + '. The crew returns through Drill site B.</p>';
+      o += '<div class="v-status red">' + icon('check') + 'Override logged · ' + ZONE_M + ' m inside Drill site B · reason: ABORT</div>';
+    }
+    $('#verdict').innerHTML = o;
+  }
+  function renderRules() {
+    var b = st.beat, rows;
+    var daylight = { ok: true, l: 'Daylight', c: 'home before sunset 17:41', v: lmst(homeTime()), u: '', vc: 'home', s: 'REMS' };
+    var radio = { ok: true, l: 'Radio gap', c: 'longest on the route · limit 5 min', v: '1.6', u: 'min', vc: 'sketch', s: 'xEVA' };
+    if (b <= 4) {
+      rows = [
+        { ok: true, l: 'Time to shelter', c: 'max on the route · limit 60 min', v: R(SC.maxTTB), u: 'min', vc: 'max', s: 'xEVA' },
+        { ok: true, l: 'Slope, 10 m baseline', c: 'limit 20° · ridge crossings: 0', v: SC.maxSlope.toFixed(1), u: '°', vc: 'max', s: 'DEM' }, radio, daylight];
+    } else if (!st.abort) {
+      rows = [
+        { ok: false, l: 'Time to shelter', c: 'protected route, injured · limit 60 min', v: R(PROT), u: 'min', vc: 'fails', s: 'xEVA' },
+        { ok: true, l: 'Slope, 10 m baseline', c: 'ABORT route · limit 20°', v: SC.abortMaxSlope.toFixed(1), u: '°', vc: 'max', s: 'DEM' }, radio, daylight];
+    } else {
+      rows = [
+        { fired: true, l: 'Time to shelter', c: 'fired ' + lmst(SC.tP) + ' on the protected route; the ABORT route is within 60 min', v: R(ABRT), u: 'min', vc: 'ABORT route', s: 'xEVA' },
+        { ok: true, l: 'Slope, 10 m baseline', c: 'ABORT route · limit 20°', v: SC.abortMaxSlope.toFixed(1), u: '°', vc: 'max', s: 'DEM' }, radio, daylight];
+    }
+    var fails = rows.filter(function (r) { return !r.ok && !r.fired; }).length, fired = rows.some(function (r) { return r.fired; });
+    $('#rules-count').textContent = fired ? '1 fired · all pass on the ABORT route' : fails ? fails + ' of 4 fails' : '4 of 4 pass';
+    $('#rules').innerHTML = rows.map(function (r) {
+      var stc = r.fired ? 'fired' : r.ok ? 'pass' : 'fail', ic = r.fired ? 'warn' : r.ok ? 'check' : 'cross', w = r.fired ? 'fired' : r.ok ? 'pass' : 'fails';
+      return '<li class="row4' + (r.ok || r.fired ? '' : ' fail') + '"><span class="a"><span class="stat ' + stc + '">' + icon(ic) + '<span class="w">' + w + '</span></span></span>' +
+        '<span class="l">' + r.l + '<span class="cap">' + r.c + '</span></span><span class="v">' + numCell(r.v, r.u, r.vc) + '</span><span class="s">' + src(r.s) + '</span></li>';
+    }).join('');
+    var dose = 0.64 * st.t / 1440;
+    $('#info').innerHTML =
+      '<li class="row4"><span class="a"><span class="stat info">' + icon('info') + '<span class="w">info</span></span></span><span class="l">Radiation dose this EVA<span class="cap">information only, never a gate · 0.64 mSv per day</span></span><span class="v">' + numCell(dose.toFixed(2), 'mSv', 'so far') + '</span><span class="s">' + src('RAD') + '</span></li>' +
+      '<li class="row4"><span class="a"><span class="stat info">' + icon('info') + '<span class="w">info</span></span></span><span class="l">Compared with Curiosity<span class="cap">mean deviation of our routes from its drives · straight line: 58 m</span></span><span class="v">' + numCell('21', 'm', 'sketch') + '</span><span class="s">' + src('LOO') + '</span></li>';
+  }
+
+  // ---------- station log ----------
+  function logEntries() {
+    var E = [], t = st.t, b = st.beat;
+    function add(time, kind, o) { o.time = time; o.kind = kind; E.push(o); }
+    add(0, 'plan', { id: 'plan', title: 'Route planned', text: '4 stations · ' + (SC.routeLen / 1000).toFixed(1) + ' km · all 3 protected zones avoided', v: hm(SC.home), u: '', vc: 'EVA plan' });
+    if (st.go) add(0.01, 'decision', { id: 'go', title: 'GO confirmed', text: 'Habitat control' });
+    G.F.stations.forEach(function (sn, i) { add(SC.sched[i].arrive, 'station', { id: 'stn' + sn.n, i: i }); });
+    if (b >= 2) add(T45 - 0.01, 'event', { id: 'jump', title: 'Time jump to EVA hour 4:45', text: 'Rehearsal skips the quiet hours; the clock shows it' });
+    if (b >= 3 && t >= 300) add(300, 'event', { id: 'turn', title: 'Turnaround at Station 4', text: 'Heading home' });
+    if (b >= 3 && t >= 301) add(301, 'event', { id: 'ls', title: 'Life support now sets the return area', text: 'Less than 60 min left' });
+    if (b >= 4 && t >= SC.tD - 0.01) add(SC.tD, 'finding', { id: 'drift', title: 'Crew 10 m from Drill site B', text: 'Drifting off the route toward a protected zone', v: '10', u: 'm', vc: 'to zone' });
+    if (st.reroute) add(SC.tD + 0.5, 'decision', { id: 'reroute', title: 'Reroute around Drill site B', text: 'Habitat control', v: '+' + DETOUR, u: 'min', vc: 'detour' });
+    if (b >= 5) add(SC.tP, 'finding', { id: 'injury', title: 'EV2 injured', text: 'Walking speed ×0.5 (assumption)', v: '×0.5', u: '', vc: 'speed', s: 'ASSUME' });
+    if (b >= 5) add(SC.tP + 0.01, 'event', { id: 'reco', title: 'Planner recommends ABORT', text: 'Protected route ' + R(PROT) + ' min breaks the 60-minute rule' });
+    if (st.abort) add(SC.tP + 0.02, 'decision', { id: 'abort', title: 'ABORT confirmed · override', text: 'Habitat control · route through Drill site B' });
+    if (st.abort && t >= SC.zoneIn) add(SC.zoneIn, 'finding', { id: 'zone', title: 'Zone entered · Drill site B', text: ZONE_M + ' m · reason: ABORT', v: ZONE_M, u: 'm', vc: 'in zone', s: 'PP' });
+    if (st.abort && t >= SC.zoneOut) add(SC.zoneOut, 'event', { id: 'zoneout', title: 'Zone left · Drill site B', text: 'Override closed' });
+    if (st.done) add(HOME_ABORT, 'event', { id: 'home', title: 'Crew home', text: 'Both crew members inside the habitat', v: R(LS - HOME_ABORT), u: 'min', vc: 'life support left' });
+    E.sort(function (a, c) { return a.time - c.time; });
+    return E;
+  }
+  var lastLogKey = '', seenLog = new Set(), logPrimed = false;
+  function renderLog(force) {
+    var E = logEntries(), t = st.t;
+    var key = E.map(function (e) {
+      if (e.kind === 'station') { var s = SC.sched[e.i]; return e.id + (t < s.arrive ? 'p' : t <= s.leave && st.beat > 1 ? 'o' : 'd'); }
+      return e.id;
+    }).join('|') + (st.sel || '');
+    if (key === lastLogKey && !force) return;
+    lastLogKey = key;
+    var html = E.map(function (e) {
+      var fresh = logPrimed && !seenLog.has(e.id);
+      seenLog.add(e.id);
+      if (e.kind === 'station') {
+        var sn = G.F.stations[e.i], s = SC.sched[e.i];
+        var stateTxt = (st.beat === 1 || t < s.arrive) ? 'planned' : (t <= s.leave ? 'on station' : 'done');
+        var planned = stateTxt === 'planned';
+        var ttb = G.homePen.time[G.idxOf(sn.c)];
+        return '<li class="row4 lg station' + (planned ? ' is-planned' : '') + (fresh ? ' is-new' : '') + '" data-id="' + e.id + '">' +
+          '<span class="a">' + lmst(s.arrive) + '<small>' + stateTxt + '<br>' + R(s.leave - s.arrive) + ' min</small></span>' +
+          '<div class="l"><div class="lg-title"><span class="badge' + (stateTxt === 'done' ? ' done' : '') + '">' + sn.n + '</span>' + sn.name + '</div>' +
+          '<div class="cap">' + sn.reason + '</div>' +
+          '<div class="lg-media"><canvas width="168" height="108" data-thumb="' + e.i + '" aria-hidden="true"></canvas><div class="cap">Ground image slot: orbital crop until the Curiosity image is in</div></div></div>' +
+          '<span class="v">' + numCell(R(ttb), 'min', 'to base') + '</span><span class="s">' + src('GRID') + '</span></li>';
+      }
+      var ring = '';
+      if (e.kind === 'finding') {
+        var rp = ringPath(29, 15, 25, 12, -0.08);
+        ring = '<svg class="ring-wrap" viewBox="0 0 64 34" aria-hidden="true"><path class="ring' + (fresh ? ' draw' : '') + '" d="' + rp.d + '" style="--len:' + rp.len + ';stroke-dasharray:' + rp.len + '"/></svg>';
+      }
+      return '<li class="row4 lg ' + e.kind + (fresh ? ' is-new' : '') + (st.sel === e.id ? ' is-hl' : '') + '" data-id="' + e.id + '"' + (e.kind === 'finding' ? ' data-f="' + e.id + '" tabindex="0" role="button" aria-label="Finding: ' + e.title + '. Show on the map"' : '') + '>' + ring +
+        '<span class="a">' + lmst(e.time) + '</span><span class="l">' + e.title + '<span class="cap">' + (e.text || '') + '</span></span>' +
+        '<span class="v">' + (e.v != null ? numCell(e.v, e.u, e.vc) : '') + '</span><span class="s">' + (e.s ? src(e.s) : '') + '</span></li>';
+    }).join('');
+    logPrimed = true;
+    var ol = $('#log');
+    ol.innerHTML = html;
+    drawThumbs();
+    snapLog();
+  }
+  function snapLog() {
+    var ol = $('#log');
+    ol.style.paddingBottom = '';
+    if (window.innerWidth > 1100) {
+      if (st.beat === 1) { ol.scrollTop = 0; return; }
+      var base = ol.scrollHeight, maxTop = base - ol.clientHeight, rows = ol.children, top = -1;
+      if (maxTop <= 0) { ol.scrollTop = 0; return; }
+      for (var ri = 0; ri < rows.length; ri++) { var ot = rows[ri].offsetTop - ol.offsetTop; if (ot >= maxTop - 1) { top = ot; break; } }
+      if (top < 0) top = maxTop;
+      var extra = top + ol.clientHeight - base;
+      if (extra > 0) ol.style.paddingBottom = (14 + extra) + 'px';
+      ol.scrollTop = top;
+    }
+  }
+  function drawThumbs() {
+    var src2 = $('#cv-terrain');
+    $$('canvas[data-thumb]').forEach(function (c) {
+      var i = +c.getAttribute('data-thumb'), p = G.F.stations[i].c, ctx = c.getContext('2d');
+      var sw = 120 / view.s * view.s, sh = sw * 108 / 168;
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(src2, X(p[0]) - sw / 2 * 0.36, Y(p[1]) - sh / 2 * 0.36, sw * 0.36, sh * 0.36, 0, 0, 168, 108);
+      ctx.strokeStyle = 'rgba(36,89,168,.9)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(84, 54, 9, 0, Math.PI * 2); ctx.stroke();
+    });
+  }
+
+  // ---------- crew display ----------
+  function crewData() {
+    var t = st.t, ls = LS - t, sun = SUNSET - t, ph = phase(), p = crewPos(), k = walkK();
+    var d = { ls: hm(ls), sun: hm(sun), state: 'ON PLAN', stateNum: '±0 min', cls: 'ok', warn: null, fill: null };
+    var ttbHere = G.homePen.time[G.idxOf(p)] * k;
+    if (st.beat === 1) {
+      d.next = 'Stn 1'; d.nextCap = R(G.legs[0].length) + ' m'; d.nextV = R(G.legs[0].minutes * k) + ' min';
+      d.ttb = '0 min'; d.ttbCap = 'at the habitat';
+      d.res = R(TURN_LATEST - 300) + ' min'; d.resCap = 'to turnaround · 14:00';
+      return d;
+    }
+    if (st.done) {
+      d.state = 'HOME'; d.stateNum = lmst(HOME_ABORT); d.cls = 'home';
+      d.next = 'Habitat'; d.nextCap = 'arrived'; d.nextV = '0 min'; d.ttb = '0 min'; d.ttbCap = 'inside';
+      d.res = R(LS - HOME_ABORT) + ' min'; d.resCap = 'life support at arrival';
+      return d;
+    }
+    if (ph.kind === 'abort') {
+      var rem = st.abort ? remaining(SC.abortTr, t) : null;
+      d.fill = { instr: 'Return to shelter now', route: st.abort ? 'Through Drill site B · override logged' : 'Stand by: route from habitat control' };
+      d.next = 'Habitat'; d.nextCap = rem ? R(rem.m) + ' m' : 'route pending'; d.nextV = rem ? R(rem.min) + ' min' : '—';
+      d.ttb = rem ? R(rem.min) + ' min' : '—'; d.ttbCap = 'injured pace';
+      d.res = rem ? R(ls - rem.min) + ' min' : '—'; d.resCap = 'at arrival';
+      return d;
+    }
+    if (ph.kind === 'walk' || ph.kind === 'dwell') {
+      var leg = ph.kind === 'walk' ? ph.leg : ph.stn + 1;
+      if (leg <= 3) {
+        var trk = SC.tracks[leg], r2 = ph.kind === 'walk' ? remaining(trk, t) : { m: G.legs[leg].length, min: G.legs[leg].minutes };
+        d.next = 'Stn ' + (leg + 1); d.nextCap = R(r2.m) + ' m'; d.nextV = R(r2.min * k) + ' min';
+      } else {
+        d.next = 'Habitat'; d.nextCap = R(G.legs[4].length) + ' m'; d.nextV = R(G.legs[4].minutes * k) + ' min';
+      }
+      d.ttb = R(ttbHere) + ' min'; d.ttbCap = 'from here';
+      d.res = R(TURN_LATEST - 300) + ' min'; d.resCap = 'to turnaround · 14:00';
+      if (t >= 290 && t < 300) { d.state = 'TURNAROUND DUE'; d.stateNum = '14:00'; d.cls = 'due'; }
+      return d;
+    }
+    var trk2 = (st.beat === 4 && t >= SC.tD && st.reroute) ? SC.reroute : SC.ret;
+    var r3 = remaining(trk2, t);
+    d.next = 'Habitat'; d.nextCap = R(r3.m) + ' m'; d.nextV = R(r3.min) + ' min';
+    d.ttb = R(ttbHere) + ' min'; d.ttbCap = 'from here';
+    d.res = R(ls - (homeTime() - t)) + ' min'; d.resCap = 'at arrival';
+    if (st.beat === 4 && t >= SC.tD - 0.01 && !st.reroute) d.warn = 'Protected zone 10 m ahead · stop';
+    if (st.beat === 4 && st.reroute) d.stateNum = '−' + DETOUR + ' min';
+    return d;
+  }
+  function cdNum(v) { var m = String(v).match(/^(\S+) (min|m)$/); return m ? numCell(m[1], m[2]) : numCell(v, ''); }
+  function renderCrew() {
+    var d = crewData(), body = $('#crew-body'), o = '';
+    if (st.skin === 'console') {
+      if (d.fill) {
+        o += '<div class="cd-fill"><div class="instr">ABORT: ' + d.fill.instr.toLowerCase() + '</div><div class="route">' + d.fill.route + '</div></div>';
+        o += '<div class="cd-compact"><div>Next target<b>' + d.nextV + '</b>' + d.next + '</div><div>Time to base<b>' + d.ttb + '</b>' + d.ttbCap + '</div><div>Reserve<b>' + d.res + '</b>' + d.resCap + '</div>' +
+          '<div>Life support<b>' + d.ls + '</b>assumption</div><div>Time to sunset<b>' + d.sun + '</b>17:41</div></div>';
+      } else {
+        o += '<div class="cd-state ' + d.cls + '">' + (d.cls === 'ok' ? icon('check') : '') + d.state + '<span class="num">' + d.stateNum + '</span></div>';
+        if (d.warn) o += '<div class="cd-warn">' + icon('warn') + d.warn + '</div>';
+        o += '<dl class="cd-vals">' +
+          '<div><dt>Next target<span class="cap">' + d.next + ' · ' + d.nextCap + '</span></dt><dd>' + cdNum(d.nextV) + '</dd></div>' +
+          '<div><dt>Time to base<span class="cap">' + d.ttbCap + '</span></dt><dd>' + cdNum(d.ttb) + '</dd></div>' +
+          '<div><dt>Reserve<span class="cap">' + d.resCap + '</span></dt><dd>' + cdNum(d.res) + '</dd></div>' +
+          '<div><dt>Life support<span class="cap">assumption: 6:00 EVA</span></dt><dd>' + cdNum(d.ls) + '</dd></div>' +
+          '<div><dt>Time to sunset<span class="cap">sunset 17:41 LMST</span></dt><dd>' + cdNum(d.sun) + '</dd></div></dl>';
+      }
+    } else {
+      var stateTxt = d.fill ? '<div class="cuff-state abort"><span>ABORT</span><span class="sub">RETURN TO SHELTER NOW</span></div>'
+        : '<div class="cuff-state"><span>' + d.state + '</span><span>' + d.stateNum + '</span></div>';
+      o += '<div class="cuff"><div class="cuff-strap top"></div><div class="cuff-body">' +
+        '<div class="cuff-keys l"><div class="cuff-key"><span>PAGE</span></div><div class="cuff-key"><span>MARK</span></div></div>' +
+        '<div class="cuff-screen">' + stateTxt +
+        (d.fill && !st.abort ? '<div class="cuff-row pending"><span>ROUTE</span><span>PENDING FROM HABITAT</span></div>' :
+        '<div class="cuff-row"><span>NEXT ' + d.next.toUpperCase() + '</span><b>' + d.nextV + '</b></div>' +
+        '<div class="cuff-row"><span>TO BASE</span><b>' + d.ttb + '</b></div>' +
+        '<div class="cuff-row"><span>RESERVE</span><b>' + d.res + '</b></div>') +
+        '<div class="cuff-row"><span>LIFE SUPP*</span><b>' + d.ls + '</b></div>' +
+        '<div class="cuff-row"><span>SUNSET IN</span><b>' + d.sun + '</b></div></div>' +
+        '<div class="cuff-keys r"><div class="cuff-key"><span>LIGHT</span></div><div class="cuff-key"><span>ACK</span></div></div>' +
+        '</div><div class="cuff-strap bottom"></div>' +
+        '<div class="cuff-note">Same five values on the forearm. Hardware keys page through them; nothing needs touch. *assumption</div></div>';
+    }
+    body.innerHTML = o;
+  }
+
+  // ---------- time budget ----------
+  function renderBudget() {
+    var el = $('#bbar'), W = Math.max(200, el.clientWidth), H = 90, max = 420;
+    var sx = function (m) { return 2 + (W - 4) * m / max; };
+    var b = st.beat, o = [];
+    for (var hr = 0; hr <= 7; hr++) {
+      o.push('<path d="M' + sx(hr * 60).toFixed(1) + ' 14v4" stroke="#2B2D2F"/>');
+      o.push('<text x="' + sx(hr * 60).toFixed(1) + '" y="10" text-anchor="' + (hr === 0 ? 'start' : hr === 7 ? 'end' : 'middle') + '">' + hr + ':00</text>');
+    }
+    var y = 20, bh = 24;
+    o.push('<rect x="' + sx(360) + '" y="' + y + '" width="' + (sx(420) - sx(360)) + '" height="' + bh + '" fill="rgba(43,45,47,.08)"/>');
+    if (W > 520) o.push('<text x="' + ((sx(360) + sx(420)) / 2) + '" y="' + (y + 16) + '" text-anchor="middle">backup 1:00</text>');
+    o.push('<rect x="' + sx(0) + '" y="' + y + '" width="' + (sx(300) - sx(0)) + '" height="' + bh + '" fill="#2B2D2F"/>');
+    SC.sched.forEach(function (s) {
+      o.push('<rect x="' + sx(s.arrive).toFixed(1) + '" y="' + (y + 4) + '" width="' + (sx(s.leave) - sx(s.arrive)).toFixed(1) + '" height="' + (bh - 8) + '" fill="#2459A8"/>');
+      o.push('<text x="' + ((sx(s.arrive) + sx(s.leave)) / 2).toFixed(1) + '" y="' + (y + 16) + '" text-anchor="middle" fill="#EDF0E6" font-weight="700">' + s.n + '</text>');
+    });
+    var retEnd, retStart = 300, overflow = null;
+    if (b >= 5) {
+      o.push('<rect x="' + sx(300) + '" y="' + y + '" width="' + (sx(SC.tP) - sx(300)) + '" height="' + bh + '" fill="#8A8F92"/>');
+      retStart = SC.tP; retEnd = R(SC.tP) + R(ABRT);
+      o.push('<rect x="' + sx(SC.tP).toFixed(1) + '" y="' + y + '" width="' + (sx(HOME_ABORT) - sx(SC.tP)).toFixed(1) + '" height="' + bh + '" fill="' + (st.abort ? '#C8361F' : 'rgba(200,54,31,.25)') + '" stroke="#C8361F" stroke-width="1.5"' + (st.abort ? '' : ' stroke-dasharray="4 3"') + '/>');
+      o.push('<text x="' + ((sx(SC.tP) + sx(HOME_ABORT)) / 2).toFixed(1) + '" y="' + (y + 16) + '" text-anchor="middle" font-weight="700" fill="' + (st.abort ? '#EDF0E6' : '#A92C18') + '">ABORT</text>');
+      if (!st.abort) {
+        var y2 = y + bh + 4, pEnd = R(SC.tP) + R(PROT);
+        o.push('<rect x="' + sx(SC.tP).toFixed(1) + '" y="' + y2 + '" width="' + (sx(Math.min(360, pEnd)) - sx(SC.tP)).toFixed(1) + '" height="9" fill="#8A8F92"/>');
+        o.push('<rect x="' + sx(360).toFixed(1) + '" y="' + y2 + '" width="' + (sx(pEnd) - sx(360)).toFixed(1) + '" height="9" fill="#C8361F"/>');
+        o.push('<text x="' + (sx(SC.tP) - 6).toFixed(1) + '" y="' + (y2 + 8) + '" text-anchor="end">protected route ' + hm(PROT) + '</text>');
+        o.push('<text x="' + (W > 520 ? sx(pEnd) + 4 : W - 2).toFixed(1) + '" y="' + (y2 + (W > 520 ? 8 : 20)) + '" fill="#C8361F" font-weight="700" text-anchor="' + (W > 520 ? 'start' : 'end') + '">over ' + hm(pEnd - 360) + '</text>');
+        overflow = pEnd - 360;
+      }
+    } else {
+      retEnd = 300 + R(homeTime() - 300);
+      o.push('<rect x="' + sx(300) + '" y="' + y + '" width="' + (sx(retEnd) - sx(300)).toFixed(1) + '" height="' + bh + '" fill="#8A8F92"/>');
+    }
+    var resStart = retEnd;
+    if (resStart < 360) {
+      o.push('<rect x="' + sx(resStart).toFixed(1) + '" y="' + (y + 0.75) + '" width="' + (sx(360) - sx(resStart) - 0.75).toFixed(1) + '" height="' + (bh - 1.5) + '" fill="none" stroke="#2B2D2F" stroke-width="1.2" stroke-dasharray="3 3"/>');
+    }
+    o.push('<path d="M' + sx(360) + ' 12V' + (y + bh + 16) + '" stroke="#2B2D2F" stroke-width="2.5"/>');
+    var ly = y + bh + 30;
+    o.push('<text class="t-lbl" x="' + ((sx(0) + sx(300)) / 2) + '" y="' + ly + '" text-anchor="middle">Outbound ' + hm(300) + '</text>');
+    if (overflow == null) o.push('<text class="t-lbl" x="' + (sx(300) + 2) + '" y="' + ly + '" text-anchor="start">Return ' + hm(retEnd - 300) + '</text>');
+    o.push('<text class="t-lbl" x="' + (sx(360) + 4) + '" y="' + (ly + 15) + '" text-anchor="start">EVA limit</text>');
+    // elapsed and now
+    var t = st.t;
+    if (b >= 2) {
+      o.push('<path d="M' + sx(0) + ' ' + (y + bh + 3) + 'H' + sx(T45) + '" stroke="#E3B21B" stroke-width="3" stroke-dasharray="5 4"/>');
+      o.push('<path d="M' + sx(T45) + ' ' + (y + bh + 3) + 'H' + sx(t) + '" stroke="#E3B21B" stroke-width="3"/>');
+    }
+    o.push('<path d="M' + sx(t).toFixed(1) + ' 13V' + (y + bh + 6) + '" stroke="#C8361F" stroke-width="2"/><path d="M' + (sx(t) - 5).toFixed(1) + ' 12h10l-5 6z" fill="#C8361F"/>');
+    el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Time budget: outbound and return against the 6-hour EVA limit">' + o.join('') + '</svg>';
+    // sums
+    var s = '';
+    function row(k, v, cls) { s += '<div class="row' + (cls ? ' ' + cls : '') + '"><span class="k">' + k + '</span><span>' + v + '</span></div>'; }
+    row('Outbound', hm(300));
+    if (b >= 5) { row('Return so far', hm(R(SC.tP) - 300)); row(st.abort ? 'ABORT route' : 'ABORT option', hm(R(ABRT))); }
+    else row('Return' + (st.reroute ? ' incl. detour' : ''), hm(retEnd - 300));
+    row('Total of 6:00', hm(retEnd), 'total');
+    row('Reserve', hm(360 - retEnd));
+    if (overflow != null) row('Protected route: over by', hm(overflow), 'over');
+    $('#bsum').innerHTML = s;
+    $('#clk-eva').textContent = hm(t);
+    $('#clk-cap').textContent = lmst(t) + ' LMST · ' + (b >= 2 ? 'after time jump' : 'simulation clock');
+    $('#hdr-clock').textContent = lmst(t) + ' LMST';
+  }
+
+  // ---------- banner, summary, subtitles ----------
+  function renderBanner() {
+    var el = $('#banner'), b = st.beat;
+    if (b === 2) { el.className = 'banner'; el.innerHTML = 'Time jump ' + icon('arrow') + ' EVA hour <span class="num">4:45</span>'; el.hidden = false; }
+    else if (b === 5) { el.className = 'banner event'; el.innerHTML = icon('warn') + 'Crew member injured · walking speed <span class="num">×0.5</span> (assumption)'; el.hidden = false; }
+    else el.hidden = true;
+    var sm = $('#summary');
+    if (st.done) {
+      sm.innerHTML = '<header><h2>Crew home at ' + lmst(HOME_ABORT) + ' LMST</h2><p>EVA rehearsal complete. Summary for the debrief.</p></header><dl>' +
+        '<div><dt>Life support left<span class="cap">1:00 backup untouched</span></dt><dd>' + R(LS - HOME_ABORT) + ' min</dd></div>' +
+        '<div><dt>Inside protected zones<span class="cap">1 entry, logged with reason ABORT</span></dt><dd class="red">' + ZONE_M + ' m</dd></div>' +
+        '<div><dt>Rules fired<span class="cap">slope, radio gap and daylight never fired</span></dt><dd class="txt">Time to shelter, ' + lmst(SC.tP) + '</dd></div>' +
+        '<div><dt>Science stations<span class="cap">all samples taken before the injury</span></dt><dd>4 of 4</dd></div>' +
+        '<div><dt>Radiation dose<span class="cap">information only</span></dt><dd>' + (0.64 * HOME_ABORT / 1440).toFixed(2) + ' mSv</dd></div></dl>' +
+        '<p class="slogan">Explore Mars. Return Safely. Preserve the Evidence.<span>Rehearsal on synthetic terrain. Every number in the build carries its source.</span></p>';
+      sm.hidden = false;
+    } else sm.hidden = true;
+    $('.legend').classList.toggle('is-off', !!st.done);
+    var be = BEATS[b - 1];
+    $('#subs-beat').innerHTML = '<span>Beat ' + b + '/6</span> · ' + be.title;
+    $('#subs-text').textContent = be.sub;
+    $$('#tp-dots button').forEach(function (btn, i) { if (i + 1 === b) btn.setAttribute('aria-current', 'step'); else btn.removeAttribute('aria-current'); });
+  }
+
+  // ---------- render orchestration ----------
+  var lastMinute = -1;
+  function renderAll() {
+    renderOverlay(); renderVerdict(); renderRules(); renderLog(); renderCrew(); renderBudget(); renderBanner();
+    lastMinute = Math.floor(st.t);
+  }
+  function renderFrame() {
+    if (Math.floor(st.t) !== lastMinute) { renderAll(); return; }
+    renderCrewMarker();
+    $('#clk-eva').textContent = hm(st.t);
+  }
+
+  // ---------- demo player ----------
+  var token = 0, raf = 0;
+  function sleep(ms, tok) { return new Promise(function (res, rej) { setTimeout(function () { if (tok === token) res(); else rej('stop'); }, ms); }); }
+  function runClock(t0, t1, tok) {
+    return new Promise(function (res, rej) {
+      var last = performance.now(); st.t = t0;
+      function tick(now) {
+        if (tok !== token) return rej('stop');
+        var dt = Math.min(0.1, (now - last) / 1000); last = now;
+        st.t = Math.min(t1, st.t + dt * st.speedX / 60);
+        renderFrame();
+        if (st.t >= t1) { renderAll(); return res(); }
+        raf = requestAnimationFrame(tick);
+      }
+      raf = requestAnimationFrame(tick);
+    });
+  }
+  function press(sel) { var b = $(sel); if (b) b.classList.add('is-pressed'); }
+  function syncSpeed() { $$('.clock .seg button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.x === st.speedX)); }); }
+  async function beatScript(b, tok) {
+    if (b === 1) { await sleep(3400, tok); press('#act-go'); await sleep(380, tok); st.go = true; renderAll(); await sleep(3200, tok); }
+    if (b === 2) { await sleep(5600, tok); }
+    if (b === 3) { await sleep(1200, tok); await runClock(T45, SC.tQa, tok); await sleep(1600, tok); }
+    if (b === 4) { await runClock(SC.tQa, SC.tD, tok); await sleep(2200, tok); press('#act-reroute'); await sleep(380, tok); st.reroute = true; renderAll(); await sleep(1200, tok); await runClock(SC.tD, SC.tP, tok); await sleep(900, tok); }
+    if (b === 5) { await sleep(7000, tok); }
+    if (b === 6) {
+      await sleep(2000, tok); press('#act-abort'); await sleep(380, tok); st.abort = true; renderAll();
+      var prev = st.speedX; st.speedX = Math.max(prev, 240); syncSpeed();
+      try { await runClock(SC.tP, HOME_ABORT, tok); } finally { st.speedX = prev; syncSpeed(); }
+      st.done = true; renderAll();
+    }
+  }
+  async function play(from, only) {
+    stop(true);
+    var tok = ++token; st.playing = true; syncPlay();
+    try {
+      for (var b = from; b <= (only || 6); b++) { setBeat(b, false); renderAll(); await beatScript(b, tok); }
+    } catch (e) { return; }
+    if (tok === token) { st.playing = false; syncPlay(); }
+  }
+  function stop(silent) { token++; cancelAnimationFrame(raf); st.playing = false; if (!silent) syncPlay(); }
+  function syncPlay() {
+    var btn = $('#btn-demo');
+    btn.innerHTML = st.playing ? icon('pause') + '<span>Stop demo</span>' : icon('play') + '<span>Play demo</span>';
+  }
+  function goBeat(n) { stop(); setBeat(Math.max(1, Math.min(6, n)), true); renderAll(); }
+
+  // ---------- highlight link between map rings and log ----------
+  function setHL(id, redraw) {
+    $$('[data-f]').forEach(function (el) {
+      var on = el.getAttribute('data-f') === id;
+      el.classList.toggle('is-hl', on);
+      if (on && redraw) {
+        var r = el.querySelector('.ring');
+        if (r && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) { r.classList.remove('draw'); void r.getBoundingClientRect(); r.classList.add('draw'); }
+      }
+    });
+  }
+
+  // ---------- assumptions panel ----------
+  var AS = [
+    { id: 'walk', label: 'Walking speed, level ground', min: 1, max: 2, step: 0.1, val: 1.5, fmt: function (v) { return v.toFixed(1) + ' km/h'; }, src: 'EWT', note: 'Changes the return area and the 60-minute line in this sketch.' },
+    { id: 'pen', label: 'Slope penalty on walking speed', kind: 'select', options: ['Tobler-type, scaled to 1.5 km/h', 'Sensitivity check: −30 %', 'Sensitivity check: +30 %'], src: 'ASSUME' },
+    { id: 'slope', label: 'Slope blocked above', min: 15, max: 25, step: 1, val: 20, fmt: function (v) { return v + '°'; }, src: 'xEVA', note: 'Suit design limit. Comfortable walking up to 10°.' },
+    { id: 'inj', label: 'Walking speed when injured', min: 0.3, max: 0.8, step: 0.05, val: 0.5, fmt: function (v) { return '×' + v.toFixed(2); }, src: 'ASSUME' },
+    { id: 'buf', label: 'Protected-zone buffer radius', min: 50, max: 200, step: 10, val: 100, fmt: function (v) { return v + ' m'; }, src: 'PP' },
+    { id: 'eva', label: 'EVA duration', min: 4, max: 8, step: 0.5, val: 6, fmt: function (v) { return v.toFixed(1) + ' h + 1 h backup'; }, src: 'xEVA' }
+  ];
+  function buildAssume() {
+    $('#assume-body').innerHTML = AS.map(function (a) {
+      var ctl = a.kind === 'select'
+        ? '<select id="as-' + a.id + '" style="width:100%;margin:10px 0 6px;height:34px;border:1.5px solid #2B2D2F;background:#EDF0E6;font:600 14px var(--f-text);color:#2B2D2F;border-radius:2px">' + a.options.map(function (op) { return '<option>' + op + '</option>'; }).join('') + '</select>'
+        : '<input type="range" id="as-' + a.id + '" min="' + a.min + '" max="' + a.max + '" step="' + a.step + '" value="' + a.val + '">';
+      return '<div class="as"><div class="as-top"><label for="as-' + a.id + '">' + a.label + '</label>' + (a.fmt ? '<output id="out-' + a.id + '">' + a.fmt(a.val) + '</output>' : '') + '</div>' + ctl +
+        '<div class="as-src">' + src(a.src) + '<span class="cap">' + (a.src === 'ASSUME' ? 'Labeled assumption' : 'Sourced value') + (a.note ? ' · ' + a.note : '') + '</span></div></div>';
+    }).join('') + '<p class="as-note">In this sketch only walking speed redraws the map. The other controls show the panel; each carries its source or the label “assumption”.</p>';
+    AS.forEach(function (a) {
+      var inp = $('#as-' + a.id);
+      if (!inp || a.kind === 'select') return;
+      inp.addEventListener('input', function () {
+        var v = +inp.value; $('#out-' + a.id).textContent = a.fmt(v);
+        if (a.id === 'walk') { st.walk = v; renderOverlay(); renderCrew(); }
+      });
+    });
+  }
+
+  // ---------- wiring ----------
+  function wire() {
+    $('#btn-demo').addEventListener('click', function () { if (st.playing) stop(); else play(1); });
+    $('#tp-prev').addEventListener('click', function () { goBeat(st.beat - 1); });
+    $('#tp-next').addEventListener('click', function () { goBeat(st.beat + 1); });
+    $('#tp-dots').innerHTML = BEATS.map(function (b) { return '<button type="button" data-b="' + b.n + '" aria-label="Beat ' + b.n + ': ' + b.title + '">' + b.n + '</button>'; }).join('');
+    $('#tp-dots').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) goBeat(+b.dataset.b); });
+    $('#verdict').addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.id === 'act-go') { st.go = true; renderAll(); }
+      if (b.id === 'act-hold') { b.textContent = 'Holding · no clock'; }
+      if (b.id === 'act-reroute') { st.reroute = true; renderAll(); }
+      if (b.id === 'act-abort' && !st.playing) { play(6, 6); }
+      if (b.id === 'act-keep') { st.keepNote = true; renderVerdict(); }
+    });
+    $('#tgl-grid').addEventListener('change', function (e) { st.grid = e.target.checked; renderOverlay(); });
+    var lb = $('#btn-layers'), lp = $('#layers');
+    lb.addEventListener('click', function (e) { e.stopPropagation(); var open = lp.hidden; lp.hidden = !open; lb.setAttribute('aria-expanded', String(open)); });
+    document.addEventListener('click', function (e) { if (!lp.hidden && !lp.contains(e.target)) { lp.hidden = true; lb.setAttribute('aria-expanded', 'false'); } });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { lp.hidden = true; lb.setAttribute('aria-expanded', 'false'); closeAssume(); }
+    });
+    $$('input[name=base]').forEach(function (r) { r.addEventListener('change', function () { st.base = r.value; syncLayers(); }); });
+    $('#ly-area').addEventListener('change', function (e) { st.showArea = e.target.checked; renderOverlay(); });
+    $('#ly-zones').addEventListener('change', function (e) { st.showZones = e.target.checked; renderOverlay(); });
+    $('#ly-ridges').addEventListener('change', function (e) { st.ridges = e.target.checked; syncLayers(); });
+    $('#ly-trav').addEventListener('change', function (e) { st.showTrav = e.target.checked; renderOverlay(); });
+    $('#btn-assume').addEventListener('click', function () { var a = $('#assume'); if (a.hidden) openAssume(); else closeAssume(); });
+    $('#assume-close').addEventListener('click', closeAssume);
+    $$('.crew-head .seg button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        st.skin = b.dataset.skin;
+        $('#crew').setAttribute('data-skin', st.skin);
+        $$('.crew-head .seg button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+        renderCrew();
+      });
+    });
+    $$('.clock .seg button').forEach(function (b) { b.addEventListener('click', function () { st.speedX = +b.dataset.x; syncSpeed(); }); });
+    // rings and log rows
+    ov.addEventListener('mouseover', function (e) { var g = e.target.closest('.finding'); if (g) setHL(g.getAttribute('data-f'), true); });
+    ov.addEventListener('mouseout', function (e) { var g = e.target.closest('.finding'); if (g && !g.contains(e.relatedTarget)) setHL(st.sel, false); });
+    ov.addEventListener('click', function (e) {
+      var g = e.target.closest('.finding'); if (!g) return;
+      st.sel = g.getAttribute('data-f'); setHL(st.sel, true);
+      var row = $('#log [data-f="' + st.sel + '"]'); if (row) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
+    $('#log').addEventListener('mouseover', function (e) { var li = e.target.closest('.lg.finding'); if (li) setHL(li.getAttribute('data-f'), !li.classList.contains('is-hl')); });
+    $('#log').addEventListener('mouseleave', function () { setHL(st.sel, false); });
+    $('#log').addEventListener('click', function (e) { var li = e.target.closest('.lg.finding'); if (li && !e.target.closest('.src')) { st.sel = st.sel === li.getAttribute('data-f') ? null : li.getAttribute('data-f'); setHL(st.sel, true); } });
+    document.addEventListener('keydown', function (e) {
+      var f = document.activeElement && document.activeElement.closest && document.activeElement.closest('[data-f]');
+      if (f && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); st.sel = f.getAttribute('data-f'); setHL(st.sel, true); }
+    });
+    // source tooltips
+    var tip = $('#tip');
+    function showTip(btn) {
+      var k = btn.getAttribute('data-src'), s = SRC[k]; if (!s) return;
+      tip.innerHTML = '<b>' + s[0] + '</b> · ' + s[1]; tip.hidden = false;
+      var r = btn.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+      var left = Math.max(8, Math.min(window.innerWidth - tw - 8, r.right - tw));
+      var top = r.top - th - 8 < 8 ? r.bottom + 8 : r.top - th - 8;
+      tip.style.left = left + 'px'; tip.style.top = top + 'px';
+    }
+    document.addEventListener('mouseover', function (e) { var b = e.target.closest('.src'); if (b) showTip(b); });
+    document.addEventListener('mouseout', function (e) { if (e.target.closest('.src')) tip.hidden = true; });
+    document.addEventListener('focusin', function (e) { var b = e.target.closest('.src'); if (b) showTip(b); });
+    document.addEventListener('focusout', function (e) { if (e.target.closest('.src')) tip.hidden = true; });
+    // readout
+    stage.addEventListener('mousemove', function (e) {
+      var r = stage.getBoundingClientRect(), wx = (e.clientX - r.left - view.ox) / view.s, wy = (e.clientY - r.top - view.oy) / view.s;
+      if (wx < 0 || wy < 0 || wx >= G.W || wy >= G.H) return;
+      var i = G.idxOf([wx, wy]), ll = G.toLonLat([wx, wy]), t = G.homePen.time[i] * walkK();
+      var what = G.ridge[i] ? 'ridge · no crossing' : G.slope[i] > 20 ? 'slope over 20° · blocked' : isFinite(t) ? R(t) + ' min to habitat' : 'no way home';
+      $('#readout').textContent = ll[0].toFixed(4) + '°E  ' + Math.abs(ll[1]).toFixed(4) + '°S · slope ' + G.slope[i].toFixed(1) + '° · ' + what;
+    });
+    stage.addEventListener('mouseleave', function () { $('#readout').textContent = ''; });
+    var rt = 0;
+    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(relayout, 180); });
+  }
+  function openAssume() { $('#assume').hidden = false; $('#btn-assume').setAttribute('aria-expanded', 'true'); var f = $('#assume input, #assume select'); if (f) f.focus(); }
+  function closeAssume() { if ($('#assume').hidden) return; $('#assume').hidden = true; $('#btn-assume').setAttribute('aria-expanded', 'false'); }
+  function syncLayers() {
+    $('#cv-terrain').hidden = st.base !== 'ortho';
+    $('#cv-slope').hidden = st.base !== 'slope';
+    $('#cv-ridges').hidden = !st.ridges;
+    $('#lg-slope').hidden = st.base !== 'slope';
+    $('#lg-ridge').hidden = !st.ridges;
+  }
+  function scaleBar() {
+    var opts = [100, 200, 250, 500, 1000], L = opts[0];
+    opts.forEach(function (o) { if (o * view.s <= 150) L = o; });
+    $('#scale .bar').style.width = (L * view.s).toFixed(1) + 'px';
+    $('#scale span').textContent = L + ' m';
+  }
+  function relayout() {
+    fit(); renderTerrain(); renderSlope(); renderRidges(); scaleBar(); cCache.clear(); renderAll(); renderLog(true);
+  }
+
+  function init() {
+    var ul = $('.legend ul');
+    ul.insertAdjacentHTML('beforeend',
+      '<li id="lg-slope" hidden><svg viewBox="0 0 34 18"><rect x="1" y="2" width="10" height="14" fill="#E2E6DA" stroke="#2B2D2F" stroke-width=".8"/><rect x="12" y="2" width="10" height="14" fill="#80868A"/><rect x="23" y="2" width="10" height="14" fill="#C8361F"/></svg>Slope: up to 10°, 10–20°, over 20° blocked</li>' +
+      '<li id="lg-ridge" hidden><svg viewBox="0 0 34 18"><path d="M2 14l8-9 7 7 7-8 8 9" fill="none" stroke="#C8361F" stroke-width="2.4"/></svg>Ridge mask: no crossing</li>');
+    buildAssume();
+    wire();
+    var q = new URLSearchParams(location.search);
+    var b = +(q.get('beat') || 0);
+    if (q.get('skin') === 'cuff') $('.crew-head .seg button[data-skin=cuff]').click();
+    if (q.get('grid') === '1') { $('#tgl-grid').checked = true; st.grid = true; }
+    if (q.get('base') === 'slope') { st.base = 'slope'; $('input[name=base][value=slope]').checked = true; }
+    if (q.get('ridges') === '1') { st.ridges = true; $('#ly-ridges').checked = true; }
+    if (q.get('assume') === '1') openAssume();
+    if (b >= 1 && b <= 6) setBeat(b, q.get('at') !== 'start'); else setBeat(1, false);
+    fit();
+    setTimeout(function () {
+      renderTerrain(); renderSlope(); renderRidges(); scaleBar(); syncLayers();
+      $('#loading').remove();
+      renderAll();
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { renderLog(true); });
+      if (window.ResizeObserver) new ResizeObserver(function () { snapLog(); }).observe($('#log'));
+      if (q.get('play') === '1') play(1);
+      if (q.get('y')) window.scrollTo(0, +q.get('y'));
+      if (q.get('layers') === '1') $('#btn-layers').click();
+    }, 30);
+  }
+  init();
+})();
+
+</script>
+</body>
+</html>

@@ -4,6 +4,7 @@
 - Vorgesehener Bereich für Benutzeroberfläche und Darstellung.
 - Geplant (13.11.2026): statische Web-App mit Vite und Leaflet 1.9.4, kein UI-Framework, GitHub Pages. JavaScript oder TypeScript entscheidet der Tech Lead beim Kickoff.
 - Eine Seite: die Habitat-Konsole mit eingebettetem, schreibgeschütztem Crew-Display. Inhalt und Demo-Drehbuch: `../docs/mission-scenario.md`, Design: `../docs/preparation/design-brief.md`.
+- Design-Sketch (14.11.2026, alle sechs Beats, synthetische Daten): `../docs/design/habitat-console-sketch.html`, Erläuterung und übertragbare Tokens in `../docs/design/README.md`. Vorlage für Layout, Zustände und Wortlaut, kein Code zum Übernehmen.
 - Bisher existiert nur `.gitkeep`; Build-System und Startbefehle sind noch nicht eingerichtet.
 
 ## Umsetzung
