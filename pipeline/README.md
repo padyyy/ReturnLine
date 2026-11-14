@@ -116,3 +116,16 @@ Dasselbe Muster trägt die DEM-Arbeit. Die Funktionen `gdal_path`, `pick_overvie
 - **Dateigröße:** 6,3 MB bei 1 m. Für schwache Verbindungen zusätzlich eine 2-m-Version erzeugen.
 - **Netz:** Auf Patricks Rechner fängt ein Proxy oder Virenscanner TLS für einige NASA-Seiten ab. Der USGS-Bucket auf S3 und `mars.nasa.gov` (MMGIS) gingen am 14.11. ohne Probleme. Zertifikatsprüfungen nie abschalten.
 - **Quellenangabe:** Das Orthofoto auf der Projektseite mit dem USGS-Datensatz zitieren (Link oben).
+
+## Mapping → Frontend vorbereiten (ohne Routing)
+
+`mapping_grid.py` liest das vorhandene echte `frontend/public/data/grid.json` unverändert. `mapping_bridge.py` bietet JSON-Anfragen für Gridbeschreibung, Zell-/Koordinatenabfragen, Abtastung weiterer GeoTIFFs durch den bestehenden GeoMapper und den Export von `slope_10m.png` + `.json` auf exakt diesem Grid.
+
+```sh
+python3 pipeline/mapping_bridge.py --request '{"action":"describe"}'
+python3 pipeline/mapping_bridge.py --request '{"action":"export_slope"}'
+```
+
+Ausgabe: ein RGBA-Pixel pro Gridzelle, NoData transparent, Klassen bis 10°, 10–20° und über 20°. Numerische Dateien und Routing bleiben unverändert. Das bestehende Orthofoto behält seine eigenen georeferenzierten Grenzen. Installation: bestehende `pipeline/requirements.txt`; für `sample_raster` zusätzlich `backend/geoMapper/requirements.txt`.
+
+Vollständige Schnittstelle, Node.js-Aufruf, Quellen/Annahmen, Zellformeln und noch offene Frontend-Schritte: [MAPPING.md](MAPPING.md). Nach Datenteam-Auftrag wurde nichts in `frontend/src/` geändert. Der Hang-Layer ist ausgeliefert, wird von der Konsole aber noch nicht geladen; das ist ein Auftrag an das Frontend-Team.
