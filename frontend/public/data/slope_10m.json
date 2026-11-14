@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "pipeline/mapping_bridge.py",
-  "created_utc": "2026-11-14T19:36:52.547205+00:00",
+  "created_utc": "2026-11-14T19:55:12.194737+00:00",
   "image": "slope_10m.png",
   "image_path": "data/slope_10m.png",
   "grid_file": "grid.json",
@@ -96,25 +96,25 @@
   "thresholds_role": "assumption: display classes from shared/data-contract.md",
   "legend": [
     {
-      "label": "up to 10 degrees",
+      "label": "up to 10 degrees, comfortable",
       "rgba": [
-        104,
-        151,
-        104,
-        255
-      ]
-    },
-    {
-      "label": "over 10 to 20 degrees",
-      "rgba": [
+        237,
+        240,
         230,
-        174,
-        59,
         255
       ]
     },
     {
-      "label": "over 20 degrees",
+      "label": "over 10 to 20 degrees, slow",
+      "rgba": [
+        81,
+        87,
+        91,
+        255
+      ]
+    },
+    {
+      "label": "over 20 degrees, blocked",
       "rgba": [
         200,
         54,

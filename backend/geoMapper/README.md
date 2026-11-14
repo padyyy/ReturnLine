@@ -16,8 +16,10 @@ Quelle: `mars_mapping_algorithm_standalone.zip`. Der bereits vorhandene Import w
 Vom Repository-Verzeichnis:
 
 ```sh
-python3 -m venv .venv
-.venv/bin/python -m pip install -r backend/geoMapper/requirements.txt
+# Projekt-Umgebung im Repo-Wurzelordner (Windows, Python 3.11); enthält alle Abhängigkeiten des Mappers
+py -3.11 -m venv .venv
+.venv/Scripts/python -m pip install -r pipeline/requirements.txt
+# macOS/Linux: python3.11 -m venv .venv && .venv/bin/python -m pip install -r pipeline/requirements.txt
 ```
 
 

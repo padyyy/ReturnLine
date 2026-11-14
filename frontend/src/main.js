@@ -215,6 +215,9 @@ function wire() {
   $('#ly-area').addEventListener('change', (e) => mapApi.setLayer('area', e.target.checked));
   $('#ly-zones').addEventListener('change', (e) => mapApi.setLayer('zones', e.target.checked));
   $('#ly-trav').addEventListener('change', (e) => mapApi.setLayer('traverse', e.target.checked));
+  // slope layer from the pipeline: only offered when its file is there
+  $('#ly-slope-row').hidden = !model.hasSlopeLayer;
+  $('#ly-slope').addEventListener('change', (e) => { mapApi.setLayer('slope', e.target.checked); $('#ly-slope-key').hidden = !e.target.checked; });
   // collapsible map key; the choice is a per-viewer convenience, so browser storage is fine
   const lgd = $('#legend'), lgt = $('#legend-toggle');
   const setLegend = (open) => { lgd.classList.toggle('is-collapsed', !open); lgt.setAttribute('aria-expanded', String(open)); };

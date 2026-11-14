@@ -45,7 +45,14 @@
         <label><input type="checkbox" id="ly-area" checked> Return area and 60-minute line</label>
         <label><input type="checkbox" id="ly-zones" checked> Protected zones</label>
         <label><input type="checkbox" id="ly-trav" checked> Curiosity traverse</label>
-        <span class="cap">Slope and science layers follow with the pipeline data.</span>
+        <h3>Terrain</h3>
+        <label id="ly-slope-row"><input type="checkbox" id="ly-slope"> Slope, 10 m baseline</label>
+        <div class="ly-key" id="ly-slope-key" hidden>
+          <span><i class="sw" style="background:#EDF0E6"></i>up to 10°</span>
+          <span><i class="sw" style="background:#51575B"></i>10–20°, slow</span>
+          <span><i class="sw" style="background:#C8361F"></i>over 20°, blocked</span>
+        </div>
+        <span class="cap">From the USGS Gale DEM (pipeline). Science layers are not in this build.</span>
       </div>
     </div>
     <button class="btn" id="btn-assume" aria-expanded="false" aria-controls="assume"><svg class="i"><use href="#i-sliders"/></svg><span class="t">Assumptions</span></button>

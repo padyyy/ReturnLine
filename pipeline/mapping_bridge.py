@@ -20,7 +20,9 @@ from mapping_grid import MappingGrid
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'frontend/public/data'
 GENERATOR = 'pipeline/mapping_bridge.py'
-COLORS = [(104, 151, 104, 255), (230, 174, 59, 255), (200, 54, 31, 255)]
+# Field Book colours (DESIGN.md): survey paper, graphite, red pencil. Not green/amber, because those
+# are the return stages in the console; red is kept for ground the routing blocks (over 20 degrees).
+COLORS = [(237, 240, 230, 255), (81, 87, 91, 255), (200, 54, 31, 255)]
 
 
 def json_value(value):
@@ -85,7 +87,7 @@ def export_slope(grid, output):
         placeholder_inputs=grid.header.get('placeholder_inputs', []),
         thresholds_deg=[10, 20], thresholds_role='assumption: display classes from shared/data-contract.md',
         legend=[dict(label=label, rgba=color) for label, color in zip(
-            ['up to 10 degrees', 'over 10 to 20 degrees', 'over 20 degrees'], COLORS)],
+            ['up to 10 degrees, comfortable', 'over 10 to 20 degrees, slow', 'over 20 degrees, blocked'], COLORS)],
         layer=dict(id='slope', name='Slope', priority=10, opacity=0.6, visible=False),
         use='display only; read numeric slope from the binary grid, never from this image',
         valid_cells=int(valid.sum()), missing_cells=int((~valid).sum()),

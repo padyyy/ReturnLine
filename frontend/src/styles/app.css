@@ -136,3 +136,10 @@ button.cuff-key:focus-visible { outline: 2px solid var(--cover); outline-offset:
   padding: 8px 10px; background: var(--paper); border: 1.5px solid var(--graphite); font: 400 12px/1.45 var(--f-text); color: var(--graphite); }
 .credits-text a { color: var(--blue); }
 .credits:hover .credits-text, .credits:focus-within .credits-text, .credits.is-open .credits-text { display: block; }
+
+/* slope layer key in the Layers menu */
+.ly-key { display: grid; gap: 3px; margin: 2px 0 4px 24px; font-size: 12.5px; }
+.ly-key span { display: flex; align-items: center; gap: 7px; }
+.ly-key .sw { width: 14px; height: 10px; border: 1px solid var(--graphite); flex: none; }
+/* slope cells stay sharp when the map is zoomed in, so classes do not blend at their edges */
+.slope-img { image-rendering: pixelated; }

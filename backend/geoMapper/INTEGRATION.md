@@ -1,6 +1,6 @@
 # Anbindung an das Frontend – Analyse vom 14.11.2026
 
-Status: Vorschlag anhand des lokalen Codes, noch nicht implementiert. Grundlage: `shared/data-contract.md`, `frontend/src/{data,model,map,sim}.js` und `pipeline/README.md`. Das Frontend bleibt statisch; kein Python-Server nötig.
+Status: Analyse vom 14.11.2026 nachmittags, am Abend vom Stand in `main` überholt. Die aktuellen Abschnitte „Stand im Frontend“ und „Noch offen“ unten ersetzen die ursprüngliche Lückenliste. Das Frontend bleibt statisch; kein Python-Server nötig.
 
 ## Vorgesehener Datenfluss
 
@@ -21,31 +21,23 @@ Der GeoMapper übernimmt Import, Koordinatenumrechnung, Zellabfrage und gemeinsa
 | Routing | Nicht enthalten | Engine muss `ttb_penalized/allowed.f32`, `ptr_penalized/allowed.i32` und `routes.json` liefern. |
 | Kartenbild | GeoTIFF als optionale Hintergrundreferenz | Browser nutzt bereits JPG plus Bounds-JSON in `public/maps/`; Mapping-Paket muss dafür nicht im Browser laufen. |
 
-Ein globales `+proj=eqc +lat_ts=0` und das lokale Raster ergeben bei gleicher nomineller Zellgröße unterschiedliche Longitude-Schritte. Ein bloßes Umbenennen der Metadaten würde einen räumlichen Versatz erzeugen. Die Grid-Spezifikation ist im Vertrag weiterhin ein offener Entwurf; keine Beispielkonfiguration als produktiven Standard veröffentlichen.
+Ein globales `+proj=eqc +lat_ts=0` und das lokale Raster ergeben bei gleicher nomineller Zellgröße unterschiedliche Longitude-Schritte. Ein bloßes Umbenennen der Metadaten würde einen räumlichen Versatz erzeugen. Die Rastergeometrie legt seit dem 14.11. abends `frontend/public/data/grid.json` fest, geschrieben von `pipeline/time_grid.py` (eqc, lat_ts=0, 10-m-Zellen auf dem 1-m-Pixelraster des DEM, 475 × 476). Keine andere Konfiguration als produktiven Standard verwenden.
 
-## Was im Frontend bereits vorhanden ist
+## Stand im Frontend (14.11.2026 abends, `main`)
 
-- `data.js` lädt statische JSON-/GeoJSON-Dateien und die vier Zeit-/Zeigerdateien als `Float32Array` bzw. `Int32Array`. Dateinamen können über `header.files` kommen. Scheitert eine Binärdatei, wird das ganze Grid verworfen.
-- `model.js` erwartet `routes.stations`, pro Eintrag `station`, `out`, `ret`. Tracks enthalten `vertices` mit `lon`, `lat`, `d_m`, `t_min`, `elev_m`, `slope_deg` sowie die Summen aus dem Datenvertrag. Das Frontend interpoliert Positionen auf diesen Tracks.
-- `map.js` zeichnet Orthofoto, GeoJSON, Routen und Marker. Die Gruppe `area` existiert, enthält aber noch keine Rasterkonturen.
+- `data.js` lädt `grid.json` und die vier Zeit- und Zeigerdateien (aus `data/`, sonst aus den Platzhaltern) sowie die Hang-Anzeige `slope_10m.json` und `.png`.
+- `model.js` rechnet Position ↔ Zelle um (`cellIndex`, `cellCenter`, `gridBounds`), liest die Zeit nach Hause an einem Punkt (`ttbAt`) und folgt den Rückweg-Zeigern (`pointerTrack`).
+- `sim.js` bestimmt die Rückkehr-Stufe an der Crew-Zelle nach Regel B aus `ttb_*`. Umleitung (Beat 4) und ABORT (Beat 5–6) folgen den Zeigern.
+- `map.js` und `contour.js` zeichnen Rückkehrbereich und feste 60-Minuten-Linie als Konturen aus `ttb_penalized`. Die Hang-Ebene liegt im Layers-Menü.
+- `crewviz.js`: Navigationskarte und Helm-HUD lesen dieselben Raster.
+- Die Engine-Seite liefert `pipeline/time_grid.py` (Fallback, Python): Zeitfelder, Zeiger, Höhe, Hang und `routes.json` im Format des Datenvertrags.
 
-## Was im Frontend noch fehlt
+## Noch offen
 
-1. Headerprüfung (CRS, nx/ny, Länge der Arrays, Zellgröße, Byteordnung und NoData) und exakte Umrechnung `lon/lat ↔ row/col`. Native TypedArrays dekodieren nicht ausdrücklich Little Endian; die vertragliche Byteordnung muss geprüft oder per DataView dekodiert werden.
-2. Laden von `elev_10m.f32` und `slope_10m.f32`; diese stehen im Vertrag, werden vom aktuellen Loader aber nicht geladen.
-3. Nutzung der Zeitfelder an der Crew-Position: `sim.js` bestimmt Rückkehrzeiten aktuell noch aus Routendistanzen/-zeiten; die Raster werden zwar geladen, aber dort nicht ausgewertet.
-4. Darstellung der Rückkehrflächen und 60-Minuten-Konturen sowie Verfolgen der Rückweg-Zeiger für Reroute und ABORT. Die geladenen Pointer sind noch nicht in diese Funktionen integriert.
-
-Allein Dateien nach `public/data/` zu kopieren aktiviert daher noch keine vollständige Raster-Navigation. Stationen, Szenario und Routen müssen ebenfalls vorliegen; ohne diese Pflichtdateien bricht `loadData()` ab oder verwendet vorhandene Platzhalter.
-
-## Empfohlene Umsetzungsschritte
-
-1. Grid-Spezifikation mit Paul fixieren: DEM-ausgerichteter Ursprung, bbox, nx/ny, 10-m-Zellen, CRS, Zeilenordnung, NoData und Dateinamen. Gemeinsame bekannte Kontrollpunkte festhalten.
-2. Echten DEM-Ausschnitt mit der Pipeline vorbereiten; GeoMapper-Abtastung nur auf dem identischen Raster verwenden. Aggregation und Hangneigung fachlich prüfen.
-3. Offline-Exportadapter erstellen: Terrain als `<f4` in C-Reihenfolge, explizite Einheiten (m, Grad), Header mit Quelle, Generator und Datum. Keine erfundenen Routingwerte exportieren.
-4. Terrain an die Routing-Engine übergeben; beide Zeit-/Pointervarianten und Stationsrouten erzeugen und zusammen mit Szenario/GeoJSON nach `frontend/public/data/` ausliefern.
-5. Frontend um Rasterzugriff, Terrainwerte, Konturen und Pointer-Navigation ergänzen; bestehende Routeninterpolation weiterverwenden.
-6. Durchgängiger Kontrolltest: bekannte Geo-Koordinate → erwartete Zelle → DEM-Wert → korrekte Kartenposition. Dateilängen `nx*ny*4`, Nord/Süd-Orientierung, Zellzentren, NoData und Pointer-Ziel/-Zyklen prüfen; anschließend Frontend-Build und Browseransicht kontrollieren.
+1. Kopfprüfung beim Laden: CRS sowie `nx·ny` gegen die Dateilänge. TypedArrays lesen in der Byteordnung der Plattform; alle Zielplattformen sind Little Endian, eine ausdrückliche Prüfung fehlt aber noch.
+2. `elev_10m.f32` und `slope_10m.f32` werden im Browser nicht geladen. Höhe und Hang entlang der Routen kommen aus `routes.json`, der Hang als Bild aus `slope_10m.png`.
+3. Weitere Ebenen des Datenteams (z. B. Grat-Maske) wie die Hang-Ebene: Bild + JSON mit Grenzen und `grid_id`.
+4. Durchgängiger Kontrolltest von der Geokoordinate über Zelle und DEM-Wert bis zur Kartenposition, mit festen Kontrollpunkten.
 
 ## Prüfstand
 
