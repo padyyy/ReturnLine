@@ -47,9 +47,12 @@ The direction contract for this surface is in `.impeccable/surfaces/docs-design-
 - **No Dijkstra in the return area:** the time-to-base grid comes from the routing engine the team is still building. Until then the sketch uses straight lines at walking speed: the area is a circle round the habitat cut by an ellipse through the crew position. "Time to base, straight line" in the data sheet is the same placeholder. The routes to the stations are still sketch routes from a Dijkstra on the synthetic grid; walk times, the max stay and the planned arrival follow those routes, so the straight-line stage can look more relaxed than the route.
 - **Why the area stays large at first:** with 6 h of life support, the 60-minute rule is the tighter limit for most of the EVA. For testing, the planner can start the EVA clock at hour 3:00 or 4:30.
 - **Navigation, top right:** helmet HUD. The compass rose turns with the heading (heading = walking direction). Base and target sit on the rim at their bearing and move inside once within 250 m. The ring takes the stage colour and word. Corners show EVA time, time to sunset, radiation dose and life support; up to three warnings sit below, including the countdown to the return.
-- **Navigation, bottom right:** the data sheet with the elevation profile of the current leg, or the small map after key 1.
+- **Navigation, bottom right:** the data sheet, or the small map after key 1.
+- **Data sheet:** one component for the tablet screen and the small panel. It never scrolls: the stage bar, two key tiles (target and the stay or the way home), the elevation profile of the current leg and nine values in a 3 × 3 grid. Type sizes follow the size of the panel (CSS container query units). On a small panel the captions under the values go first, then the profile shrinks to a strip without axis labels.
 - **Test terrain:** stronger relief than the console sketch (about 100 m range, routes up to about 7°), so slope and the elevation profile mean something.
 
 URL parameters change the view only: `?grid=1`, `?base=slope`, `?ridges=1`, `?assume=1`, `?layers=1`. Navigation always starts from the button.
 
 The yellow stage breaks DESIGN.md's rule that yellow is never a status colour. It is a separate amber (`#D9A300`), and every stage also carries its words.
+
+The navigation sketch also breaks DESIGN.md's "square by default" rule on purpose: the team asked for a rounder look. Cards have a 14 to 18 px radius, buttons and tiles 10 to 12 px, the tablet bezel 34 px. Everything else in DESIGN.md still holds: no shadows, hairline borders, the pencil colours with one meaning each. The crew marker in the elevation profile is graphite now, because red stays for findings and ABORT.
