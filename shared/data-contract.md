@@ -20,7 +20,7 @@ Folder `frontend/public/data/` unless noted.
 |---|---|---|---|
 | `../maps/ortho_gale_1m.jpg` + `.json` | orthophoto overlay and bounds | pipeline (exists) | console map, cuff map |
 | `slope_10m.png` + `.json` | slope picture for display: up to 10°, 10–20°, over 20° | pipeline | console layer, cuff base map "slope" |
-| `scenario.json` | constants and assumptions, each with source or "assumption": habitat `[lon, lat]`, EVA start (LMST), sol shown, life support 360 min, backup 60 min, sunset and sunrise (REMS, last reading sol 4995), walking speed, injury factor 0.5, caution margin 15 min, dose rate 0.64 mSv/day, zone buffer, slope limits 10° and 20° | team, pipeline for REMS | everything |
+| `scenario.json` | constants and assumptions, each with source or "assumption": habitat `[lon, lat]`, `scenario_station` (station `n` the six beats play for, chosen by the data checks in `docs/demo-script.md`), EVA start (LMST), sol shown, life support 360 min, backup 60 min, sunset and sunrise (REMS, last reading sol 4995), walking speed, injury factor 0.5, caution margin 15 min, dose rate 0.64 mSv/day, zone buffer, slope limits 10° and 20° | team, pipeline for REMS | everything |
 | `stations.geojson` | points: `n`, `name`, `reason`, Curiosity `sol`, ground image `{path, instrument, sol}`, `elev_m` | pipeline | console log, target picker, maps, HUD |
 | `zones.geojson` | **polygons** (buffer drawn as polygon, not `L.circle`): `id`, `name`, `drill_sol`, `buffer_m` | pipeline | maps, HUD, warnings, zone metres |
 | `curiosity_traverse.geojson` | Curiosity's line, clipped to the map extent | pipeline (MMGIS) | console map |

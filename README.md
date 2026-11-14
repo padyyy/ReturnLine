@@ -35,6 +35,8 @@ Needs Node 20 or newer and Python 3.11.
 cd frontend
 npm install
 npm run dev
+# until the pipeline and the engine deliver data/, the console runs on marked
+# placeholder files in public/data/placeholder/ (regenerate: npm run data:placeholder)
 
 # only to regenerate the overlay, e.g. for a new extent
 py -3.11 -m venv .venv

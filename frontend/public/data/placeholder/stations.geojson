@@ -1,0 +1,79 @@
+{
+ "type": "FeatureCollection",
+ "note": "PLACEHOLDER until the pipeline and the routing engine deliver real files",
+ "generator": "frontend/scripts/make-placeholder-data.mjs",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     137.379686,
+     -4.804189
+    ]
+   },
+   "properties": {
+    "n": 1,
+    "name": "Station 1",
+    "reason": "Placeholder: reason from the NASA boxwork blog posts",
+    "sol": 4600,
+    "image": null,
+    "elev_m": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     137.379842,
+     -4.806893
+    ]
+   },
+   "properties": {
+    "n": 2,
+    "name": "Station 2",
+    "reason": "Placeholder: reason from the NASA boxwork blog posts",
+    "sol": 4650,
+    "image": null,
+    "elev_m": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     137.381004,
+     -4.808008
+    ]
+   },
+   "properties": {
+    "n": 3,
+    "name": "Station 3",
+    "reason": "Placeholder: reason from the NASA boxwork blog posts",
+    "sol": 4711,
+    "image": null,
+    "elev_m": null
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     137.382628,
+     -4.807883
+    ]
+   },
+   "properties": {
+    "n": 4,
+    "name": "Station 4",
+    "reason": "Placeholder: reason from the NASA boxwork blog posts",
+    "sol": 4823,
+    "image": null,
+    "elev_m": null
+   }
+  }
+ ]
+}
