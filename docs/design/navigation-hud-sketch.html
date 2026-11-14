@@ -171,9 +171,9 @@ svg.ov .tick { font-family: var(--f-num); font-size: 10.5px; fill: var(--graphit
 .scale { display: flex; flex-direction: column; gap: 3px; }
 .scale .bar { height: 7px; border: 1.5px solid var(--graphite); border-top: 0; background: linear-gradient(90deg, var(--graphite) 0 50%, var(--paper) 50% 100%); }
 .scale span { font: 600 11.5px/1 var(--f-num); background: rgba(237,240,230,.9); border-radius: 6px; padding: 3px 6px; align-self: flex-start; }
-.attrib { margin-left: auto; font-size: 11.5px; background: rgba(237,240,230,.9); border-radius: 8px; padding: 4px 8px; color: var(--graphite); max-width: 52%; text-align: right; }
+.attrib { margin-left: auto; font-size: 11.5px; background: rgba(237,240,230,.9); border-radius: 8px; padding: 4px 8px; color: var(--graphite); max-width: 44%; text-align: right; }
 /* time budget */
-.budget { display: grid; grid-template-columns: 230px minmax(0, 1fr) 270px; gap: 20px; align-items: center; padding: 12px var(--pad) 12px; background: var(--paper); border-top: 1px solid var(--rule-2); }
+.budget { display: grid; grid-template-columns: 230px minmax(0, 1fr) 270px; gap: 20px; align-items: center; height: 152px; padding: 8px var(--pad); background: var(--paper); border-top: 1px solid var(--rule-2); }
 .clock .row1 { display: flex; align-items: baseline; gap: 10px; }
 .clock .eva { font: 700 30px/1 var(--f-num); }
 .clock .lbl { font-weight: 700; font-size: 13px; }
@@ -363,7 +363,8 @@ body.nav .console, body.nav #plan-controls { display: none; }
 .dv { container: dv / size; }
 .dv-in { position: absolute; inset: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: clamp(6px, 1.5cqh, 14px); padding: clamp(4px, 2.2cqh, 22px); }
 .dv-top { display: flex; gap: 10px; align-items: stretch; min-width: 0; }
-.dv-stage { flex: 1; min-width: 0; display: flex; align-items: center; gap: .5em; padding: .45em .8em; border-radius: 12px; font-weight: 800; font-size: clamp(14px, 3.4cqh, 30px); line-height: 1.1; white-space: nowrap; }
+.dv-stage { flex: 1; min-width: 0; display: flex; align-items: center; gap: .5em; padding: .45em .8em; border-radius: 12px; font-weight: 800; font-size: clamp(14px, min(3.4cqh, 3.9cqw), 30px); line-height: 1.1; white-space: nowrap; overflow: hidden; }
+.dv-stage > span:not(.num) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .dv-stage svg.i { width: 1em; height: 1em; stroke-width: 2.2; }
 .dv-stage .num { margin-left: auto; font-weight: 700; font-size: .85em; }
 .dv-top .btn { height: auto; border-radius: 12px; }
@@ -379,7 +380,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
 .dt-s { font-size: clamp(10.5px, 1.55cqh, 14px); color: var(--graphite-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dv-hero .dt { background: var(--graphite); color: var(--paper); }
 .dv-hero .dt-l, .dv-hero .dt-s { color: #C9CDC2; }
-.dv-hero .dt-v { font-size: clamp(18px, 6.4cqh, 58px); }
+.dv-hero .dt-v { font-size: clamp(18px, min(6.4cqh, 9cqw), 58px); }
 .dv-hero .src { color: #C9CDC2; }
 .dv-hero .src:hover { background: rgba(237,240,230,.1); }
 .dv-prof { min-height: 0; display: flex; flex-direction: column; gap: 2px; background: var(--paper-2); border-radius: 12px; padding: clamp(4px, 1.2cqh, 12px) clamp(8px, 1.5cqw, 16px); }
@@ -400,6 +401,126 @@ body.nav .console, body.nav #plan-controls { display: none; }
 .np-opt { display: flex; align-items: center; gap: 10px; padding: 8px var(--pad) 0; flex-wrap: wrap; }
 .np-k { font-weight: 600; font-size: 13.5px; min-width: 150px; }
 
+/* ---------- map only: fold the side panel and the time bar away ---------- */
+.tg { position: absolute; z-index: 6; display: grid; place-items: center; padding: 0; background: rgba(252,249,245,.96); border: 1.5px solid var(--graphite); color: var(--graphite); cursor: pointer; }
+.tg:hover { background: var(--paper-2); }
+.tg svg.i { width: 15px; height: 15px; stroke-width: 2.2; }
+.tg-side { right: 0; top: 50%; transform: translateY(-50%); width: 24px; height: 62px; border-right: 0; border-radius: 12px 0 0 12px; }
+.tg-bar { bottom: 0; left: 50%; transform: translateX(-50%); width: 62px; height: 24px; border-bottom: 0; border-radius: 12px 12px 0 0; }
+.tg-side[aria-expanded="false"] svg { transform: rotate(180deg); }
+.tg-bar svg { transform: rotate(90deg); }
+.tg-bar[aria-expanded="false"] svg { transform: rotate(-90deg); }
+.console.no-side { grid-template-columns: minmax(0, 1fr); }
+.console.no-side .logcol { display: none; }
+.mapcol.no-bar .budget { display: none; }
+
+/* ---------- emergency rehearsal on the base map ---------- */
+.btn-sim { border-color: var(--red); color: var(--red); }
+.btn-sim:hover { background: var(--red-tint); }
+body.sim #plan-controls, body.sim .logscroll { display: none; }
+.legend li.lg-sim { display: none; }
+body.sim .legend li.lg-sim { display: grid; }
+.ring { fill: none; stroke: var(--red); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.ring.draw { animation: ringdraw .55s var(--ease) both; }
+.ring.old { opacity: .45; }
+@keyframes ringdraw { from { stroke-dashoffset: var(--len); } to { stroke-dashoffset: 0; } }
+svg.ov .co { font-size: 12.5px; font-weight: 700; fill: #EDF0E6; }
+/* story strip under the map: the one place that says where the rehearsal is and what it means */
+.story { display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, 330px) 200px; gap: 20px; align-items: stretch; height: 186px; padding: 12px var(--pad); background: var(--paper); border-top: 1px solid var(--rule-2); overflow: hidden; }
+.st-main { min-width: 0; display: flex; flex-direction: column; }
+.st-top { display: flex; align-items: center; gap: 12px; }
+.st-top .cap { margin-left: auto; font-weight: 600; white-space: nowrap; }
+.st-steps { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; }
+.st-steps li { display: flex; align-items: center; }
+.st-steps li + li::before { content: ""; width: 18px; height: 2px; background: var(--rule-2); }
+.st-steps li.is-done::before, .st-steps li.is-now::before { background: var(--graphite); }
+.st-steps button { width: 27px; height: 27px; padding: 0; border-radius: 50%; border: 1.5px solid var(--graphite-3); background: transparent; color: var(--graphite-2); font: 700 12.5px/1 var(--f-num); cursor: pointer; }
+.st-steps button:hover { border-color: var(--graphite); color: var(--graphite); }
+.st-steps li.is-done button { background: var(--graphite); border-color: var(--graphite); color: var(--paper); }
+.st-steps li.is-now button { background: var(--cover); border-color: var(--cover); color: var(--graphite); }
+.st-title { margin: 9px 0 3px; font-size: 22px; font-weight: 800; line-height: 1.15; letter-spacing: -.005em; }
+.st-title.is-alert { color: var(--red); }
+.st-text { margin: 0; font-size: 15.5px; line-height: 1.42; font-weight: 500; text-wrap: pretty; }
+.st-watch { margin: auto 0 0; padding-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* habitat control's verdict and decision for the step */
+.hc { min-width: 0; border-left: 1px solid var(--rule-2); padding-left: 20px; display: flex; flex-direction: column; gap: 5px; }
+.hc-label { font-size: var(--t-cap); font-weight: 700; color: var(--graphite-2); }
+.hc .v-line { margin: 0; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.hc .v-word { font-size: 34px; line-height: 1; letter-spacing: -.02em; }
+.hc .v-count { font-size: 13.5px; font-weight: 700; }
+.hc-note { margin: 0; font-size: 13px; font-weight: 600; line-height: 1.3; }
+.hc .constraint { margin: 2px 0 0; padding: 6px 9px; font-size: 12.5px; border-radius: 10px; border-width: 1px; }
+.hc .v-facts { margin: 0; }
+.hc .v-facts li { font-size: 13px; padding: 4px 0; }
+.hc .v-status { margin: 1px 0 0; font-size: 12.5px; align-items: flex-start; }
+.hc .v-status svg.i { margin-top: 1px; }
+.hc .v-actions { margin: 3px 0 0; }
+.hc-act { pointer-events: none; height: 30px; font-size: 12.5px; padding: 0 11px; }
+/* next, back, auto-play */
+.st-ctl { display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+.st-next { height: 62px; padding: 0 14px; justify-content: space-between; text-align: left; white-space: normal; }
+.st-next svg.i { width: 18px; height: 18px; }
+.st-nx { display: grid; gap: 3px; min-width: 0; }
+.st-k { font-size: 11.5px; font-weight: 600; opacity: .78; }
+.st-t { font-size: 15px; font-weight: 700; line-height: 1.15; }
+.st-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.st-row .btn { height: 34px; padding: 0 11px; font-size: 13px; }
+.st-row .btn svg.i { transform: rotate(180deg); }
+.st-row .switch { font-size: 13px; white-space: nowrap; }
+/* astronaut view: the crew view that belongs to the step, in the right column */
+.simview { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--paper); }
+.sv-head { padding: 12px 14px 10px; border-bottom: 1px solid var(--rule-2); }
+.sv-head .panel-h { padding: 0 2px 10px; }
+.sv-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px 10px; flex-wrap: wrap; }
+.sv-bar .seg button { height: 30px; padding: 0 12px; font-size: 13.5px; }
+.sv-bar .switch { font-size: 13px; }
+.sv-hint { margin: 8px 2px 0; font-weight: 600; color: var(--graphite); }
+.sv-body { position: relative; flex: 1; min-height: 0; }
+.sv-slot { position: absolute; inset: 12px; }
+.sv-slot > .nvmap, .sv-slot > .nvdata { position: absolute; inset: 0; }
+.sv-slot > .nvmap { border-radius: 14px; }
+.sv-slot.sv-hud { display: flex; flex-direction: column; justify-content: center; }
+.sv-slot.sv-sum { overflow: auto; }
+.sv-slot #hud svg { max-height: calc(100vh - 450px); min-height: 0; }
+.sv-slot .nv-turn { left: auto; right: 12px; transform: none; max-width: calc(100% - 82px); white-space: normal; }
+.sv-slot .nv-turn .big { font-size: 22px; }
+.sv-slot .nv-turn .big small { display: block; margin: 2px 0 0; }
+.sv-slot .nv-stage { max-width: calc(100% - 24px); flex-wrap: wrap; justify-content: center; row-gap: 2px; font-size: 14px; border-radius: 16px; padding: 8px 14px; }
+.sv-slot .nv-keybox, .sv-slot .nv-scale { bottom: 76px; }
+.summary { background: var(--paper); border: 1px solid var(--rule-2); border-radius: 14px; overflow: hidden; }
+.summary header { background: var(--green); color: var(--paper); padding: 14px 18px; }
+.summary header h2 { margin: 0; font-size: 21px; font-weight: 800; }
+.summary header p { margin: 3px 0 0; font-size: 14px; }
+.summary dl { margin: 0; padding: 4px 18px 2px; }
+.summary dl > div { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--rule); }
+.summary dt { font-weight: 600; }
+.summary dt .cap { display: block; font-weight: 400; }
+.summary dd { margin: 0; font: 600 19px/1.2 var(--f-num); text-align: right; }
+.summary dd.red { color: var(--red); }
+.summary dd.txt { font: 700 15px/1.3 var(--f-text); }
+.summary .slogan { margin: 0; padding: 14px 18px 16px; font-size: 18px; font-weight: 800; }
+.summary .slogan span { display: block; font-size: var(--t-cap); font-weight: 400; color: var(--graphite-2); margin-top: 4px; }
+
+@media (max-height: 900px), (max-width: 1500px) {
+  .story { grid-template-columns: minmax(0, 1fr) 244px 186px; gap: 12px; height: 176px; padding: 10px 14px; }
+  .st-title { font-size: 18.5px; margin: 7px 0 2px; }
+  .st-text { font-size: 14px; line-height: 1.38; }
+  .st-watch { display: none; }
+  .st-steps button { width: 24px; height: 24px; font-size: 11.5px; }
+  .st-steps li + li::before { width: 12px; }
+  .hc { padding-left: 14px; gap: 4px; }
+  .hc .v-word { font-size: 28px; }
+  .hc .v-count, .hc-note, .hc .v-facts li, .hc .constraint, .hc .v-status { font-size: 12px; }
+  .hc .v-facts li { padding: 3px 0; }
+  .st-next { height: 54px; padding: 0 12px; }
+  .st-row .btn { padding: 0 9px; }
+  .hc-act { height: 28px; font-size: 12px; padding: 0 9px; }
+  .st-t { font-size: 14px; }
+  .summary header h2 { font-size: 18px; }
+  .summary dl > div { padding: 6px 0; }
+  .summary dd { font-size: 16px; }
+  .summary .slogan { font-size: 15px; padding: 10px 18px 12px; }
+}
 @media (max-width: 1500px) {
   :root { --pad: 16px; --col-a: 48px; --col-v: 98px; --col-s: 64px; }
   .meta-item.site { display: none; }
@@ -413,6 +534,12 @@ body.nav .console, body.nav #plan-controls { display: none; }
 @media (max-width: 1100px) {
   body { height: auto; overflow: auto; grid-template-rows: auto auto; }
   .console { grid-template-rows: auto auto; }
+  body.sim .logcol { min-height: 640px; }
+  .story { height: auto; grid-template-columns: 1fr; }
+  .hc { border-left: 0; padding-left: 0; }
+  .tg { display: none; }
+  .console.no-side .logcol { display: block; }
+  .mapcol.no-bar .budget { display: grid; }
   .band { flex-wrap: wrap; gap: 8px 14px; padding: 10px 16px; }
   .meta { border-left: 0; padding-left: 0; height: auto; flex-wrap: wrap; gap: 4px 12px; order: 3; width: 100%; }
   .tag-sketch { display: inline-block; }
@@ -439,7 +566,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
   .legend { position: static; width: auto; margin: 12px 16px; }
   .legend ul { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
   .attrib { display: none; }
-  .budget { grid-template-columns: 1fr; gap: 10px; }
+  .budget { grid-template-columns: 1fr; gap: 10px; height: auto; }
   .row4 .l { font-size: 14px; }
   .stat .w { display: none; }
   .stat svg.i { width: 18px; height: 18px; }
@@ -476,6 +603,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
       <circle cx="43.9" cy="10.5" r="2" fill="#FCF9F5"/>
     </symbol>
     <symbol id="i-info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 7.3v4M8 4.8v.2"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5"/></symbol>
     <symbol id="i-close" viewBox="0 0 16 16"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></symbol>
   </defs>
 </svg>
@@ -501,6 +629,14 @@ body.nav .console, body.nav #plan-controls { display: none; }
     <button class="btn" id="nav-pause"><svg class="i"><use href="#i-pause"/></svg><span>Pause</span></button>
     <button class="btn btn-dark" id="nav-end"><svg class="i"><use href="#i-close"/></svg><span>End navigation</span></button>
   </div>
+  <div class="controls" id="sim-controls" hidden>
+    <div class="seg" role="group" aria-label="Rehearsal time compression">
+      <button type="button" data-sx="1" aria-pressed="false">×1</button>
+      <button type="button" data-sx="60" aria-pressed="true">×60</button>
+      <button type="button" data-sx="240" aria-pressed="false">×240</button>
+    </div>
+    <button class="btn btn-dark" id="sim-end"><svg class="i"><use href="#i-close"/></svg><span>End simulation</span></button>
+  </div>
   <div class="controls" id="plan-controls">
     <label class="switch"><input type="checkbox" id="tgl-grid" aria-label="100 m survey grid"><span class="track"></span><span class="t">100 m&nbsp;</span>grid</label>
     <div class="menu">
@@ -521,6 +657,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
       </div>
     </div>
     <button class="btn" id="btn-assume" aria-expanded="false" aria-controls="assume"><svg class="i"><use href="#i-sliders"/></svg><span class="t">Assumptions</span></button>
+    <button class="btn btn-sim" id="btn-sim" title="Play the emergency rehearsal on this map"><svg class="i"><use href="#i-warn"/></svg><span class="t">Simulate emergency</span></button>
   </div>
 </header>
 
@@ -551,13 +688,33 @@ body.nav .console, body.nav #plan-controls { display: none; }
           <li><svg viewBox="0 0 34 18"><path d="M1 9h32" stroke="#EDF0E6" stroke-width="7"/><path d="M1 9h32" stroke="#2B2D2F" stroke-width="4"/></svg>Planned route</li>
           <li><svg viewBox="0 0 34 18"><path d="M1 9h32" stroke="#2B2D2F" stroke-width="1.6" stroke-dasharray="1.5 4" stroke-linecap="round"/></svg>Curiosity traverse</li>
           <li><svg viewBox="0 0 34 18"><circle cx="17" cy="9" r="7.5" fill="#EDF0E6" stroke="#2459A8" stroke-width="1.6"/><text x="17" y="12.4" text-anchor="middle" font-size="9.5" font-weight="700" fill="#2459A8" font-family="Atkinson Hyperlegible Mono, monospace">1</text></svg>Science station, click to pick</li>
+          <li class="lg-sim"><svg viewBox="0 0 34 18"><path d="M1 9h32" stroke="#EDF0E6" stroke-width="7"/><path d="M1 9h32" stroke="#C8361F" stroke-width="3.6"/></svg>ABORT route</li>
+          <li class="lg-sim"><svg viewBox="0 0 34 18"><path d="M5 10.5c0-5 5-8 12-8s12 3 12 7.5-5 7-12 7c-6 0-11-2.5-11.5-6.5 0-1 .5-2.5 1.5-3.5" fill="none" stroke="#C8361F" stroke-width="2" stroke-linecap="round"/></svg>Finding, logged</li>
         </ul>
       </aside>
       </div>
+      <button type="button" class="tg tg-side" id="tg-side" aria-expanded="true" aria-controls="logcol" aria-label="Hide the side panel" title="Hide the side panel"><svg class="i"><use href="#i-chev"/></svg></button>
+      <button type="button" class="tg tg-bar" id="tg-bar" aria-expanded="true" aria-controls="budget" aria-label="Hide the time bar" title="Hide the time bar"><svg class="i"><use href="#i-chev"/></svg></button>
     </div>
+    <section class="story" id="story" hidden aria-label="Emergency rehearsal, step by step">
+      <div class="st-main">
+        <div class="st-top"><ol class="st-steps" id="st-steps" aria-label="Steps of the rehearsal"></ol><span class="cap" id="st-count"></span></div>
+        <h2 class="st-title" id="st-title"></h2>
+        <p class="st-text" id="st-text" aria-live="polite"></p>
+        <p class="st-watch cap" id="st-watch"></p>
+      </div>
+      <div class="hc" id="hc" aria-live="polite"></div>
+      <div class="st-ctl">
+        <button type="button" class="btn btn-dark st-next" id="st-next"></button>
+        <div class="st-row">
+          <button type="button" class="btn" id="st-back"><svg class="i"><use href="#i-arrow"/></svg>Back</button>
+          <label class="switch" title="Go on to the next step without a click"><input type="checkbox" id="st-auto" aria-label="Auto-play"><span class="track"></span>Auto-play</label>
+        </div>
+      </div>
+    </section>
     <section class="budget" id="budget" aria-label="EVA plan">
       <div class="clock">
-        <div class="row1"><span class="lbl">EVA start</span><span class="eva" id="clk-eva">0:00</span></div>
+        <div class="row1"><span class="lbl" id="clk-lbl">EVA start</span><span class="eva" id="clk-eva">0:00</span></div>
         <div class="cap" id="clk-cap">09:00 LMST</div>
       </div>
       <div class="budget-bar" id="bbar"></div>
@@ -565,7 +722,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     </section>
   </section>
 
-  <section class="logcol" aria-label="Route planning and station details">
+  <section class="logcol" id="logcol" aria-label="Route planning and station details">
     <div class="logscroll">
       <div class="verdict" id="verdict" aria-live="polite"></div>
       <section class="navpick" id="navpick" aria-label="Route planning">
@@ -583,6 +740,27 @@ body.nav .console, body.nav #plan-controls { display: none; }
         <div id="target"></div>
       </section>
     </div>
+    <section class="simview" id="simview" hidden aria-label="Astronaut view">
+      <div class="sv-head">
+        <h2 class="panel-h">Astronaut view <span class="cap">what the crew sees at this step</span></h2>
+        <div class="sv-bar">
+          <div class="seg" id="sv-tabs" role="group" aria-label="Astronaut view">
+            <button type="button" data-v="hud" aria-pressed="true">Helmet HUD</button>
+            <button type="button" data-v="nav" aria-pressed="false">Navigator</button>
+            <button type="button" data-v="data" aria-pressed="false">Data</button>
+            <button type="button" data-v="sum" id="sv-tab-sum" aria-pressed="false" hidden>Summary</button>
+          </div>
+          <label class="switch" title="Show the crew view that belongs to the step"><input type="checkbox" id="sv-auto" checked aria-label="Follow the story"><span class="track"></span>Follow the story</label>
+        </div>
+        <p class="cap sv-hint" id="sv-hint" aria-live="polite"></p>
+      </div>
+      <div class="sv-body">
+        <div class="sv-slot sv-hud" data-v="hud"></div>
+        <div class="sv-slot" data-v="nav" hidden></div>
+        <div class="sv-slot" data-v="data" hidden></div>
+        <div class="sv-slot sv-sum" data-v="sum" hidden><div class="summary" id="summary"></div></div>
+      </div>
+    </section>
     <aside class="assume" id="assume" hidden aria-label="Assumptions">
       <div class="assume-h"><h2>Assumptions</h2><button class="btn" id="assume-close"><svg class="i"><use href="#i-close"/></svg>Close</button></div>
       <div class="assume-body" id="assume-body"></div>
@@ -613,9 +791,11 @@ body.nav .console, body.nav #plan-controls { display: none; }
     <section class="hud-panel" aria-label="Helmet HUD">
        <!-- <span class="cap">sketch · heading = walking direction</span> -->
       <h2 class="panel-h">Helmet HUD</h2>
-      <div id="hud"></div>
-      <div class="hud-line" id="hud-line"></div>
-      <ul class="hud-warn" id="hud-warn" aria-live="polite"></ul>
+      <div id="hud-wrap">
+        <div id="hud"></div>
+        <div class="hud-line" id="hud-line"></div>
+        <ul class="hud-warn" id="hud-warn" aria-live="polite"></ul>
+      </div>
     </section>
     <section class="mini" aria-label="Second view">
       <h2 class="panel-h" id="mini-h">Data sheet</h2>
@@ -931,6 +1111,72 @@ body.nav .console, body.nav #plan-controls { display: none; }
     }
     return tr.pts[tr.pts.length - 1].slice();
   }
+  // ---------- emergency rehearsal: the six-beat story of the console sketch, built on first use ----------
+  // Routes only. The plan through all four stations, the drift toward Drill site B, the reroute and the two
+  // ways home after the injury come from the sketch Dijkstra. The return area does not use these fields.
+  var SCN = null;
+  function scenario() {
+    if (SCN) return SCN;
+    var TURN = 295;                               // turnaround at Station 4, EVA minute (13:55 LMST); on this steeper
+                                                  // test terrain a 14:00 turnaround would bring the rerouted crew home late
+    var homePen = dijkstra(hIdx, ZONE_PENALTY, -1), homeAllow = dijkstra(hIdx, 1, -1);
+    var stops = [F.habitat].concat(F.stations.map(function (s) { return s.c; })).concat([F.habitat]), legs = [];
+    for (var li = 0; li < stops.length - 1; li++) {
+      var from = idxOf(stops[li]), to = idxOf(stops[li + 1]);
+      var fld = (to === hIdx) ? homePen : dijkstra(to, ZONE_PENALTY, from);
+      var cells = pathFrom(fld, from), ps = pathStats(cells);
+      legs.push({ cells: cells, minutes: fld.time[from], maxSlope: ps.maxSlope, length: ps.length, zoneMetres: ps.zoneMetres });
+    }
+    var dwell = [50, 55, 60], sched = [], t = 0, tracks = [];
+    for (var i = 0; i < 4; i++) {
+      var tr = track(legs[i].cells, 1, t);
+      tracks.push(tr);
+      t = tr.t1;
+      var arrive = t, leave = i < 3 ? t + dwell[i] : TURN;
+      sched.push({ n: i + 1, arrive: arrive, leave: leave });
+      t = leave;
+    }
+    var ret = track(legs[4].cells, 1, TURN), home = ret.t1;
+    // drift: the point of the return leg nearest to Drill site B
+    var zb = F.zones[1].c, best = 0;
+    for (var k = 0; k < ret.pts.length; k++) if (dist(ret.pts[k], zb) < dist(ret.pts[best], zb)) best = k;
+    var tQ = ret.ts[best], tQa = tQ - 2;
+    var qa = posOn(ret, tQa), q = ret.pts[best];
+    var dd = dist(q, zb), rD = F.zoneR + 10;
+    var D = [zb[0] + (q[0] - zb[0]) * rD / dd, zb[1] + (q[1] - zb[1]) * rD / dd];
+    var drift = { t0: tQa, t1: tQ + 1, pts: [] };
+    for (var s2 = 0; s2 <= 16; s2++) {
+      var u = s2 / 16, a1 = 1 - u;
+      drift.pts.push([a1 * a1 * qa[0] + 2 * a1 * u * q[0] + u * u * D[0], a1 * a1 * qa[1] + 2 * a1 * u * q[1] + u * u * D[1]]);
+    }
+    var tD = drift.t1, dIdx = idxOf(D);
+    var reroute = track(pathFrom(homePen, dIdx), 1, tD);
+    var detour = reroute.t1 - home;
+    // injury two minutes later: walking speed halves (factor 2 on every step)
+    var tP = tD + 2, P = posOn(reroute, tP), pIdx = idxOf(P);
+    var protectedTr = track(pathFrom(homePen, pIdx), 2, tP);
+    var abortTr = track(pathFrom(homeAllow, pIdx), 2, tP);
+    var zoneIn = -1, zoneOut = -1, zoneM = 0;
+    for (var c = 1; c < abortTr.cells.length; c++) {
+      if (zoneOf[abortTr.cells[c]] >= 0) {
+        if (zoneIn < 0) zoneIn = abortTr.ts[c];
+        zoneOut = abortTr.ts[c];
+        zoneM += dist(abortTr.pts[c - 1], abortTr.pts[c]);
+      }
+    }
+    var entryIdx = abortTr.cells.findIndex(function (cc) { return zoneOf[cc] >= 0; });
+    var maxTTB = 0, maxSlope = 0, routeLen = 0;
+    legs.forEach(function (l) { l.cells.forEach(function (cc) { maxTTB = Math.max(maxTTB, homePen.time[cc]); }); maxSlope = Math.max(maxSlope, l.maxSlope); routeLen += l.length; });
+    SCN = {
+      turn: TURN, turnLatest: 360 - legs[4].minutes, legs: legs, zone: F.zones[1],   // zone: the protected zone the story is about
+      sched: sched, tracks: tracks, ret: ret, home: home, tQa: tQa, tQ: tQ, drift: drift, D: D, tD: tD,
+      reroute: reroute, detour: detour, tP: tP, P: P, lsAtP: 360 - tP, protectedTr: protectedTr, abortTr: abortTr,
+      zoneIn: zoneIn, zoneOut: zoneOut, zoneM: zoneM, entry: entryIdx >= 0 ? abortTr.pts[entryIdx] : P,
+      maxTTB: maxTTB, maxSlope: maxSlope, routeLen: routeLen, abortMaxSlope: pathStats(abortTr.cells).maxSlope
+    };
+    return SCN;
+  }
+
   function toLonLat(p) { return [CENTER.lon + (p[0] - W / 2) / M_PER_DEG, CENTER.lat - (p[1] - H / 2) / M_PER_DEG]; }
 
   root.RLGEN = {
@@ -939,7 +1185,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     F: F, z: z, slope: slope, shade: shade, ridge: ridge, blocked: blocked, zoneOf: zoneOf, zoneNear: zoneNear, insideRim: insideRim,
     nearest2: nearest2, edgeDists: edgeDists, edgeOpen: edgeOpen, wallEdge: wallEdge, boxworkActive: boxworkActive, fbm: fbm, hash2: hash2, segInfo: segInfo,
     idxOf: idxOf, ctr: ctr, dist: dist, dijkstra: dijkstra, pathFrom: pathFrom, pathStats: pathStats,
-    toLonLat: toLonLat, hIdx: hIdx,
+    toLonLat: toLonLat, hIdx: hIdx, scenario: scenario,
     speed: speed, moveTime: moveTime, chaikin: chaikin, track: track, posOn: posOn
   };
 })(typeof window !== 'undefined' ? window : globalThis);
@@ -978,7 +1224,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
   };
   function src(k) { return '<button type="button" class="src' + (k === 'ASSUME' ? ' is-assume' : '') + '" data-src="' + k + '">' + SRC[k][0] + '</button>'; }
 
-  var st = { grid: false, base: 'ortho', ridges: false, showArea: true, showZones: true, showTrav: true, walk: 1.5 };
+  var st = { grid: false, base: 'ortho', ridges: false, showArea: true, showZones: true, showTrav: true, walk: 1.5, side: true, bar: true };
 
   // ---------- view ----------
   var stage = $('#stage'), ov = $('#ov');
@@ -1169,7 +1415,8 @@ body.nav .console, body.nav #plan-controls { display: none; }
     if (st.showArea) {
       var Hb = G.F.habitat, hx = X(Hb[0]), hy = Y(Hb[1]), v = vWalk();
       var half = (Math.min(LS, SUNSET) - NAVT0) / 2;        // go out and come back
-      var same = half >= 60, rA = Math.max(0, Math.min(60, half)) * v * s, r60 = 60 * v * s;
+      var SA = SIM.on ? simArea() : null;                   // rehearsal: home in time from there, as in the console sketch
+      var same = SA ? SA.same : half >= 60, rA = (SA ? SA.r : Math.max(0, Math.min(60, half)) * v) * s, r60 = 60 * v * s;
       if (!same) o.push('<path d="' + circ(hx, hy, r60) + circ(hx, hy, rA) + '" fill="rgba(237,240,230,.52)" fill-rule="evenodd" stroke="none"/>');
       o.push('<path d="' + circ(hx, hy, rA) + '" fill="rgba(31,107,69,.20)" stroke="none"/>');
       o.push('<path d="' + circ(hx, hy, r60) + '" fill="none" stroke="rgba(237,240,230,.85)" stroke-width="4.5"/>');
@@ -1178,7 +1425,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
       o.push('<path d="' + circ(hx, hy, rA) + '" fill="none" stroke="#1F6B45" stroke-width="2.6"/>');
       if (!narrow) {
         L.push(circleLabel(hx, hy, r60, same ? 'Return area = 60-minute line' : '60-minute line', '#2B2D2F'));
-        if (!same) L.push(circleLabel(hx, hy, rA, 'Return area · from EVA hour ' + hm(NAVT0), '#1F6B45'));
+        if (!same) L.push(circleLabel(hx, hy, rA, SA ? 'Return area · ' + SA.lim + ' min' + (SA.inj ? ', injured' : '') : 'Return area · from EVA hour ' + hm(NAVT0), '#1F6B45'));
       }
     }
     // protected zones
@@ -1199,8 +1446,9 @@ body.nav .console, body.nav #plan-controls { display: none; }
       var tp = G.F.traverse[3];
       L.push(label(X(tp[0]) + 10, Y(tp[1]) + 4, 'Curiosity traverse', 'lbl', 'start'));
     }
-    // planned route to the picked station
-    if (NAVSEL != null) {
+    // rehearsal: the whole plan and what happens to it; planning: the route to the picked station
+    if (SIM.on) simRoutes(o, L);
+    else if (NAVSEL != null) {
       var nl = navLeg(NAVSEL), pv = G.chaikin(nl.cells.map(G.ctr), 2);
       o.push('<path d="' + pd(pv) + '" fill="none" stroke="rgba(237,240,230,.95)" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>');
       o.push('<path d="' + pd(pv) + '" fill="none" stroke="#2B2D2F" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>');
@@ -1212,14 +1460,16 @@ body.nav .console, body.nav #plan-controls { display: none; }
     o.push('<rect x="' + (hx2 - 8).toFixed(1) + '" y="' + (hy2 - 8).toFixed(1) + '" width="16" height="16" fill="#2B2D2F" stroke="#EDF0E6" stroke-width="2"/>');
     L.push(label(hx2 - 14, hy2 + 5, 'Habitat', 'lbl', 'end'));
     G.F.stations.forEach(function (sn, i) {
-      var sx2 = X(sn.c[0]), sy2 = Y(sn.c[1]), on = i === NAVSEL;
+      var sx2 = X(sn.c[0]), sy2 = Y(sn.c[1]), on = !SIM.on && i === NAVSEL;
+      var fillOn = on || (SIM.on && SIM.beat > 1 && SIM.t >= SC.sched[i].leave);   // rehearsal: stations already done
       o.push('<g class="stn" data-stn="' + i + '" role="button" tabindex="0" aria-label="Pick Station ' + sn.n + ', ' + sn.name + '">' +
-        '<circle cx="' + sx2.toFixed(1) + '" cy="' + sy2.toFixed(1) + '" r="' + (on ? 14 : 11.5) + '" fill="' + (on ? '#2459A8' : '#EDF0E6') + '" stroke="#2459A8" stroke-width="2"/>' +
-        '<text x="' + sx2.toFixed(1) + '" y="' + (sy2 + 4.2).toFixed(1) + '" text-anchor="middle" font-family="Atkinson Hyperlegible Mono, monospace" font-size="12" font-weight="700" fill="' + (on ? '#EDF0E6' : '#2459A8') + '">' + sn.n + '</text></g>');
+        '<circle cx="' + sx2.toFixed(1) + '" cy="' + sy2.toFixed(1) + '" r="' + (on ? 14 : 11.5) + '" fill="' + (fillOn ? '#2459A8' : '#EDF0E6') + '" stroke="#2459A8" stroke-width="2"/>' +
+        '<text x="' + sx2.toFixed(1) + '" y="' + (sy2 + 4.2).toFixed(1) + '" text-anchor="middle" font-family="Atkinson Hyperlegible Mono, monospace" font-size="12" font-weight="700" fill="' + (fillOn ? '#EDF0E6' : '#2459A8') + '">' + sn.n + '</text></g>');
       var right = i >= 2;
       if (!narrow) L.push(label(right ? sx2 + 18 : sx2 - 18, sy2 + 4.5, 'Stn ' + sn.n, 'lbl', right ? 'start' : 'end', '#2459A8'));
     });
-    ov.innerHTML = o.join('') + ticks + L.join('');
+    ov.innerHTML = o.join('') + ticks + L.join('') + (SIM.on ? '<g id="g-rings"></g><g id="g-crew"></g>' : '');
+    if (SIM.on) { ringsKey = ''; renderRings(); renderCrewMarker(); }
   }
 
   // ---------- verdict, picker, rules, station details, plan bar ----------
@@ -1321,7 +1571,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     function seg(a, b, fill, txt, txtFill) {
       if (b <= a) return;
       o.push('<rect x="' + (sx(a) + 1).toFixed(1) + '" y="' + y + '" width="' + Math.max(1, sx(b) - sx(a) - 2).toFixed(1) + '" height="' + bh + '" rx="6" fill="' + fill + '"/>');
-      if (txt && sx(b) - sx(a) > txt.length * 7 + 8) o.push('<text x="' + ((sx(a) + sx(b)) / 2).toFixed(1) + '" y="' + (y + 16) + '" text-anchor="middle" font-weight="700" fill="' + txtFill + '">' + txt + '</text>');
+      if (txt && sx(b) - sx(a) > txt.length * 7 + 8) o.push('<text x="' + ((sx(a) + sx(b)) / 2).toFixed(1) + '" y="' + (y + 16) + '" text-anchor="middle" font-weight="700" style="fill:' + txtFill + '">' + txt + '</text>');
     }
     if (P && P.ok) {
       seg(P.t0, P.tArr, '#2B2D2F', 'out', '#EDF0E6');
@@ -1344,12 +1594,13 @@ body.nav .console, body.nav #plan-controls { display: none; }
       row('Life support', hm(LS - NAVT0)); row('Sunset', '17:41 LMST');
     }
     $('#bsum').innerHTML = s;
+    $('#clk-lbl').textContent = 'EVA start';
     $('#clk-eva').textContent = hm(NAVT0);
     $('#clk-cap').textContent = lmst(NAVT0) + ' LMST · life support ' + hm(LS - NAVT0);
     $('#hdr-clock').textContent = lmst(NAVT0) + ' LMST';
   }
   function renderAll() { renderOverlay(); renderVerdict(); renderNavPick(); renderRules(); renderTarget(); renderPlanBar(); }
-  function pick(i) { NAVSEL = i; renderAll(); }
+  function pick(i) { if (SIM.on) return; NAVSEL = i; renderAll(); }
 
   // ---------- assumptions panel ----------
   var AS = [
@@ -1425,7 +1676,12 @@ body.nav .console, body.nav #plan-controls { display: none; }
     });
     stage.addEventListener('mouseleave', function () { $('#readout').textContent = ''; });
     var rt = 0;
-    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { if (!NAV.on) relayout(); }, 180); });
+    function mapBoxChanged() { var r = stage.getBoundingClientRect(); return r.width > 1 && r.height > 1 && (Math.abs(r.width - view.w) > 1 || Math.abs(r.height - view.h) > 1); }
+    function relayoutSoon() { clearTimeout(rt); rt = setTimeout(function () { if (!NAV.on && mapBoxChanged()) relayout(); }, 180); }
+    $('#tg-side').addEventListener('click', function () { setPanel('side', !st.side); });
+    $('#tg-bar').addEventListener('click', function () { setPanel('bar', !st.bar); });
+    window.addEventListener('resize', relayoutSoon);
+    if (window.ResizeObserver) new ResizeObserver(function () { if (mapBoxChanged()) relayoutSoon(); }).observe(stage);
   }
   // info boxes: a button opens the key, a second press, Escape or a click elsewhere closes it
   function infoBox(btnSel, boxSel) {
@@ -1450,7 +1706,16 @@ body.nav .console, body.nav #plan-controls { display: none; }
     $('#scale .bar').style.width = (L * view.s).toFixed(1) + 'px';
     $('#scale span').textContent = L + ' m';
   }
-  function relayout() { fit(); renderTerrain(); renderSlope(); renderRidges(); scaleBar(); renderAll(); }
+  function remap() { fit(); renderTerrain(); renderSlope(); renderRidges(); scaleBar(); }   // the map at the size of its box
+  function relayout() { remap(); if (SIM.on) simRenderAll(true); else renderAll(); }
+  // Map only: the side panel and the time bar under the map fold away; the map is redrawn at its new size.
+  function applyPanel(which, open) {
+    st[which] = open;
+    if (which === 'side') $('.console').classList.toggle('no-side', !open); else $('.mapcol').classList.toggle('no-bar', !open);
+    var b = $('#tg-' + which), txt = (open ? 'Hide the ' : 'Show the ') + (which === 'side' ? 'side panel' : 'time bar');
+    b.setAttribute('aria-expanded', String(open)); b.setAttribute('aria-label', txt); b.title = txt;
+  }
+  function setPanel(which, open) { applyPanel(which, open); if (!NAV.on) relayout(); }
 
   // =====================================================================
   // ---------- navigation mode: forearm tablet + helmet HUD ----------
@@ -1525,10 +1790,10 @@ body.nav .console, body.nav #plan-controls { display: none; }
     };
   }
   function navWarnings(d) {
-    var w = [];
+    var w = d.warn ? d.warn.slice() : [];
     if (d.home) return [['ok', 'check', 'Crew home · ' + lmst(d.t) + ' LMST']];
     if (d.at && d.stayLeft <= 10) w.push(['amber', 'warn', 'Return starts in ' + hm(Math.max(0, d.stayLeft))]);
-    if (d.stage === 'red') w.push(['red', 'warn', 'Cannot get home in time · return to shelter now']);
+    if (d.stage === 'red' && !d.abort) w.push(['red', 'warn', 'Cannot get home in time · return to shelter now']);
     else if (d.stage === 'yellow') w.push(['amber', 'warn', 'Under ' + CAUTION + ' min to spare · head home soon']);
     if (d.zone.d < 60) w.push(['blue', 'warn', (d.zone.d <= 0 ? 'Inside ' : 'Protected zone ' + R(d.zone.d) + ' m · ') + d.zone.name]);
     if (d.slope > 15) w.push(['red', 'warn', 'Steep ground ' + R(d.slope) + '° · limit 20°']);
@@ -1592,7 +1857,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     if (NAV.base === 'plain') { ctx.fillStyle = '#EDF0E6'; ctx.fillRect(0, 0, G.W, G.H); }
     else navTextures()[NAV.base].forEach(function (tx) { ctx.drawImage(tx.cv, tx.x0, tx.y0, tx.w, tx.h); });
     // return stages from here: green = 15+ min spare, yellow = under 15 min, red = cannot get home in time
-    var pR = polyPath(returnPts(p, d.lim.B, 0)), pG = polyPath(returnPts(p, d.lim.B, CAUTION));
+    var pR = d.abort ? null : polyPath(returnPts(p, d.lim.B, 0)), pG = d.abort ? null : polyPath(returnPts(p, d.lim.B, CAUTION));   // ABORT: all red
     var red = new Path2D(); red.rect(-4000, -4000, G.W + 8000, G.H + 8000); if (pR) red.addPath(pR);
     ctx.fillStyle = STAGE.red.tint; ctx.fill(red, 'evenodd');
     if (pR) { var yel = new Path2D(); yel.addPath(pR); if (pG) yel.addPath(pG); ctx.fillStyle = STAGE.yellow.tint; ctx.fill(yel, 'evenodd'); }
@@ -1620,9 +1885,12 @@ body.nav .console, body.nav #plan-controls { display: none; }
     var tr = navTrack();
     if (NAV.phase === 'ret') line(NAV.out.draw, 'rgba(43,45,47,.45)', 2.5, false, [6, 5]);
     if (NAV.phase !== 'home') {
-      line(tr.draw, '#2B2D2F', 5, true);
-      var k = 0; while (k < tr.ts.length - 1 && tr.ts[k + 1] <= NAV.t) k++;
-      line(tr.pts.slice(0, k + 1).concat([p]), '#80878B', 5, false);
+      if (d.pending) line(tr.draw, 'rgba(43,45,47,.5)', 3, false, [6, 5]);   // rehearsal: old route, new one pending
+      else {
+        line(tr.draw, '#2B2D2F', 5, true);
+        var k = 0; while (k < tr.ts.length - 1 && tr.ts[k + 1] <= NAV.t) k++;
+        line(tr.pts.slice(0, k + 1).concat([p]), '#80878B', 5, false);
+      }
     }
     ctx.restore();
     // markers and labels, upright in screen space
@@ -1677,7 +1945,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     });
     if (!d.home) {
       var rp = navTrack().draw.map(rel).map(function (q) { return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join('L');
-      g += '<path d="M' + rp + '" fill="none" stroke="#EDF0E6" stroke-width="7" stroke-linejoin="round"/><path d="M' + rp + '" fill="none" stroke="#2B2D2F" stroke-width="3.5" stroke-linejoin="round"/>';
+      g += '<g' + (d.pending ? ' opacity=".35"' : '') + '><path d="M' + rp + '" fill="none" stroke="#EDF0E6" stroke-width="7" stroke-linejoin="round"/><path d="M' + rp + '" fill="none" stroke="#2B2D2F" stroke-width="3.5" stroke-linejoin="round"/></g>';
     }
     o.push('<g clip-path="url(#hud-clip)"><g transform="translate(' + c + ' ' + c + ')">' + g + '</g></g>');
     // stage ring
@@ -1714,7 +1982,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     o.push(corner(8, S - 30, 'start', 'Radiation', d.dose.toFixed(2) + ' mSv'));
     o.push(corner(S - 8, S - 30, 'end', 'Life support*', hm(d.ls)));
     $('#hud').innerHTML = '<svg viewBox="0 0 ' + S + ' ' + S + '" role="img" aria-label="Helmet HUD: heading ' + hdg + ' degrees, ' + stg.word + '">' + o.join('') + '</svg>';
-    $('#hud-line').innerHTML = d.home ? '<span>Habitat</span><span>arrived</span>'
+    $('#hud-line').innerHTML = d.hudLine ? d.hudLine : d.home ? '<span>Habitat</span><span>arrived</span>'
       : d.at ? '<span>Stn ' + d.tgt.n + ' · return in ' + hm(Math.max(0, d.stayLeft)) + '</span><span>Home ' + lmst(d.homeAt) + '</span>'
       : '<span>' + (d.tgt.n === 'H' ? 'Base' : 'Stn ' + d.tgt.n) + ' ' + R(d.rem.m) + ' m · ' + R(d.rem.min) + ' min</span><span>Home ' + lmst(d.homeAt) + '</span>';
     $('#hud-warn').innerHTML = navWarnings(d).slice(0, 3).map(function (w) { return '<li class="' + w[0] + '">' + icon(w[1]) + w[2] + '</li>'; }).join('');
@@ -1761,17 +2029,18 @@ body.nav .console, body.nav #plan-controls { display: none; }
     box.innerHTML = pr.svg;
     $('#dv-prof-h').innerHTML = '<span>Elevation, ' + (NAV.phase === 'ret' || d.home ? 'way home' : 'way out') + '</span><span class="num">+' + R(pr.up) + ' m · −' + R(pr.dn) + ' m</span>';
   }
-  if (window.ResizeObserver) new ResizeObserver(function () { if (NAV.on && lastD) renderProf(lastD); }).observe($('#dv-prof-box'));
+  if (window.ResizeObserver) new ResizeObserver(function () { if ((NAV.on || SIM.on) && lastD) renderProf(lastD); }).observe($('#dv-prof-box'));
   function tile(l, v, u, s, sk) {
     return '<div class="dt"><div class="dt-l"><span>' + l + '</span>' + (sk ? src(sk) : '') + '</div>' +
       '<div class="dt-v">' + v + (u ? '<span class="u">' + u + '</span>' : '') + '</div>' + (s ? '<div class="dt-s">' + s + '</div>' : '') + '</div>';
   }
   function renderNavUi(d) {
     var stg = STAGE[d.stage], tr = navTrack(), turn, sn = G.F.stations[NAV.target];
-    var spareTxt = d.spare >= 0 ? R(d.spare) + ' min spare' : 'no way home';
+    var spareTxt = d.spareTxt || (d.spare >= 0 ? R(d.spare) + ' min spare' : 'no way home');
     var stayLeft = Math.max(0, d.stayLeft), back = NAV.ret.t1 - NAV.ret.t0;
     // turn card on the map
-    if (d.home) turn = icon('check') + '<div><div class="to">Crew home</div><div class="big">' + lmst(d.t) + '<small>LMST</small></div></div>';
+    if (d.turn) turn = d.turn;
+    else if (d.home) turn = icon('check') + '<div><div class="to">Crew home</div><div class="big">' + lmst(d.t) + '<small>LMST</small></div></div>';
     else if (d.at) turn = icon('check') + '<div><div class="to">At Stn ' + sn.n + ' · ' + sn.name + '</div><div class="big">Return in ' + hm(stayLeft) + '<small>leave ' + lmst(NAV.tLeave) + '</small></div></div>';
     else {
       var ah = G.posOn(tr, Math.min(tr.t1, d.t + 2)), ra = G.dist(d.p, ah) > 2 ? bearingTo(d.p, ah) - NAV.hd : 0;
@@ -1779,7 +2048,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
         '<div><div class="to">To ' + d.tgt.name + '</div><div class="big">' + R(d.rem.m) + ' m<small>' + R(d.rem.min) + ' min · ETA ' + lmst(d.eta) + '</small></div></div>';
     }
     $('#nv-turn').innerHTML = turn;
-    $('#nd-end').hidden = !d.home;
+    $('#nd-end').hidden = !d.home || SIM.on;
     var se = $('#nv-stage');
     se.style.background = stg.bg; se.style.color = stg.fg;
     se.innerHTML = icon(d.stage === 'green' ? 'check' : 'warn') + stg.word + '<span class="num">' + spareTxt + '</span>';
@@ -1808,6 +2077,8 @@ body.nav .console, body.nav #plan-controls { display: none; }
       A = tile('To Habitat', R(d.rem.m), 'm', R(d.rem.min) + ' min · ETA ' + lmst(d.eta) + ' LMST', 'ROUTE');
       B = tile('Home at', lmst(d.homeAt), '', 'planned · EVA ' + hm(d.homeAt), 'ROUTE');
     }
+    if (d.tileA) A = d.tileA;
+    if (d.tileB) B = d.tileB;
     $('#dv-hero').innerHTML = A + B;
     renderProf(d);
     $('#dv-grid').innerHTML =
@@ -1906,6 +2177,538 @@ body.nav .console, body.nav #plan-controls { display: none; }
     });
   }
 
+  // =====================================================================
+  // ---------- emergency rehearsal on the base map ----------
+  // The six-step story of the console sketch (plan, time jump, the area pulls away, deviation caught,
+  // crew member injured, override logged), told from habitat control's view on the planning map.
+  // One strip under the map says where the story is and what it means; the user steps through it.
+  // The right column shows what the crew sees at that step: helmet HUD, navigator or data sheet.
+  // Those are the navigation views, fed from the rehearsal state instead of a picked route.
+  //
+  // Real data: everything the story shows comes from the scenario object SC (routes, times, zone and
+  // station names) and from G.F (habitat, stations, zones). Texts are built from those, never typed in.
+  // To run it on real data, replace G.scenario() and G.F by the engine's output; see the README.
+  // =====================================================================
+  var SC = null, SCD = null, BEATS = [];
+  var T45 = 285;                                // the time jump: EVA hour 4:45
+  var SIM = { on: false, beat: 1, t: 0, go: false, reroute: false, abort: false, done: false, playing: false, autoplay: false, speedX: 60, view: 'hud', auto: true, saved: null };
+  var SIM_PAUSE_MS = 4500;                      // reading time between steps when auto-play is on
+
+  function simBuild() {
+    if (SC) return;
+    SC = G.scenario();
+    var nS = SC.tracks.length, nZ = G.F.zones.length, Z = SC.zone.name, last = 'Station ' + SC.sched[nS - 1].n;
+    var prot = SC.protectedTr.t1 - SC.tP, abrt = SC.abortTr.t1 - SC.tP;
+    SCD = {
+      nS: nS, zone: Z, detour: Math.max(1, R(SC.detour)), prot: prot, abrt: abrt,
+      zoneM: R(SC.zoneM / 10) * 10, homeAbort: SC.abortTr.t1,
+      // checked against the data, so the words stay true when the data changes
+      rules: [SC.maxTTB <= 60, SC.maxSlope <= 20, true, SC.home <= SUNSET],   // time to shelter, slope, radio gap (not in the sketch), daylight
+      zonesAvoided: SC.legs.every(function (l) { return l.zoneMetres < 1; }),
+      protFits: prot <= 60 && SC.tP + prot <= LS, abrtFits: abrt <= 60 && SC.tP + abrt <= LS
+    };
+    SCD.pass = SCD.rules.filter(Boolean).length;
+    SCD.planOk = SCD.pass === SCD.rules.length && SC.home <= LS;
+    var zonesTxt = nZ === 1 ? 'the protected zone' : 'all ' + nZ + ' protected zones';
+    BEATS = [
+      { n: 1, nav: 'Plan', title: 'The plan', view: 'data', t0: 0, t1: 0,
+        text: nS + ' science stations, then home. ' + (SCD.zonesAvoided ? 'The route avoids ' + zonesTxt : 'The route crosses a protected zone') + ', and ' + (SCD.pass === 4 ? 'all four safety rules pass' : SCD.pass + ' of 4 safety rules pass') + '.',
+        watch: 'On the map: the dark line is the planned route. The green area is where the crew can still get home.',
+        crew: 'The plan in numbers, before the crew leaves the habitat.' },
+      { n: 2, nav: 'Time jump', title: 'Time jump to EVA hour ' + hm(T45), view: 'hud', t0: T45, t1: T45,
+        text: 'The quiet hours are skipped. The crew has finished ' + (nS - 1) + ' stations and works at ' + last + '. The return area still equals the 60-minute line.',
+        watch: 'On the map: the crew marker at ' + last + '. The orange line on the time bar shows the skipped hours.',
+        crew: 'The helmet HUD at ' + last + '. The ring is green: home in time.' },
+      { n: 3, nav: 'The area shrinks', title: 'The return area pulls away', view: 'nav', t0: T45, t1: SC.tQa,
+        text: 'The crew heads home. Less than an hour of life support is left, so life support now sets the limit: the green area shrinks.',
+        watch: 'On the map: the green area pulls away from the dashed 60-minute line.',
+        crew: 'The navigator shows the same shrinking area from where the crew stands.' },
+      { n: 4, nav: 'Deviation', title: 'Deviation caught', view: 'hud', t0: SC.tQa, t1: SC.tP,
+        text: 'The crew drifts toward ' + Z + ', a protected zone. The console warns 10 m before it, and habitat control sends a way around: +' + SCD.detour + ' min.',
+        watch: 'On the map: red dashes show the drift, the red ring marks the finding, then the new route appears.',
+        crew: 'The helmet HUD warns before the protected zone.' },
+      { n: 5, nav: 'Injury', title: 'Crew member injured', view: 'hud', t0: SC.tP, t1: SC.tP,
+        text: 'EV2 is injured, so walking speed halves. ' + (SCD.protFits ? 'The protected route home still fits.' : 'The protected route home is now too long.') + ' ' +
+          (SCD.abrtFits ? 'Only the way through ' + Z + ' gets the crew home in time.' : 'The way through ' + Z + ' is too long as well.'),
+        watch: 'On the map: dark dashes are the protected route, red dashes the way through the zone.',
+        crew: 'The helmet HUD turns red: ABORT, stand by for the route.' },
+      { n: 6, nav: 'Override', title: 'Override, logged', view: 'nav', t0: SC.tP, t1: SCD.homeAbort,
+        text: 'Crew safety comes before planetary protection: habitat control sends the crew through ' + Z + ' on purpose. The zone entry is logged with its reason.',
+        watch: 'On the map: the red ABORT route through the hatched zone.',
+        crew: 'The navigator leads the crew home through the zone.' }
+    ];
+    SCD.endTitle = 'Crew home';
+    SCD.endText = 'Both crew members are inside at ' + lmst(SCD.homeAbort) + ' LMST with ' + R(LS - SCD.homeAbort) + ' min of life support left. ' + SCD.zoneM + ' m inside ' + Z + ', logged with the reason ABORT.';
+    $('#st-steps').innerHTML = BEATS.map(function (b) { return '<li><button type="button" data-b="' + b.n + '" title="' + b.nav + '" aria-label="Step ' + b.n + ': ' + b.nav + '">' + b.n + '</button></li>'; }).join('');
+  }
+  function setBeat(n, atEnd) {
+    var b = BEATS[n - 1];
+    SIM.beat = n; SIM.t = atEnd ? b.t1 : b.t0;
+    SIM.go = n > 1 || !!atEnd;
+    SIM.reroute = n > 4 || (n === 4 && !!atEnd);
+    SIM.abort = n === 6 && !!atEnd;
+    SIM.done = n === 6 && !!atEnd;
+  }
+
+  // ---------- rehearsal state ----------
+  function onDrift(t) {
+    var p = SC.drift.pts, f = (t - SC.drift.t0) / (SC.drift.t1 - SC.drift.t0) * (p.length - 1);
+    f = Math.max(0, Math.min(p.length - 1, f));
+    var i = Math.floor(f), j = Math.min(p.length - 1, i + 1), u = f - i;
+    return [p[i][0] + (p[j][0] - p[i][0]) * u, p[i][1] + (p[j][1] - p[i][1]) * u];
+  }
+  function simPos(t) {                          // where the crew is at EVA minute t, given the step reached
+    var b = SIM.beat, i;
+    if (b >= 6 && SIM.abort && t >= SC.tP) return G.posOn(SC.abortTr, t);
+    if (t <= SC.turn) {
+      for (i = 0; i < SCD.nS; i++) {
+        if (t <= SC.tracks[i].t1) return G.posOn(SC.tracks[i], t);
+        if (t <= SC.sched[i].leave) return G.F.stations[i].c.slice();
+      }
+    }
+    if (b >= 4 && t >= SC.tQa) return t <= SC.drift.t1 ? onDrift(t) : G.posOn(SC.reroute, Math.min(t, SC.tP));
+    return G.posOn(SC.ret, t);
+  }
+  function simHeading() {                       // walking direction; while standing, the direction walked last
+    var t = SIM.t, a = simPos(t - 0.5), b2 = simPos(t + 0.5);
+    if (G.dist(a, b2) >= 1) return bearingTo(a, b2);
+    for (var k = 0; k < 120; k++) {
+      a = simPos(t - k - 1); b2 = simPos(t - k);
+      if (G.dist(a, b2) >= 1) return bearingTo(a, b2);
+    }
+    return 0;
+  }
+  function simHomeTime() {                      // when the crew is home on the plan that is valid right now
+    if (SIM.beat >= 5) return SIM.abort ? SCD.homeAbort : SC.tP + SCD.prot;
+    if (SIM.reroute) return SC.reroute.t1;
+    return SC.home;
+  }
+  // Return area on the base map, as in the console sketch: home within the 60-minute rule and before life
+  // support runs out, at half speed once a crew member is injured. Straight lines, like the rest of the page.
+  function simArea() {
+    var lim = Math.max(0, Math.min(60, Math.floor(LS - SIM.t))), inj = SIM.beat >= 5;
+    return { lim: lim, inj: inj, r: lim * vWalk() / (inj ? 2 : 1), same: lim >= 60 && !inj };
+  }
+  function simFindings() {
+    var f = [];
+    if (SIM.beat >= 4 && SIM.t >= SC.tD - 0.01) f.push({ id: 'drift', p: SC.drift.pts[SC.drift.pts.length - 1] });
+    if (SIM.beat >= 5) f.push({ id: 'injury', p: SC.P });
+    if (SIM.abort && SIM.t >= SC.zoneIn) f.push({ id: 'zone', p: SC.entry });
+    return f;
+  }
+
+  // ---------- base map layers of the rehearsal ----------
+  function callout(x, y, txt, tone, anchor) {   // a pill label for the things the current step is about
+    var w = txt.length * 7 + 22, x0 = anchor === 'end' ? x - w : anchor === 'middle' ? x - w / 2 : x;
+    var fill = tone === 'red' ? '#C8361F' : tone === 'green' ? '#1F6B45' : '#2B2D2F';
+    return '<g><rect x="' + x0.toFixed(1) + '" y="' + (y - 16).toFixed(1) + '" width="' + w.toFixed(0) + '" height="24" rx="12" fill="' + fill + '" stroke="#EDF0E6" stroke-width="1.5"/>' +
+      '<text class="co" x="' + (x0 + w / 2).toFixed(1) + '" y="' + (y + 0.5).toFixed(1) + '" text-anchor="middle">' + txt + '</text></g>';
+  }
+  function simRoutes(o, L) {
+    var b = SIM.beat, t = SIM.t, planOp = b >= 5 ? 0.42 : 1;
+    SC.tracks.map(function (x) { return x.draw; }).concat([SC.ret.draw]).forEach(function (p) {
+      o.push('<path d="' + pd(p) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="6.5" stroke-linejoin="round" opacity="' + planOp + '"/>');
+      o.push('<path d="' + pd(p) + '" fill="none" stroke="#2B2D2F" stroke-width="3" stroke-linejoin="round" opacity="' + planOp + '"/>');
+    });
+    if (b >= 4 && t >= SC.tQa) {                // drift off the route, then the reroute
+      var dEnd = b === 4 ? Math.min(t, SC.drift.t1) : SC.drift.t1, dp = [];
+      for (var k = 0; k < SC.drift.pts.length; k++) {
+        var tt = SC.drift.t0 + (SC.drift.t1 - SC.drift.t0) * k / (SC.drift.pts.length - 1);
+        if (tt <= dEnd + 1e-6) dp.push(SC.drift.pts[k]);
+      }
+      if (dp.length > 1) o.push('<path d="' + pd(dp) + '" fill="none" stroke="#C8361F" stroke-width="2.2" stroke-dasharray="4 3"/>');
+      if (SIM.reroute && b === 4) {
+        o.push('<path d="' + pd(SC.reroute.draw) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="6.5"/>');
+        o.push('<path d="' + pd(SC.reroute.draw) + '" fill="none" stroke="#2B2D2F" stroke-width="3"/>');
+        var rm = SC.reroute.draw[R(SC.reroute.draw.length * 0.55)];
+        L.push(callout(X(rm[0]) - 12, Y(rm[1]) - 10, 'New route · +' + SCD.detour + ' min', 'ink', 'end'));
+      }
+    }
+    if (b === 5 || (b === 6 && !SIM.abort)) {   // the two ways home after the injury
+      var pp = SC.protectedTr.draw, ap = SC.abortTr.draw;
+      o.push('<path d="' + pd(pp) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="6"/>');
+      o.push('<path d="' + pd(pp) + '" fill="none" stroke="#2B2D2F" stroke-width="2.6" stroke-dasharray="8 5"/>');
+      o.push('<path d="' + pd(ap) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="7"/>');
+      o.push('<path d="' + pd(ap) + '" fill="none" stroke="#C8361F" stroke-width="3.6" stroke-dasharray="10 5"/>');
+      var pm = pp[R(pp.length * 0.62)], am = ap[R(ap.length * 0.78)];
+      L.push(callout(X(pm[0]) - 12, Y(pm[1]) + 4, 'Protected route · ' + R(SCD.prot) + ' min · ' + (SCD.protFits ? 'fits' : 'too long'), 'ink', 'end'));
+      L.push(callout(X(am[0]) + 12, Y(am[1]) + 4, 'Through the zone · ' + R(SCD.abrt) + ' min · ' + (SCD.abrtFits ? 'fits' : 'too long'), 'red', 'start'));
+    }
+    if (b === 6 && SIM.abort) {
+      var ar = SC.abortTr.draw;
+      o.push('<path d="' + pd(ar) + '" fill="none" stroke="rgba(237,240,230,.9)" stroke-width="7.5"/>');
+      o.push('<path d="' + pd(ar) + '" fill="none" stroke="#C8361F" stroke-width="3.8"/>');
+      var am2 = ar[R(ar.length * 0.36)];
+      L.push(callout(X(am2[0]) - 14, Y(am2[1]) + 4, 'ABORT route · ' + SCD.zoneM + ' m in the zone, logged', 'red', 'end'));
+    }
+  }
+  function ringPath(cx, cy, rx, ry, rot) {      // a hand-drawn red-pencil ring round a finding
+    var pts = [], n = 46, a0 = -2.25, sweep = Math.PI * 2 * 1.12;
+    for (var k = 0; k <= n; k++) {
+      var a = a0 + sweep * k / n, f = 0.94 + 0.13 * (k / n);
+      var x = Math.cos(a) * rx * f, y = Math.sin(a) * ry * f;
+      pts.push([cx + x * Math.cos(rot) - y * Math.sin(rot), cy + x * Math.sin(rot) + y * Math.cos(rot)]);
+    }
+    var len = 0;
+    for (var j = 1; j < pts.length; j++) len += Math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]);
+    return { d: 'M' + pts.map(function (p) { return p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join('L'), len: Math.ceil(len) };
+  }
+  var drawnRings = {}, ringsKey = '';
+  function renderRings() {
+    var g = $('#g-rings');
+    if (!g) return;
+    var f = simFindings(), key = f.map(function (x) { return x.id; }).join(',');
+    if (key === ringsKey) return;
+    ringsKey = key;
+    g.innerHTML = f.map(function (x, n) {
+      var sz = x.id === 'injury' ? [34, 26] : x.id === 'drift' ? [19, 15] : [27, 20];
+      var rp = ringPath(X(x.p[0]), Y(x.p[1]), sz[0], sz[1], -0.2), fresh = !drawnRings[x.id];
+      drawnRings[x.id] = 1;
+      return '<path class="ring' + (fresh ? ' draw' : '') + (n < f.length - 1 ? ' old' : '') + '" d="' + rp.d + '" style="--len:' + rp.len + ';stroke-dasharray:' + rp.len + '"/>';
+    }).join('');
+  }
+  function renderCrewMarker() {
+    var g = $('#g-crew');
+    if (!g) return;
+    var p = simPos(SIM.t), cx = X(p[0]), cy = Y(p[1]), red = SIM.beat >= 5 && !SIM.done, col = red ? '#C8361F' : '#2B2D2F';
+    g.innerHTML = (SIM.beat === 1 || SIM.done) ? '' :
+      '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="15" fill="none" stroke="' + col + '" stroke-width="1.4" opacity=".6"/>' +
+      '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="8" fill="' + col + '" stroke="#EDF0E6" stroke-width="2.4"/>' +
+      callout(cx + 20, cy - 12, red ? 'Crew · EV2 injured' : 'Crew', red ? 'red' : 'ink', 'start');
+  }
+
+  // ---------- story strip: step, headline, what happens, habitat control's decision ----------
+  function renderHc() {
+    var b = SIM.beat, t = SIM.t, Z = SCD.zone, o = '<div class="hc-label">Habitat control decides</div>';
+    function word(w, cls, count) { return '<div class="v-line"><span class="v-word ' + cls + '">' + w + '</span>' + (count ? '<span class="v-count">' + count + '</span>' : '') + '</div>'; }
+    function note(txt) { return '<p class="hc-note">' + txt + '</p>'; }
+    function constraint(trig, act, warn) { return '<div class="constraint' + (warn ? ' warn' : '') + '"><span class="trig">' + trig + '</span>' + icon('arrow') + '<span class="act">' + act + '</span></div>'; }
+    function action(id, cls, ic, txt) { return '<div class="v-actions"><span class="btn ' + cls + ' hc-act" id="' + id + '">' + icon(ic) + txt + '</span></div>'; }
+    function status(cls, ic, txt) { return '<div class="v-status' + (cls ? ' ' + cls : '') + '">' + icon(ic) + '<span>' + txt + '</span></div>'; }
+    function fact(ok, txt, num) { return '<li class="' + (ok ? 'good' : 'bad') + '">' + icon(ok ? 'check' : 'cross') + '<span>' + txt + '</span><span class="num">' + num + '</span></li>'; }
+    var logged = 'Override logged · ' + SCD.zoneM + ' m in ' + Z + ' · reason: ABORT';
+    if (b === 1) {
+      o += word(SCD.planOk ? 'GO' : 'NO-GO', SCD.planOk ? 'go' : 'nogo') + note(SCD.pass + ' of 4 rules pass · home ' + lmst(SC.home) + ' LMST, ' + hm(LS - SC.home) + ' to spare');
+      o += SIM.go ? status('ok', 'check', 'GO confirmed · ' + lmst(0) + ' LMST') : action('act-go', 'btn-go', 'check', 'Confirm GO');
+    } else if (b === 2 || (b === 3 && t < LS - 60)) {
+      o += word('GO', 'go') + note(t < SC.turn ? 'On plan. Turnaround at ' + lmst(SC.turn) + ', latest ' + lmst(SC.turnLatest) + '.' : 'Turnaround at ' + lmst(SC.turn) + ' as planned. The crew is heading home.');
+      o += status('ok', 'check', 'GO confirmed ' + lmst(0) + ' LMST');
+    } else if (b <= 4) {
+      o += word('GO', 'go', '1 constraint');
+      if (b === 4 && t >= SC.tD - 0.01) {
+        o += constraint('Crew 10 m from ' + Z, SIM.reroute ? 'Rerouted, +' + SCD.detour + ' min' : 'Reroute', true);
+        o += SIM.reroute ? status('', 'check', 'New route sent ' + lmst(SC.tD + 0.5) + ' · home ' + lmst(SC.reroute.t1) + ' LMST') : action('act-reroute', 'btn-dark', 'arrow', 'Reroute around ' + Z);
+      } else {
+        o += constraint('Crew leaves the return area', 'ABORT: return to shelter now');
+        o += note('Life support sets the return area now.');
+      }
+    } else if (b === 5 || !SIM.abort) {
+      o += word('ABORT', 'abort', 'life support ' + R(SC.lsAtP) + ' min');
+      o += '<ul class="v-facts">' + fact(SCD.protFits, 'Protected route: ' + (SCD.protFits ? 'fits' : 'too long'), R(SCD.prot) + ' min') +
+        fact(SCD.abrtFits, 'Through ' + Z + ': ' + (SCD.abrtFits ? 'fits' : 'too long'), R(SCD.abrt) + ' min') + '</ul>';
+      o += action('act-abort', 'btn-abort', 'check', 'Confirm ABORT through ' + Z);
+    } else if (SIM.done) {
+      o += word('HOME', 'go') + note('Inside at ' + lmst(SCD.homeAbort) + ' LMST · ' + R(LS - SCD.homeAbort) + ' min of life support left');
+      o += status('red', 'check', logged);
+    } else {
+      o += word('ABORT', 'abort') + note('Override confirmed ' + lmst(SC.tP) + '. The crew walks home through ' + Z + '.');
+      o += status('red', 'check', logged);
+    }
+    $('#hc').innerHTML = o;
+  }
+  function renderStory() {
+    var b = SIM.beat, be = BEATS[b - 1], done = SIM.done, nxt = BEATS[b];
+    $$('#st-steps li').forEach(function (li, i) {
+      li.className = (done || i + 1 < b) ? 'is-done' : i + 1 === b ? 'is-now' : '';
+      if (i + 1 === b && !done) li.firstChild.setAttribute('aria-current', 'step'); else li.firstChild.removeAttribute('aria-current');
+    });
+    $('#st-count').textContent = done ? 'Rehearsal complete' : 'Step ' + b + ' of ' + BEATS.length;
+    var ti = $('#st-title');
+    ti.textContent = done ? SCD.endTitle : be.title;
+    ti.className = 'st-title' + (!done && b >= 5 ? ' is-alert' : '');
+    $('#st-text').textContent = done ? SCD.endText : be.text;
+    $('#st-watch').textContent = done ? 'On the right: the summary for the debrief.' : be.watch;
+    // one main button: skip while a step plays, otherwise the next step, at the end play again
+    var nx = $('#st-next'), k, tt;
+    if (SIM.playing) { k = 'Playing'; tt = 'Skip to the end of this step'; }
+    else if (done || !nxt) { k = 'Finished'; tt = 'Play again'; }
+    else { k = 'Next step'; tt = nxt.nav; }
+    nx.className = 'btn st-next' + (SIM.playing ? '' : ' btn-dark');
+    nx.innerHTML = '<span class="st-nx"><span class="st-k">' + k + '</span><span class="st-t">' + tt + '</span></span>' + icon(done && !SIM.playing ? 'play' : 'arrow');
+    $('#st-back').disabled = b === 1 && !done;
+    // the debrief summary, shown in the right column once the crew is home
+    $('#sv-tab-sum').hidden = !done;
+    $('#summary').innerHTML = !done ? '' :
+      '<header><h2>Crew home at ' + lmst(SCD.homeAbort) + ' LMST</h2><p>EVA rehearsal complete. Summary for the debrief.</p></header><dl>' +
+      '<div><dt>Life support left<span class="cap">1:00 backup untouched</span></dt><dd>' + R(LS - SCD.homeAbort) + ' min</dd></div>' +
+      '<div><dt>Inside protected zones<span class="cap">1 entry, logged with reason ABORT</span></dt><dd class="red">' + SCD.zoneM + ' m</dd></div>' +
+      '<div><dt>Rules fired<span class="cap">slope, radio gap and daylight never fired</span></dt><dd class="txt">Time to shelter, ' + lmst(SC.tP) + '</dd></div>' +
+      '<div><dt>Science stations<span class="cap">all samples taken before the injury</span></dt><dd>' + SCD.nS + ' of ' + SCD.nS + '</dd></div>' +
+      '<div><dt>Radiation dose<span class="cap">information only</span></dt><dd>' + (0.64 * SCD.homeAbort / 1440).toFixed(2) + ' mSv</dd></div></dl>' +
+      '<p class="slogan">Explore Mars. Return Safely. Preserve the Evidence.<span>Rehearsal on synthetic terrain. Every number in the build carries its source.</span></p>';
+    $('#sv-hint').textContent = !SIM.auto ? 'View pinned. Switch on “Follow the story” to let it change with the steps.' : done ? 'The summary for the debrief.' : be.crew;
+  }
+  function renderSimBar() {                     // time budget of the rehearsal: outbound, return, ABORT, against the 6-hour limit
+    var el = $('#bbar'), W = Math.max(200, el.clientWidth), H = 90, max = 420, TURN = SC.turn;
+    var sx = function (m) { return 2 + (W - 4) * m / max; };
+    var b = SIM.beat, t = SIM.t, o = [], y = 20, bh = 24;
+    function rect(a, c, fill, extra) { o.push('<rect x="' + sx(a).toFixed(1) + '" y="' + y + '" width="' + Math.max(0, sx(c) - sx(a)).toFixed(1) + '" height="' + bh + '" rx="6" fill="' + fill + '"' + (extra || '') + '/>'); }
+    for (var hr = 0; hr <= 7; hr++) {
+      o.push('<path d="M' + sx(hr * 60).toFixed(1) + ' 14v4" stroke="#2B2D2F"/>');
+      o.push('<text x="' + sx(hr * 60).toFixed(1) + '" y="10" text-anchor="' + (hr === 0 ? 'start' : hr === 7 ? 'end' : 'middle') + '">' + hr + ':00</text>');
+    }
+    rect(LS, max, 'rgba(43,45,47,.08)');
+    if (W > 520) o.push('<text x="' + ((sx(LS) + sx(max)) / 2) + '" y="' + (y + 16) + '" text-anchor="middle">backup 1:00</text>');
+    rect(0, TURN, '#2B2D2F');
+    SC.sched.forEach(function (s) {
+      o.push('<rect x="' + sx(s.arrive).toFixed(1) + '" y="' + (y + 4) + '" width="' + (sx(s.leave) - sx(s.arrive)).toFixed(1) + '" height="' + (bh - 8) + '" rx="4" fill="#2459A8"/>');
+      o.push('<text x="' + ((sx(s.arrive) + sx(s.leave)) / 2).toFixed(1) + '" y="' + (y + 16) + '" text-anchor="middle" style="fill:#EDF0E6" font-weight="700">' + s.n + '</text>');
+    });
+    var retEnd, overflow = null;
+    if (b >= 5) {
+      rect(TURN, SC.tP, '#8A8F92');
+      retEnd = SCD.homeAbort;
+      rect(SC.tP, SCD.homeAbort, SIM.abort ? '#C8361F' : 'rgba(200,54,31,.25)', ' stroke="#C8361F" stroke-width="1.5"' + (SIM.abort ? '' : ' stroke-dasharray="4 3"'));
+      o.push('<text x="' + ((sx(SC.tP) + sx(SCD.homeAbort)) / 2).toFixed(1) + '" y="' + (y + 16) + '" text-anchor="middle" font-weight="700" style="fill:' + (SIM.abort ? '#EDF0E6' : '#A92C18') + '">ABORT</text>');
+      if (!SIM.abort) {
+        var y2 = y + bh + 9, pEnd = SC.tP + SCD.prot;
+        o.push('<rect x="' + sx(SC.tP).toFixed(1) + '" y="' + y2 + '" width="' + (sx(Math.min(LS, pEnd)) - sx(SC.tP)).toFixed(1) + '" height="9" fill="#8A8F92"/>');
+        o.push('<rect x="' + sx(LS).toFixed(1) + '" y="' + y2 + '" width="' + Math.max(0, sx(Math.min(max, pEnd)) - sx(LS)).toFixed(1) + '" height="9" fill="#C8361F"/>');
+        o.push('<text x="' + (sx(SC.tP) - 6).toFixed(1) + '" y="' + (y2 + 8) + '" text-anchor="end">protected route ' + hm(SCD.prot) + '</text>');
+        o.push('<text x="' + (W - 2) + '" y="' + (y2 + 21) + '" style="fill:#C8361F" font-weight="700" text-anchor="end">over by ' + hm(pEnd - LS) + '</text>');
+        overflow = pEnd - LS;
+      }
+    } else {
+      retEnd = simHomeTime();
+      rect(TURN, retEnd, '#8A8F92');
+    }
+    if (retEnd < LS) o.push('<rect x="' + sx(retEnd).toFixed(1) + '" y="' + (y + 0.75) + '" width="' + (sx(LS) - sx(retEnd) - 0.75).toFixed(1) + '" height="' + (bh - 1.5) + '" rx="6" fill="none" stroke="#2B2D2F" stroke-width="1.2" stroke-dasharray="3 3"/>');
+    o.push('<path d="M' + sx(LS) + ' 12V' + (y + bh + 16) + '" stroke="#2B2D2F" stroke-width="2.5"/>');
+    var ly = y + bh + 30;
+    o.push('<text class="t-lbl" x="' + ((sx(0) + sx(TURN)) / 2) + '" y="' + ly + '" text-anchor="middle">Outbound ' + hm(TURN) + '</text>');
+    if (overflow == null && W > 520) o.push('<text class="t-lbl" x="' + (sx(TURN) + 2) + '" y="' + ly + '" text-anchor="start">Return ' + hm(retEnd - TURN) + '</text>');
+    o.push('<text class="t-lbl" x="' + (sx(LS) + 4) + '" y="' + (ly + 15) + '" text-anchor="start">EVA limit</text>');
+    if (b >= 2) {                                // the hours the rehearsal skipped, then the time played
+      o.push('<path d="M' + sx(0) + ' ' + (y + bh + 3) + 'H' + sx(T45) + '" stroke="#E8622C" stroke-width="3" stroke-dasharray="5 4"/>');
+      o.push('<path d="M' + sx(T45) + ' ' + (y + bh + 3) + 'H' + sx(t).toFixed(1) + '" stroke="#E8622C" stroke-width="3"/>');
+    }
+    o.push('<path d="M' + sx(t).toFixed(1) + ' 13V' + (y + bh + 6) + '" stroke="#C8361F" stroke-width="2"/><path d="M' + (sx(t) - 5).toFixed(1) + ' 12h10l-5 6z" fill="#C8361F"/>');
+    el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Time budget: outbound and return against the 6-hour EVA limit">' + o.join('') + '</svg>';
+    var s = '';
+    function row(k, v, cls) { s += '<div class="row' + (cls ? ' ' + cls : '') + '"><span class="k">' + k + '</span><span>' + v + '</span></div>'; }
+    row('Outbound', hm(TURN));
+    if (b >= 5) { row('Return so far', hm(SC.tP - TURN)); row(SIM.abort ? 'ABORT route' : 'ABORT option', hm(SCD.abrt)); }
+    else row('Return' + (SIM.reroute ? ' incl. detour' : ''), hm(retEnd - TURN));
+    row('Total of 6:00', hm(retEnd), 'total');
+    row('Reserve', hm(LS - retEnd));
+    if (overflow != null) row('Protected route: over by', hm(overflow), 'over');
+    $('#bsum').innerHTML = s;
+    $('#clk-lbl').textContent = 'EVA';
+    $('#clk-eva').textContent = hm(t);
+    $('#clk-cap').textContent = lmst(t) + ' LMST · ' + (b >= 2 ? 'after time jump' : 'rehearsal clock');
+  }
+
+  // ---------- astronaut views: feed the navigation views from the rehearsal ----------
+  function simSyncNav(dt, snap) {
+    var b = SIM.beat, t = SIM.t, i, n = SCD.nS, lastI = n - 1;
+    NAV.t = t; NAV.t0 = 0; NAV.swapped = false;
+    NAV.target = lastI; NAV.out = SC.tracks[lastI]; NAV.ret = SC.ret; NAV.tLeave = SC.turn; NAV.stay = SC.turn - SC.sched[lastI].arrive;
+    if (SIM.done) { NAV.phase = 'home'; NAV.ret = SC.abortTr; }
+    else if (b >= 5) { NAV.phase = 'ret'; NAV.ret = SIM.abort ? SC.abortTr : SC.reroute; }
+    else if (b === 4 || t > SC.turn) { NAV.phase = 'ret'; if (b === 4 && SIM.reroute) NAV.ret = SC.reroute; }
+    else {
+      NAV.phase = 'at';
+      for (i = 0; i < n; i++) {
+        if (t < SC.tracks[i].t1) { NAV.phase = 'out'; break; }
+        if (t <= SC.sched[i].leave) break;
+      }
+      i = Math.min(i, lastI);
+      NAV.target = i; NAV.out = SC.tracks[i]; NAV.tLeave = SC.sched[i].leave; NAV.stay = SC.sched[i].leave - SC.sched[i].arrive;
+    }
+    NAV.max = NAV.stay;
+    NAV.pos = simPos(t);
+    var hd = simHeading();
+    NAV.hd = (snap || NAV.hd == null) ? hd : angNorm(NAV.hd + angDiff(hd, NAV.hd) * Math.min(1, dt * 3));
+  }
+  function simData() {
+    var d = navData(), b = SIM.beat, t = SIM.t, Z = SCD.zone;
+    if (SIM.done) return d;                     // home: the views already say so
+    d.homeAt = simHomeTime(); d.reserve = LS - d.homeAt;
+    if (b >= 5) {                               // ABORT is habitat control's verdict; the crew display follows it
+      d.stage = 'red'; d.abort = true; d.sl *= 2;
+      if (!SIM.abort) {
+        d.pending = true; d.spareTxt = 'route pending';
+        d.turn = icon('warn') + '<div><div class="to">ABORT · EV2 injured</div><div class="big">Stand by<small>route from habitat control</small></div></div>';
+        d.tileA = tile('ABORT · return to shelter now', 'Stand by', '', 'route from habitat control', '');
+        d.tileB = tile('Walking speed', '×0.5', '', 'EV2 injured', 'ASSUME');
+        d.hudLine = '<span>ABORT · stand by</span><span>route pending</span>';
+        d.warn = [['red', 'warn', 'EV2 injured · walking speed ×0.5'], ['red', 'warn', 'Stand by: route from habitat control']];
+      } else {
+        d.spareTxt = R(LS - SCD.homeAbort) + ' min spare';
+        d.tileB = tile('ABORT route', lmst(SCD.homeAbort), '', 'through ' + Z + ' · override logged', 'ROUTE');
+        d.warn = [['red', 'warn', 'ABORT · return to shelter now']];
+        if (t >= SC.zoneIn && t <= SC.zoneOut) d.warn.push(['blue', 'warn', 'Zone entry logged · reason: ABORT']);
+      }
+    } else if (d.out) {
+      d.tileB = tile('Planned stay', hm(NAV.stay), '', 'station ' + (NAV.target + 1) + ' of ' + SCD.nS + ' · leave ' + lmst(NAV.tLeave), 'ASSUME');
+    } else if (b === 4 && t >= SC.tD - 0.01 && !SIM.reroute) {
+      d.warn = [['red', 'warn', 'Stop · protected zone 10 m ahead']];
+    }
+    return d;
+  }
+  var simUiT = 0;
+  function simAstro(dt, snap, forceUi) {        // only the view that is on screen is drawn
+    simSyncNav(dt, snap);
+    var d = simData(), now = performance.now();
+    if (SIM.view === 'nav') navDraw(d);
+    if (SIM.view === 'hud') renderHud(d);
+    if (forceUi || now - simUiT > 200) { simUiT = now; renderNavUi(d); }
+  }
+  function setView(v, quiet) {
+    SIM.view = v;
+    $$('#simview .sv-slot').forEach(function (el) { el.hidden = el.getAttribute('data-v') !== v; });
+    $$('#sv-tabs button').forEach(function (bb) { bb.setAttribute('aria-pressed', String(bb.dataset.v === v)); });
+    if (!quiet && SIM.on && SC) simAstro(0, false, true);
+  }
+  function simAutoView() {                      // the crew view that belongs to the step; the summary once the crew is home
+    var want = SIM.done ? 'sum' : BEATS[SIM.beat - 1].view;
+    if (SIM.auto ? SIM.view !== want : (SIM.view === 'sum' && !SIM.done)) setView(want, true);
+  }
+
+  // ---------- render orchestration and the step player ----------
+  var simTok = 0, simRaf = 0, simLastMin = -1;
+  function simRenderAll(snap, dt) {
+    simAutoView();
+    renderOverlay(); renderHc(); renderStory(); renderSimBar();
+    simLastMin = Math.floor(SIM.t);
+    simAstro(dt || 0, !!snap, true);
+  }
+  function simFrame(dt) {
+    if (Math.floor(SIM.t) !== simLastMin) { simRenderAll(false, dt); return; }
+    renderCrewMarker(); renderRings();
+    $('#clk-eva').textContent = hm(SIM.t);
+    $('#clk-cap').textContent = lmst(SIM.t) + ' LMST · after time jump';   // the clock only runs after the jump
+    simAstro(dt, false, false);
+  }
+  function simSleep(ms, tok) { return new Promise(function (res, rej) { setTimeout(function () { if (tok === simTok) res(); else rej('stop'); }, ms); }); }
+  function simClock(t0, t1, tok) {
+    return new Promise(function (res, rej) {
+      var last = performance.now(); SIM.t = t0;
+      function tick(now) {
+        if (tok !== simTok) return rej('stop');
+        var dt = Math.min(0.1, Math.max(0, (now - last) / 1000)); last = now;
+        SIM.t = Math.min(t1, SIM.t + dt * SIM.speedX / 60);
+        if (SIM.t >= t1) { simRenderAll(false, dt); return res(); }
+        simFrame(dt);
+        simRaf = requestAnimationFrame(tick);
+      }
+      simRaf = requestAnimationFrame(tick);
+    });
+  }
+  function press(sel) { var b = $(sel); if (b) b.classList.add('is-pressed'); }
+  function syncSimSpeed() { $$('#sim-controls .seg button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.sx === SIM.speedX)); }); }
+  async function beatScript(b, tok) {           // what moves in a step; habitat control's decisions are pressed by the script
+    if (b === 1) { await simSleep(1400, tok); press('#act-go'); await simSleep(380, tok); SIM.go = true; simRenderAll(); await simSleep(300, tok); }
+    if (b === 2) { await simSleep(500, tok); }
+    if (b === 3) { await simSleep(700, tok); await simClock(T45, SC.tQa, tok); await simSleep(200, tok); }
+    if (b === 4) {
+      await simClock(SC.tQa, SC.tD, tok); await simSleep(1800, tok);
+      press('#act-reroute'); await simSleep(380, tok); SIM.reroute = true; simRenderAll(); await simSleep(1000, tok);
+      await simClock(SC.tD, SC.tP, tok); await simSleep(200, tok);
+    }
+    if (b === 5) { await simSleep(500, tok); }
+    if (b === 6) {
+      await simSleep(1500, tok); press('#act-abort'); await simSleep(380, tok); SIM.abort = true; simRenderAll();
+      var prev = SIM.speedX; SIM.speedX = Math.max(prev, 240); syncSimSpeed();
+      try { await simClock(SC.tP, SCD.homeAbort, tok); } finally { SIM.speedX = prev; syncSimSpeed(); }
+      SIM.done = true; simRenderAll();
+    }
+  }
+  async function simPlayBeat(b) {               // play one step, then wait for "Next" (or go on by itself with auto-play)
+    simStop();
+    var tok = ++simTok;
+    SIM.playing = true;
+    if (b === 1) drawnRings = {};
+    try { setBeat(b, false); simRenderAll(true); await beatScript(b, tok); }
+    catch (e) { if (e !== 'stop') throw e; return; }
+    if (tok !== simTok) return;
+    SIM.playing = false; renderStory();
+    simAfterBeat(tok);
+  }
+  function simAfterBeat(tok) {                  // auto-play: leave time to read, then go on
+    if (!SIM.autoplay || SIM.done) return;
+    simSleep(SIM_PAUSE_MS, tok).then(function () { if (SIM.on && SIM.autoplay && !SIM.playing && !SIM.done) simPlayBeat(SIM.beat + 1); }, function () {});
+  }
+  function simStop() { simTok++; cancelAnimationFrame(simRaf); SIM.playing = false; }
+  function goBeat(n) {                          // jump to the end state of a step
+    simStop(); drawnRings = {};
+    setBeat(Math.max(1, Math.min(BEATS.length, n)), true);
+    simRenderAll(true);
+    simAfterBeat(simTok);
+  }
+  function simNext() {
+    if (SIM.playing) goBeat(SIM.beat);          // skip to the end of the step that is playing
+    else if (SIM.done || SIM.beat >= BEATS.length) simPlayBeat(1);
+    else simPlayBeat(SIM.beat + 1);
+  }
+
+  // ---------- start, end, wiring ----------
+  function simStart() {
+    if (SIM.on || NAV.on) return;
+    var btn = $('#btn-sim'); btn.disabled = true;
+    var ld = document.createElement('div'); ld.className = 'loading'; ld.textContent = 'Preparing the emergency rehearsal…';
+    stage.appendChild(ld);
+    setTimeout(function () {
+      try {
+        simBuild(); navTextures();
+        closeAssume();
+        $('#layers').hidden = true; $('#btn-layers').setAttribute('aria-expanded', 'false');
+        $('#legend').hidden = true; $('#btn-key').setAttribute('aria-expanded', 'false');
+        $('#nv-legend').hidden = true; $('#nv-key').setAttribute('aria-expanded', 'false');
+        SIM.saved = { walk: st.walk, zoomI: NAV.zoomI, base: NAV.base, side: st.side, bar: st.bar };
+        st.walk = 1.5; NAV.zoomI = 1; NAV.base = 'ortho'; NAV.hd = null;   // the story is told at 1.5 km/h
+        SIM.on = true; SIM.auto = true; $('#sv-auto').checked = true; SIM.autoplay = false; $('#st-auto').checked = false;
+        document.body.classList.add('sim');
+        ['#sim-controls', '#simview', '#story'].forEach(function (q) { $(q).hidden = false; });
+        applyPanel('side', true);                // the crew view lives in the side panel
+        $('#simview .sv-slot[data-v="hud"]').appendChild($('#hud-wrap'));
+        $('#simview .sv-slot[data-v="nav"]').appendChild($('#nav-map'));
+        $('#simview .sv-slot[data-v="data"]').appendChild($('#nav-data'));
+        // the story strip takes room under the map; on a short window fold the time bar away
+        if (st.bar && $('#mapwrap').getBoundingClientRect().height < 430) applyPanel('bar', false);
+        setBeat(1, false); setView(BEATS[0].view, true); syncSimSpeed();
+        remap();                                 // the map box changed size: draw the map again before the story starts
+        simPlayBeat(1);
+      } finally { ld.remove(); btn.disabled = false; }
+    }, 30);
+  }
+  function simEnd() {
+    if (!SIM.on) return;
+    simStop();
+    SIM.on = false; document.body.classList.remove('sim');
+    ['#sim-controls', '#simview', '#story'].forEach(function (q) { $(q).hidden = true; });
+    $('.hud-panel').appendChild($('#hud-wrap'));   // the navigation views go back where navigation expects them
+    NAV.swapped = false; placeViews();
+    $('#nv-legend').hidden = true; $('#nv-key').setAttribute('aria-expanded', 'false');
+    st.walk = SIM.saved.walk; NAV.zoomI = SIM.saved.zoomI; NAV.base = SIM.saved.base; NAV.hd = null;
+    applyPanel('side', SIM.saved.side); applyPanel('bar', SIM.saved.bar);
+    relayout();                                  // the map gets its planning size back
+  }
+  function simWire() {
+    $('#btn-sim').addEventListener('click', simStart);
+    $('#sim-end').addEventListener('click', simEnd);
+    $$('#sim-controls .seg button').forEach(function (bb) { bb.addEventListener('click', function () { SIM.speedX = +bb.dataset.sx; syncSimSpeed(); }); });
+    $('#st-next').addEventListener('click', simNext);
+    $('#st-back').addEventListener('click', function () { goBeat(SIM.done ? BEATS.length - 1 : SIM.beat - 1); });
+    $('#st-steps').addEventListener('click', function (e) { var bb = e.target.closest('button'); if (bb) goBeat(+bb.dataset.b); });
+    $('#st-auto').addEventListener('change', function (e) { SIM.autoplay = e.target.checked; if (SIM.autoplay && !SIM.playing) simAfterBeat(simTok); });
+    $('#sv-tabs').addEventListener('click', function (e) {     // picking a view by hand pins it
+      var bb = e.target.closest('button'); if (!bb) return;
+      SIM.auto = false; $('#sv-auto').checked = false; setView(bb.dataset.v); renderStory();
+    });
+    $('#sv-auto').addEventListener('change', function (e) { SIM.auto = e.target.checked; simAutoView(); renderStory(); simAstro(0, false, true); });
+  }
+
   function init() {
     var ul = $('.legend ul');
     ul.insertAdjacentHTML('beforeend',
@@ -1914,6 +2717,7 @@ body.nav .console, body.nav #plan-controls { display: none; }
     buildAssume();
     wire();
     navWire();
+    simWire();
     var q = new URLSearchParams(location.search);   // view settings only; navigation starts from the Start button
     if (q.get('grid') === '1') { $('#tgl-grid').checked = true; st.grid = true; }
     if (q.get('base') === 'slope') { st.base = 'slope'; $('input[name=base][value=slope]').checked = true; }

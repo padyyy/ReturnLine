@@ -37,7 +37,7 @@ The direction contract for this surface is in `.impeccable/surfaces/docs-design-
 
 ## Navigation and HUD sketch (work in progress)
 
-`navigation-hud-sketch.html` starts from the console sketch and adds a navigation mode (branch `navigation-view-/-hud`). The console sketch above stays unchanged. The six-beat demo is not in this file.
+`navigation-hud-sketch.html` starts from the console sketch and adds a navigation mode (branch `navigation-view-/-hud`). The console sketch above stays unchanged. Its six-beat story is here too, as the emergency rehearsal (see below).
 
 - **Start screen (planning):** base map with the stations, protected zones and the return area. Pick a station in the "Plan the route" list or on the map. The map shows the route; the right column shows GO or NO-GO, the four safety rules and the station details; the bar under the map shows the plan: way out, stay, way home and reserve against the 6-hour limit.
 - **Planned stay:** the crew stays 0:15, 0:30, 1:00, 1:30 or as long as possible ("Max"). A stay longer than the max stay is capped. The max stay is life support (or daylight) left at arrival, minus the way home. The sketch assumes the crew keeps the plan: after the stay, the return starts on its own. There is no "Start return" button.
@@ -50,6 +50,35 @@ The direction contract for this surface is in `.impeccable/surfaces/docs-design-
 - **Navigation, bottom right:** the data sheet, or the small map after key 1.
 - **Data sheet:** one component for the tablet screen and the small panel. It never scrolls: the stage bar, two key tiles (target and the stay or the way home), the elevation profile of the current leg and nine values in a 3 × 3 grid. Type sizes follow the size of the panel (CSS container query units). On a small panel the source chips and captions go first, the End navigation button keeps only its icon, the profile shrinks to a strip and then goes, and only then the least important values (elevation, zone, slope, then the middle row).
 - **Test terrain:** stronger relief than the console sketch (about 100 m range, routes up to about 7°), so slope and the elevation profile mean something.
+
+### Emergency rehearsal
+
+"Simulate emergency" (top right on the start screen) tells the six-step story of the console sketch on the base map, from habitat control's view: the plan, the time jump to EVA hour 4:45, the return area pulls away, deviation caught and rerouted, crew member injured, ABORT through Drill site B with the override logged, then crew home with the debrief summary.
+
+- **One story strip under the map** says where the rehearsal is and what it means: the six steps, a headline, two or three plain sentences, a line that says what to look at on the map, and habitat control's verdict and decision for that step (the script presses the decision, as in the console sketch). The map itself only carries the map: pill labels name the things the step is about.
+- **Step by step:** "Next step" plays one step and then waits. While a step plays, the same button skips to its end. "Back" and the step buttons jump to the end state of a step. "Auto-play" goes on by itself after 4.5 s of reading time.
+- **Right column: the astronaut view.** It shows the crew view that belongs to the step (plan in numbers, helmet HUD, navigator, HUD warning, HUD on ABORT, navigator through the zone) and says in one line why. A tab pins one view; "Follow the story" lets it change again. Once the crew is home it shows the debrief summary. These are the same views as in navigation, fed from the rehearsal instead of a picked route.
+- **Header:** time compression and "End simulation". Planning and navigation work as before afterwards.
+- **Numbers on this test terrain** (derived from the grid, as in the console sketch): turnaround at Station 4 at 13:55, plan home at 5:52 of 6:00, reroute +3 min, injury at EVA 5:08, protected route 94 min against 40 min through Drill site B, 180 m inside the zone, crew home at 14:49 with 11 min of life support left. The console sketch turns around at 14:00; on this steeper terrain the rerouted crew would then be home 18 s after the limit, so the plan here turns around five minutes earlier.
+- **Return area on the base map:** as in the console sketch, the places from which the crew gets home inside the 60-minute rule and before life support ends, at half speed after the injury. Straight lines, like the rest of the page, so it is a circle.
+- **ABORT on the crew display** is habitat control's verdict: the protected route breaks the rules. The straight-line stage alone would not show red there, because it cannot see the rim ridge. This goes away with the routing engine's grid.
+
+### Map only
+
+On the start screen two handles on the map edge fold the side panel (right) and the time bar (bottom) away, so the map can fill the page. The map is redrawn at its new size each time. During the rehearsal the story strip takes room under the map; on a short window the time bar folds away by itself and comes back afterwards.
+
+### Running the rehearsal on real data
+
+The story is built from data, not typed in: station and zone names, counts, times, "fits" and "too long", GO or NO-GO all come from two objects. To use real data, fill these two from the pipeline and the routing engine and leave the rest of the page alone.
+
+| Object | What the page reads | Real source |
+|---|---|---|
+| `G.F` | `habitat` (x, y in metres), `stations[]` (`n`, `name`, `reason`, `c`), `zones[]` (`id`, `name`, `c`), `zoneR`, `traverse` | stations and zone centres from the data catalog, Curiosity waypoints |
+| `G.scenario()` | `tracks[]` and `ret` (the plan, one timed track per leg), `sched[]` (arrive, leave per station), `turn`, `turnLatest`, `home`, `maxTTB`, `maxSlope`, `legs[].zoneMetres`, `drift`, `tQa`, `tD`, `reroute`, `detour`, `tP`, `P`, `lsAtP`, `protectedTr`, `abortTr`, `zone`, `zoneIn`, `zoneOut`, `zoneM`, `entry` | the C# engine: routes with return pointers in both variants (zones penalised, zones allowed) |
+| a timed track | `pts[]` (metres), `ts[]` (EVA minutes), `t0`, `t1`, `cells[]` (grid index, for slope and elevation), `draw` (smoothed line) | engine route plus the DEM |
+| `G.z`, `G.slope`, `G.ridge` | elevation, 10 m slope and ridge mask per grid cell | pipeline rasters |
+
+What stays a rehearsal choice and is not data: the time jump (EVA 4:45), the drift toward the zone, the injury two minutes after the reroute and the halved walking speed. The four rule checks on the plan are computed (`time to shelter`, `slope`, `daylight`); the radio gap is not in the sketch and always passes. If the real numbers do not carry the story (for example the protected route still fits after the injury), the strip says so instead of repeating the script.
 
 URL parameters change the view only: `?grid=1`, `?base=slope`, `?ridges=1`, `?assume=1`, `?layers=1`. Navigation always starts from the button.
 
