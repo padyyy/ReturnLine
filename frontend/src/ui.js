@@ -58,8 +58,8 @@ export function rulesOf(model, P) {
   return [
     { st: ttb <= 60 ? 'pass' : 'fail', l: 'Time to shelter', c: 'longest on the route · limit 60 min', v: R(ttb), u: 'min', vc: 'max', s: 'xEVA' },
     { st: slope <= model.sc.slope_block_deg ? 'pass' : 'fail', l: 'Slope, 10 m baseline', c: model.grid?.header?.files?.ridge ? `limit ${model.sc.slope_block_deg}° · ridge crossings: 0` : `limit ${model.sc.slope_block_deg}° · ridge mask pending`, v: slope.toFixed(1), u: '°', vc: 'max', s: 'DEM' },
-    // team decision 2026-11-15: a radio gap over the limit is a warning, never a NO-GO
-    { st: radio == null ? 'open' : radio <= radioMax ? 'pass' : 'warn', l: 'Radio gap', c: `longest on the route · warning above ${radioMax} min`, v: radio == null ? null : radio.toFixed(1), u: 'min', vc: radio == null ? 'from data' : 'max', s: 'RADIO' },
+    // one of the four rules that can say NO-GO (CLAUDE.md, PRODUCT.md, project page)
+    { st: radio == null ? 'open' : radio <= radioMax ? 'pass' : 'fail', l: 'Radio gap', c: `longest on the route · limit ${radioMax} min`, v: radio == null ? null : radio.toFixed(1), u: 'min', vc: radio == null ? 'from data' : 'max', s: 'RADIO' },
     { st: home <= model.sunsetEva ? 'pass' : 'fail', l: 'Daylight', c: `home before sunset ${model.sc.sunset_lmst}`, v: lmst(model, home), u: '', vc: 'home', s: 'REMS' },
   ];
 }
@@ -68,7 +68,14 @@ export function renderHeader(model, t) {
   $('#hdr-eva').textContent = `EVA ${String(model.sc.eva_number ?? '').padStart(2, '0')}`;
   $('#hdr-sol').textContent = `Sol ${model.sc.sol}`;
   $('#hdr-clock').textContent = `${lmst(model, t)} LMST`;
-  // the data tag (placeholder or engine data) was removed from the header on 2026-11-15
+  // honesty: say so while any input is still a placeholder (files from public/data/placeholder/ or placeholder fields)
+  const tag = $('#tag-data');
+  if (tag) {
+    const ph = model.placeholders?.size || model.sc.placeholder_fields?.length;
+    tag.textContent = 'Placeholder data';
+    tag.hidden = !ph;
+    tag.title = ph ? `Placeholder inputs: ${[...(model.placeholders ?? []), ...(model.sc.placeholder_fields ?? [])].join(', ')}` : '';
+  }
 }
 
 export function renderVerdict(model) {

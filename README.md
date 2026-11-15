@@ -48,4 +48,4 @@ Details: `pipeline/README.md` and `frontend/AGENTS.md`.
 
 ## Deployment
 
-Every push to `main` builds `frontend/` and publishes it to GitHub Pages (`.github/workflows/deploy-pages.yml`), at https://padyyy.github.io/ReturnLine/. One-time repo setting: Settings > Pages > Build and deployment > Source: GitHub Actions. The workflow can also be started by hand under Actions.
+Every push to the deploy branch `navigation-view-/-hud` (team decision 2026-11-15) or to `main` builds `frontend/` and publishes it to GitHub Pages (`.github/workflows/deploy-pages.yml`), at https://padyyy.github.io/ReturnLine/. The last push wins. One-time repo setting: Settings > Pages > Build and deployment > Source: GitHub Actions. The workflow can also be started by hand under Actions.

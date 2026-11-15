@@ -56,7 +56,14 @@ export function createMap(el, data, model, { onStation } = {}) {
   map.getPane('area').style.pointerEvents = 'none';
 
   // a view first: Leaflet adds layers (and creates the SVG container) only once the map has one
-  const planBounds = () => L.latLngBounds([ll(model.habitat), ...model.stations.map(ll)]).pad(0.06);
+  // in the rehearsal only the habitat and the scenario station matter: a short map (story strip below) cannot
+  // zoom out far enough for all stations (min zoom keeps the view on the orthophoto), so the habitat fell off
+  const planBounds = () => {
+    const sim = document.body.classList.contains('sim');
+    const scen = model.stations.find((s) => s.n === model.sc.scenario_station);
+    const pts = sim && scen ? [ll(model.habitat), ll(scen)] : [ll(model.habitat), ...model.stations.map(ll)];
+    return L.latLngBounds(pts).pad(sim ? 0.25 : 0.06);
+  };
   map.fitBounds(planBounds());
   // the view never leaves the map: no zooming out past its edge and no panning beyond it. The edge is the
   // orthophoto, which covers exactly the console grid; the smallest zoom keeps the whole view inside it.
@@ -140,7 +147,9 @@ export function createMap(el, data, model, { onStation } = {}) {
 
   const stationMarkers = new Map();
   function stationIcon(s, state) {
-    const side = s.lon < midLon ? ' left' : '';
+    // label to the left in the west half, and whenever another station sits close to the east (its label would run into it)
+    const crowded = model.stations.some((o) => o !== s && o.lon > s.lon && o.lon - s.lon < 0.0025 && Math.abs(o.lat - s.lat) < 0.0003);
+    const side = s.lon < midLon || crowded ? ' left' : '';
     return L.divIcon({
       className: 'mk',
       html: `<span class="mk-stn${state ? ` is-${state}` : ''}">${s.n}</span><span class="mk-lbl stn${side}">${s.name}</span>`,
@@ -245,7 +254,7 @@ export function createMap(el, data, model, { onStation } = {}) {
   }
 
   // room for the map key button and the scale, so the plan is fitted into the free part of the map
-  const overlayPad = () => ({ tl: [48, 64], br: [48, 48] });
+  const overlayPad = () => ({ tl: [48, 64], br: [48, 72] });   // bottom: clear of the fold handle
 
   return {
     map,

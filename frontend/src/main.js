@@ -261,6 +261,12 @@ async function boot() {
     const data = await loadData();
     model = buildModel(data);
     mapApi = createMap($('#map'), data, model, { onStation: pick });
+    // the story strip fills after the rehearsal fitted the map and makes it shorter: refit on every size change
+    // during the rehearsal, so the habitat and the scenario station stay in view
+    if (window.ResizeObserver) {
+      let rz = 0;
+      new ResizeObserver(() => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => { mapApi.invalidate(); if (document.body.classList.contains('sim')) mapApi.fitPlan(); }); }).observe($('#map'));
+    }
     ui.renderAssume(model);
     wire();
     navWire();

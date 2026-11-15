@@ -1,6 +1,6 @@
 # Auftrag an das Datenteam
 
-Stand: Sonntag, 15.11.2026, 10:30. Fortschreibung der Fassung von 02:15.
+Stand: Sonntag, 15.11.2026, 11:00. Fortschreibung der Fassung von 02:15.
 
 **Zeitplan:**
 - Fest stehen: Videoaufnahme So 13:00, Checkpoint 14:30, Abgabe 15:45.
@@ -16,14 +16,15 @@ Stand: Sonntag, 15.11.2026, 10:30. Fortschreibung der Fassung von 02:15.
 - Die Habitat-Konsole (`frontend/`) spielt alle sechs Beats ab, auf einem Zeit-Grid aus dem echten Gale-DEM (`pipeline/time_grid.py`). Live: https://padyyy.github.io/ReturnLine/
 - Echte Dateien in `frontend/public/data/` ersetzen die Platzhalter aus `frontend/public/data/placeholder/` ohne Codeänderung. Solange noch Platzhalter im Spiel sind, zeigt die Konsole oben „Placeholder data“.
 
-**Stand der Aufgaben, 15.11.2026, 10:30:**
+**Stand der Aufgaben, 15.11.2026, 11:00:**
 
 | Aufgabe | Stand |
 |---|---|
 | 1 Stationen | offen, keine Lieferung auf GitHub |
-| 2 Bohrstellen und Zonen | offen, keine Lieferung auf GitHub |
+| 2 Bohrstellen und Zonen | **geprüft** (Patrick, 10:50): unsere Zonen sind keine Bohrstellen; mit den echten Stellen trägt die Geschichte nicht. **Entscheidung des Teams offen** (siehe Aufgabe 2) |
 | 3 Funkprüfung | **erledigt** (Patrick, PR #31): längste Lücke 2,9 min, die Regel besteht |
-| 4 Tageslicht aus REMS | **erledigt** (Patrick, PR #30): Sol 4596, Untergang 17:31 LMST |
+| 4 Tageslicht aus REMS | **erledigt** (Patrick, PR #30 und #33): seit 10:56 Sol 4839, Untergang 17:55 LMST |
+| Zusatz: Lufttemperatur aus REMS | **erledigt** (PR #33, aus Pauls Branch übernommen): Info-Zeile „Air temperature now“, nur Messwerte |
 | 5 Curiosity-Vergleich | offen (Paul) |
 | 6 Grat-Maske | offen; Empfehlung: nicht mehr anfangen (siehe Aufgabe 6) |
 
@@ -52,7 +53,7 @@ Seit 10:19 haben in der Konsole alle vier Sicherheitsregeln Daten und bestehen. 
 11. **`frontend/public/data/scenario.json` gibt es jetzt** (seit Aufgabe 4). Wer weitere Felder setzt, ändert nur seine Felder in dieser Datei (Regel 10). Die Funkschwelle steht dort als `radio_gap_max_min`.
 12. **Zwei Skripte müssen nach Änderungen neu laufen:**
     - `py -3.11 pipeline/radio_check.py` nach jeder Änderung an `routes.json`, also nach `time_grid.py`;
-    - `py -3.11 pipeline/rems_daylight.py`, wenn sich die Szenario-Station oder ihr Sol ändert.
+    - `py -3.11 pipeline/rems_daylight.py --sol <Sol>` nur zusammen mit einer neuen Temperatur-Datei vom selben Sol (seit 10:56 Sol 4839, siehe Aufgabe 4).
 13. **Die Funkprüfung hängt an den angenommenen Antennenhöhen** (Habitat 3 m, Crew 2 m). Mit 2 m und 1,5 m läge Station 1 bei 5,4 min, also NO-GO in Beat 1. Die Höhen nicht ändern, ohne das Team zu fragen.
 
 ## Reihenfolge
@@ -162,6 +163,22 @@ Bilder zeigt die Konsole noch nicht an; das macht das Frontend-Team.
 
 **Vorschlag:** Michael · **Branch:** `feat/zones-data` · **Bis (Vorschlag):** So 12:00, weil die Zonennamen im Video stehen
 
+**Stand 10:50, geprüft von Patrick (Recherche in den NASA-Blogposts, Szenario-Suche):**
+- **Keine Bohrstellen:** Unsere Zonen A (Sol 4633) und B (Sol 4818) sind Wegpunkte, an denen Curiosity nicht gebohrt hat.
+- **Echte Bohrstellen der Kampagne**, alle innerhalb von etwa 10 m beim Wegpunkt 4687/4711:
+  - „Valle de la Luna“, im Tal „Monte Grande“, gebohrt um Sol 4689;
+  - „Nevado Sajama“, auf dem Rücken daneben, Bohrsol 4718;
+  - „Nevado Sajama 2“, Bohrloch auf einem Bild von Sol 4803.
+- **Szenario-Suche:** Mit diesen Stellen trägt keine Kombination. Die Geschichte braucht zwei Zonen mit mindestens 180 m Abstand, und die echte Stelle liegt 115 m von A und 90 m von B entfernt.
+- **Abstand der Szenario-Route:** 167–176 m zur echten Stelle. Die Route zu Station 3 endet 22–31 m davor.
+- **Optionen, die Entscheidung trifft das Team:**
+  1. **Ehrlich umbenennen (empfohlen):** „Protected site A/B“, beschrieben als angenommene sensible Forschungsstellen an Curiosity-Wegpunkten. Dazu Legende („it drilled the protected sites“ ist falsch), Beat-1- und Beat-4-Untertitel, Platzhalter-Generator, Projektseite und Formular korrigieren. Die Geschichte bleibt unverändert, Aufwand etwa 20–30 min.
+  2. **Die echte Stelle als dritte Zone schützen:** Station 3 müsste verlegt werden, danach müssen Routen, Funk und Suche neu laufen. Etwa 1 h, riskant.
+- **Quellen:**
+  - https://science.nasa.gov/blog/curiosity-blog-sols-4689-4694-drill-in-the-boxwork-unit-is-go/
+  - https://science.nasa.gov/blog/curiosity-blog-sols-4709-4715-drilling-high-and-low-in-the-boxwork-unit
+  - https://science.nasa.gov/blog/curiosity-blog-sols-4804-4811-kicking-off-the-final-phase-of-boxwork-exploration
+
 **Problem:** Die Platzhalter-Zonen „Drill site A“ (Sol 4633) und „Drill site B“ (Sol 4818) sind nur gewählt, weil der Demo-Ablauf dort trägt. Ob Curiosity dort gebohrt hat, ist **nicht geprüft**. Die Konsole nennt sie aber „Drill site“, seit Beat 5 sogar auf der Karte und auf dem ABORT-Knopf. Auch die Projektseite und das Video sprechen von „drill sites“. Das Ergebnis dieser Aufgabe entscheidet über die Wortwahl dort.
 
 **Schritte:**
@@ -215,15 +232,20 @@ Bilder zeigt die Konsole noch nicht an; das macht das Frontend-Team.
 
 ## Aufgabe 4: Tageslicht aus REMS — erledigt
 
-**Erledigt:** Patrick, PR #30, gemergt am 15.11.2026 um 10:13. Skript `pipeline/rems_daylight.py`, Ergebnis in `frontend/public/data/scenario.json`.
+**Erledigt:** Patrick, PR #30 (10:13) und PR #33 (10:56). Skript `pipeline/rems_daylight.py`, Ergebnis in `frontend/public/data/scenario.json`.
 
-- **Ergebnis:** Sol 4596 (11.07.2025), an dem Curiosity an der Szenario-Station stand: Sonnenaufgang 05:47, Sonnenuntergang 17:31 LMST.
+- **Ergebnis seit 10:56:** Sol 4839 (18.03.2026), Sonnenaufgang 05:39, Sonnenuntergang 17:55 LMST.
+  - Vorher Sol 4596 (17:31). Gewechselt, weil die Lufttemperatur (PR #33) von Sol 4839 stammt und die Konsole kein Wetter von zwei Tagen zeigen soll.
   - Die Felder `sunrise_lmst`, `sunset_lmst` und `daylight_source_sol` sind gesetzt.
   - `sol` bleibt der künftige Sol der Crew-EVA.
-  - Die Übertragung auf die EVA ist in `sources` als Annahme gekennzeichnet.
+  - Die Übertragung auf die EVA ist in `sources` und im Annahmen-Panel als Annahme gekennzeichnet (PR #34).
 - **Tageslicht bindet nicht:** Die Crew ist um 14:58 LMST zu Hause.
-- **Für andere Aufgaben:** Ändert sich die Szenario-Station oder ihr Sol, `py -3.11 pipeline/rems_daylight.py` neu laufen lassen.
-- **Offen fürs Frontend-Team:** Das Feld `daylight_source_sol` zeigt die Konsole noch nicht an.
+- **Lufttemperatur (Zusatz, PR #33):**
+  - Pauls Generator `backend/rems/rems_temperature.py` mit Tests und `frontend/public/data/temperature.json` (REMS, NASA PDS) sind unverändert übernommen.
+  - Die Konsole zeigt nur Messwerte, nie Pauls Schätzkurve.
+  - **Pauls Branch `feat/rems-daylight-temperature` bitte nicht mergen.** Er brächte ein zweites Tageslicht-Skript mit eigener `scenario.json` und eine 12-MB-Datei `mapped_layers.npz`.
+- **Für andere Aufgaben:** `rems_daylight.py` nur mit `--sol` des Temperatur-Sols neu laufen lassen.
+- **Offen fürs Frontend-Team:** keine.
 
 ---
 

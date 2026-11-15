@@ -136,7 +136,7 @@
     "name": "Boxwork protection mask, 50 m",
     "priority": 30,
     "opacity": 0.55,
-    "visible": false,
+    "visible": true,
     "role": null
   },
   "detail": null,
