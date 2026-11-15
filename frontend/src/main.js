@@ -129,7 +129,12 @@ function renderAll() {
 let token = 0;
 let raf = 0;
 const sleep = (ms, tok) => new Promise((res, rej) => setTimeout(() => (tok === token ? res() : rej(new Error('stopped'))), ms));
-function runClock(t1, tok, speed) {
+// Run the EVA clock to minute t1. Each stretch has a default compression (x240 for the walks, x60 for
+// beats 3 and 4); once habitat control picks a speed with the x1 / x60 / x240 buttons, that choice holds
+// for the rest of the run. The speed is read on every frame, so a click takes effect at once, and the
+// pressed button always shows the speed that is really running.
+function runClock(t1, tok, defaultSpeed = 60) {
+  if (st.userSpeed == null && st.speedX !== defaultSpeed) { st.speedX = defaultSpeed; ui.renderBudget(model); }
   return new Promise((res, rej) => {
     let last = performance.now();
     let lastMinute = Math.floor(st.t);
@@ -137,7 +142,7 @@ function runClock(t1, tok, speed) {
       if (tok !== token) return rej(new Error('stopped'));
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
-      st.t = Math.min(t1, st.t + dt * (speed ?? st.speedX) / 60);
+      st.t = Math.min(t1, st.t + dt * st.speedX / 60);
       if (Math.floor(st.t) !== lastMinute) { lastMinute = Math.floor(st.t); renderAll(); } else renderMap();
       if (st.t >= t1) { renderAll(); return res(); }
       raf = requestAnimationFrame(tick);
@@ -256,7 +261,8 @@ function wire() {
   $('#tp-dots').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) goBeat(+b.dataset.b); });
   $('#tp-prev').addEventListener('click', () => (st.beat > 1 ? goBeat(st.beat - 1) : (stop(), resetRun(st.target ?? scenarioStation(model)), renderAll())));
   $('#tp-next').addEventListener('click', () => goBeat(Math.min(6, st.beat + 1)));
-  $$('.clock .seg button').forEach((b) => b.addEventListener('click', () => { st.speedX = +b.dataset.x; ui.renderBudget(model); }));
+  // a chosen speed overrides the stretch defaults until the next station pick (resetRun)
+  $$('.clock .seg button').forEach((b) => b.addEventListener('click', () => { st.speedX = +b.dataset.x; st.userSpeed = st.speedX; ui.renderBudget(model); }));
   $$('.crew-head .seg button').forEach((b) => b.addEventListener('click', () => { st.skin = b.dataset.skin; renderCrew(model); }));
   // cuff hardware keys: they change only the crew's own view
   $('#crew-body').addEventListener('click', (e) => {
