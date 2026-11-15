@@ -211,6 +211,10 @@ def main(argv: list[str] | None = None) -> int:
         sc["scenario_station"] = 1
     if a.drift_zone:
         sc["drift_zone"] = a.drift_zone
+    zone_ids = {f["properties"].get("id") for f in tg.load("zones.geojson")[0]["features"]}
+    if sc.get("drift_zone") not in zone_ids:   # no such protected zone (none at all yet): no scripted drift
+        sc.pop("drift_zone", None)
+        sc["placeholder_fields"] = [f for f in sc.get("placeholder_fields", []) if f != "drift_zone"]
     write_json(DATA / "scenario.json", sc)
     stations = {"type": "FeatureCollection", "note": "Science sites of the A* routing (backend/config/science_targets.json)",
                 "generator": "pipeline/astar_import.py", "features": []}

@@ -4,7 +4,8 @@
 // Navigation (nav.js) and the emergency rehearsal (rehearsal.js) build a view object v and call
 // renderViews(); the DOM elements are moved between the two places, so the ids are unique.
 import { hm, R, icon, esc, setHTML } from './format.js';
-import { lmst, elevAt } from './model.js';
+import { lmst, elevAt, demZ } from './model.js';
+import { navViews, navView } from './layerstate.js';
 import { src } from './sources.js';
 import { drawNavMap, hudSvg, STAGE, bearing } from './crewviz.js';
 
@@ -55,7 +56,11 @@ function profileSVG(model, v, W, H) {
   const out = { svg: '', up: 0, dn: 0, ok: false };
   const tr = v.track;
   if (!tr || tr.vertices.length < 2) return out;
-  const vs = tr.vertices, n = vs.length, dist = vs.map((q) => q.d_m), zs = vs.map((q) => (q.elev_m != null ? q.elev_m : elevAt(model, q)));
+  const vs = tr.vertices, n = vs.length, dist = vs.map((q) => q.d_m);
+  // the GeoMapper elevation map where it covers the whole way, else the route's own elevations
+  let zs = model.dem ? vs.map((q) => demZ(model, q)) : null;
+  out.src = 'geomapper';
+  if (!zs || zs.some((z) => z == null)) { zs = vs.map((q) => (q.elev_m != null ? q.elev_m : elevAt(model, q))); out.src = 'grid'; }
   if (zs.some((z) => z == null || !Number.isFinite(z))) return out;
   out.ok = true;
   for (let i = 1; i < n; i++) { const dz = zs[i] - zs[i - 1]; if (dz > 0) out.up += dz; else out.dn -= dz; }
@@ -88,7 +93,7 @@ function renderProf(model, v) {
   lastProf = [model, v];
   const box = $('#dv-prof-box'), pr = profileSVG(model, v, R(box.clientWidth), R(box.clientHeight));
   box.innerHTML = pr.ok ? pr.svg : '<p class="cap dv-none">No elevation data for this way</p>';
-  $('#dv-prof-h').innerHTML = `<span>Elevation, ${v.homeward ? 'way home' : 'way out'}</span>${pr.ok ? `<span class="num">+${R(pr.up)} m · −${R(pr.dn)} m</span>` : ''}`;
+  $('#dv-prof-h').innerHTML = `<span>Elevation, ${v.homeward ? 'way home' : 'way out'}${pr.ok ? src(pr.src === 'geomapper' ? 'GEOM' : 'DEM') : ''}</span>${pr.ok ? `<span class="num">+${R(pr.up)} m · −${R(pr.dn)} m</span>` : ''}`;
 }
 if (window.ResizeObserver) new ResizeObserver(() => { if (lastProf && document.querySelector('#dv-prof-box').clientWidth) renderProf(...lastProf); }).observe(document.querySelector('#dv-prof-box'));
 
@@ -108,7 +113,9 @@ function renderUi(model, v, o) {
   const se = $('#nv-stage');
   se.style.background = stg.bg; se.style.color = stg.fg;
   se.innerHTML = `${icon(v.stage === 'green' || v.home ? 'check' : 'warn')}${v.home ? 'Crew home' : stg.word}<span class="num">${sp}</span>`;
-  $('#nv-mapname').textContent = `Map: ${{ ortho: 'Orthophoto', plain: 'Plain: return stages only' }[o.base] ?? model.layers.find((l) => l.id === o.base)?.name ?? o.base}`;
+  const views = navViews(model), nv = navView(model, o.base), k = views.findIndex((c) => c.id === nv.id);
+  $('#nv-mapname').innerHTML = `<b>Map ${k + 1}/${views.length} · ${esc(nv.label)}</b>${nv.parts.length > 1 ? `<small>${esc(nv.detail)}</small>` : ''}`;
+  $('#nv-mapname').title = `${nv.label} · ${nv.detail}. Key 4 switches the map; the Layers menu sets which maps and their order.`;
   $('#nv-legend').innerHTML = '<b>Home in time from there, now?</b>' +
     `<div><i style="background:${STAGE.green.tint};border-color:${STAGE.green.c}"></i>Yes, ${v.caution}+ min to spare</div>` +
     `<div><i style="background:${STAGE.yellow.tint};border-color:${STAGE.yellow.c}"></i>Yes, under ${v.caution} min to spare</div>` +
@@ -138,6 +145,7 @@ function renderUi(model, v, o) {
   $('#dv-hero').innerHTML = A + B;
   renderProf(model, v);
   const fx = (x, d = 0) => (x == null || !Number.isFinite(x) ? '–' : d ? x.toFixed(d) : R(x));
+  const geo = v.zSrc === 'geomapper', demLabel = model.dem ? model.dem.name.replace(/^Elevation,\s*/i, '') : '';
   $('#dv-grid').innerHTML =
     tile('Life support', hm(Math.max(0, v.ls)), '', `assumption: ${hm(model.ls)} EVA`, 'ASSUME') +
     tile('Sunset in', hm(v.sun), '', `sunset ${model.sc.sunset_lmst} LMST`, 'REMS') +
@@ -145,9 +153,9 @@ function renderUi(model, v, o) {
     tile('Return limit', R(v.lim.L), 'min', `set by the ${v.lim.by}`, 'xEVA') +
     tile('Time to base', fx(v.ttb), v.ttb == null ? '' : 'min', v.ttb == null ? 'needs the grid' : 'from here, engine grid', 'GRID') +
     tile('Radiation', v.dose.toFixed(2), 'mSv', 'information only', 'RAD') +
-    tile('Slope here', fx(v.slope, 1), v.slope == null ? '' : '°', 'limit 20°', 'DEM') +
+    tile('Slope here', fx(v.slope, 1), v.slope == null ? '' : '°', `limit 20° · ${geo ? '10 m baseline' : '10 m grid'}`, geo ? 'GEOM' : 'DEM') +
     tile('Protected zone', v.zone ? Math.max(0, R(v.zone.d)) : '–', v.zone ? 'm' : '', v.zone ? esc(v.zone.name) : 'no zones', 'PP') +
-    tile('Elevation', fx(v.z), v.z == null ? '' : 'm', 'from the DEM', 'DEM');
+    tile('Elevation', fx(v.z), v.z == null ? '' : 'm', geo ? esc(demLabel) : 'from the DEM, 10 m grid', geo ? 'GEOM' : 'DEM');
 }
 
 // o: { map, hud, ui, zoomI, base, small, onReady }

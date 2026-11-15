@@ -120,3 +120,42 @@
 
 /* source cards float above the map panes and the panels */
 .tip { z-index: 2000; }
+
+/* Layers menu: ordered map layers with opacity, and the tablet maps for key 4 */
+.popover#layers { width: 340px; max-height: calc(100vh - 96px); overflow: auto; }
+.popover h3 small { font-weight: 400; margin-left: 4px; }
+.ly-list, .ly-nav { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.ly-row { border: 1px solid var(--rule); border-radius: 10px; padding: 2px 6px 2px 8px; }
+.ly-row.is-on { border-color: var(--rule-2); background: rgba(43,45,47,.035); }
+.ly-top { display: flex; align-items: center; gap: 6px; }
+.ly-top label { flex: 1; min-width: 0; }
+.ly-name { min-width: 0; line-height: 1.25; }
+.ly-name small { display: block; font-size: 12px; color: var(--graphite-2); }
+.ly-mv { display: flex; gap: 2px; flex: none; }
+.ly-b { width: 26px; height: 26px; display: grid; place-items: center; padding: 0; border: 1px solid var(--rule-2); border-radius: 8px; background: var(--paper); color: var(--graphite); cursor: pointer; }
+.ly-b:hover:not(:disabled) { background: rgba(43,45,47,.07); }
+.ly-b:disabled { opacity: .3; cursor: default; }
+.ly-b svg.i { width: 13px; height: 13px; stroke-width: 2.2; }
+.ly-b svg.up { transform: rotate(-90deg); }
+.ly-b svg.down { transform: rotate(90deg); }
+.ly-sub { padding: 0 0 6px 24px; }
+.popover .ly-op { padding: 2px 0 4px; gap: 8px; font-size: 12.5px; cursor: default; }
+.popover .ly-op input { width: auto; flex: 1; height: 14px; }
+.ly-op output { font: 600 12px/1 var(--f-num); min-width: 38px; text-align: right; }
+.ly-sub .ly-key { margin: 2px 0 0; }
+.ly-n { width: 20px; height: 20px; flex: none; display: grid; place-items: center; border-radius: 6px; background: var(--graphite); color: var(--paper); font: 700 11.5px/1 var(--f-num); }
+.ly-n.is-out { background: transparent; color: var(--graphite-2); border: 1px dashed var(--rule-2); }
+.nv-mapname { max-width: max(130px, calc(50% - 210px)); border-radius: 12px; line-height: 1.25; }
+.nv-mapname b, .nv-mapname small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nv-mapname b { font-weight: 700; }
+.nv-mapname small { font-weight: 500; font-size: 10.5px; color: var(--graphite-2); }
+
+/* remove an added target: a small cross beside its row, and a button in the station details */
+.np-item { display: flex; gap: 6px; align-items: stretch; }
+.np-item .np-row { flex: 1; min-width: 0; }
+.np-rm { flex: none; display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 34px; padding: 0 9px; border: 1px solid var(--rule); border-radius: 12px; background: transparent; color: var(--graphite-2); font: 600 12.5px/1.2 var(--f-text); cursor: pointer; }
+.np-rm span:empty { display: none; }
+.np-rm:hover, .tg-rm:hover { color: #C8361F; border-color: #C8361F; }
+.np-rm.is-armed, .tg-rm.is-armed { color: #fff; background: #C8361F; border-color: #C8361F; }
+.np-rm:disabled, .tg-rm:disabled { opacity: .7; cursor: progress; }
+.tg-head .tg-rm { margin-left: auto; flex: none; align-self: flex-start; height: 32px; padding: 0 11px; font-size: 13px; gap: 6px; }

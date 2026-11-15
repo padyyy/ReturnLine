@@ -2,7 +2,27 @@
 
 Für das Datenteam (Magnus, Michael). Stand 14.11.2026, 13:40. Diese Datei beschreibt das erste Pipeline-Skript, was damit geprüft ist und wie dasselbe Muster für das DEM funktioniert. Der Ablageort `pipeline/` ist ein Vorschlag; über die endgültige Struktur entscheidet der Tech Lead.
 
-## Was es gibt
+## Seit 15.11.2026: alle Karten über GeoMapper
+
+Jede Karte kommt über GeoMapper (`backend/geoMapper`) auf das Konsolen-Raster, auch Höhe und Orthofoto:
+
+```sh
+.venv/Scripts/python pipeline/fetch_sources.py   # einmalig: Ausschnitte der USGS-Mosaike nach data/raw/ (etwa 80 s)
+.venv/Scripts/python pipeline/time_grid.py       # Höhe per GeoMapper, Hang, Zeit-Raster, Zeiger
+.venv/Scripts/python pipeline/astar_import.py    # A*-Routen, Stationen, hinzugefügte Ziele
+.venv/Scripts/python pipeline/ortho_overlay.py   # Orthofoto per GeoMapper
+.venv/Scripts/python pipeline/mapping_bridge.py --request '{"action":"export_slope"}'
+.venv/Scripts/python pipeline/map_layers.py      # alle Kartenebenen aus data/layers/
+.venv/Scripts/python pipeline/check_alignment.py # prüft alles, auch dass Höhe und Orthofoto von GeoMapper stammen
+```
+
+- `fetch_sources.py` schneidet nur aus: die 4-m-Stufe des USGS-DEM (`data/raw/gale_dem_4m.tif`) und die 1-m-Stufe des Orthofotos (`data/raw/gale_ortho_1m.tif`), Pixel unverändert, CRS und Pixelraster bleiben. Beide Dateien sind nicht im Git (`*.tif`).
+- Höhe (`time_grid.py`, `ELEVATION_SOURCES`): GeoMapper füllt jede 10-m-Zelle aus der ersten Karte, die sie abdeckt, in dieser Reihenfolge: das 1-m-CSV-DEM aus newData (`csv_to_matrices`, nächster Punkt, 1 km um die Basis), sonst das USGS-DEM (`raster_to_matrix`, nächstes Pixel). Bis 15.11. wurde die 4-m-Stufe mit rasterio auf 10 m gemittelt; der Unterschied liegt im Median bei −0,07 m, bei 99 % der Zellen unter 2,4 m.
+- Die Zellen bleiben die der vorhandenen `grid.json`; `--new-grid` legt neue an.
+- Orthofoto (`ortho_overlay.py`): GeoMapper tastet die 1-m-Stufe an jeder 1-m-Teilzelle des Konsolen-Rasters ab (10 × 10 je Zelle). Das Bild deckt genau das Raster ab (4750 × 4760 px). Der versetzte Pixelraster des Orthofotos (siehe unten) spielt damit keine Rolle mehr.
+- Die Abschnitte unten beschreiben den Stand vom 14.11. und bleiben als Protokoll stehen.
+
+## Was es gibt (Stand 14.11.)
 
 `ortho_overlay.py` schneidet das Einsatzgebiet aus dem USGS-Orthofoto von Gale aus und speichert es als ein Bild plus JSON mit den Grenzen in Grad. Das reicht für den Meilenstein „Der Punkt wandert über das echte Orthofoto“.
 
@@ -38,6 +58,8 @@ Nützliche Optionen:
 | `--west --east --south --north` | anderer Ausschnitt in Grad (Süden ist die negativere Breite) |
 | `--name`, `--out-dir` | Dateiname und Zielordner |
 | `--source` | andere Quelle, URL oder lokaler Pfad (z. B. ein Fenster vom USB-Stick) |
+
+Seit 15.11. hat `ortho_overlay.py` nur noch `--source` (lokales GeoTIFF), `--sub` (Teilzellen je Zellkante, 10 = 1 m) und `--quality`; die Tabelle oben gilt für den Stand vom 14.11.
 
 ## Ausgabe
 
@@ -124,7 +146,7 @@ Stand 14.11.2026, abends. Das ist der geplante Python-Fallback für die Engine. 
   - `ptr_penalized.i32`, `ptr_allowed.i32`
   - `elev_10m.f32`, `slope_10m.f32` (je 475 × 476 Zellen, je 0,9 MB)
   - `routes.json` (Habitat ↔ jede Station entlang der Zeiger)
-- **Höhe:** 4-m-Übersicht des DEM, gemittelt auf 10-m-Zellen. Die Zellen liegen auf dem 1-m-Pixelraster des DEM. Die Hangneigung kommt aus diesem Raster.
+- **Höhe (seit 15.11.):** GeoMapper legt die Höhenkarten auf die 10-m-Zellen (1-m-CSV-DEM nahe der Basis, sonst USGS-DEM 4-m-Stufe), siehe oben. Die Zellen liegen auf dem 1-m-Pixelraster des DEM. Die Hangneigung kommt aus diesem Raster. Bis 15.11.: 4-m-Übersicht, mit rasterio gemittelt.
 - **Gesperrt:** keine Daten oder Hang über 20° (`slope_block_deg`).
   - Lücke: Die 1-m-Grat-Maske fehlt. Sie braucht das 1-m-DEM; schmale Boxwork-Rücken sind bei 4 m nicht sichtbar.
 - **Gehzeit (seit 14.11. abends, Teamentscheidung):** Tobler-Wanderfunktion (Tobler 1993), normiert auf 1,5 km/h auf ebenem Boden: Geschwindigkeit = Grundgeschwindigkeit · exp(−3,5 · (|g + 0,05| − 0,05)), g = Höhenänderung / Strecke in Gehrichtung. Bergauf und bergab unterscheiden sich, am schnellsten ist leichtes Gefälle (−5 %). Dieselbe Formel wie Michaels Modul (`frontend/src/route-duration.js`) und die Testvektoren `shared/walking-model-vectors.json`. Die Suche läuft vom Habitat über umgekehrte Kanten, gespeichert ist also die Zeit *zum* Habitat. Der Hinweg in `routes.json` wird in seiner eigenen Richtung gerechnet. Für Raumanzüge auf dem Mars ist das eine Annahme, keine Validierung.

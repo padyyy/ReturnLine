@@ -29,6 +29,9 @@ export function buildModel(d) {
     hasSlopeLayer: !!d.slopeLayer,
     slopeLayer: d.slopeLayer || null,
     layers: d.layers || [],
+    // the elevation map placed on the grid by GeoMapper (layer role "elevation"); the crew views read
+    // elevation and slope from it where it covers the ground, else from the pipeline's 10 m grid
+    dem: (d.layers || []).find((l) => l.role === 'elevation' && (l.detail || l.values)) || null,
     comparison: d.comparison,
   };
 }
@@ -174,6 +177,34 @@ export const elevAt = (model, p) => gridValue(model.grid, model.grid?.elev, p);
 export const slopeAt = (model, p) => gridValue(model.grid, model.grid?.slope, p);
 // Value of a map layer at p (pipeline/map_layers.py value grid); the slope layer reads the slope grid
 export const layerValueAt = (model, layer, p) => gridValue(model.grid, layer.values ?? (layer.id === 'slope' ? model.grid?.slope : null), p);
+// Elevation (m) and slope (°, 10 m baseline) at p, from the GeoMapper elevation map (model.dem) where it
+// covers p, else from the pipeline's 10 m grid. Between the map's 1 m samples the elevation is bilinear;
+// the slope comes from the elevations 5 m east, west, north and south, the same 10 m baseline as rule 2.
+// { z, slope, src: 'geomapper' | 'grid' }; z and slope are null where nothing covers p.
+function detailZ(d, p) {
+  const [[s, w], [n, e]] = d.bounds;
+  const fx = (p.lon - w) / (e - w) * d.cols - 0.5, fy = (n - p.lat) / (n - s) * d.rows - 0.5;
+  const x0 = Math.floor(fx), y0 = Math.floor(fy);
+  if (!(x0 >= 0 && y0 >= 0 && x0 < d.cols - 1 && y0 < d.rows - 1)) return null;
+  const u = fx - x0, v = fy - y0, a = d.values, i = y0 * d.cols + x0;
+  const q00 = a[i], q01 = a[i + 1], q10 = a[i + d.cols], q11 = a[i + d.cols + 1];
+  if (!(Number.isFinite(q00) && Number.isFinite(q01) && Number.isFinite(q10) && Number.isFinite(q11))) return null;
+  return q00 * (1 - u) * (1 - v) + q01 * u * (1 - v) + q10 * (1 - u) * v + q11 * u * v;
+}
+export function demZ(model, p) {
+  const dem = model.dem;
+  if (!dem || !p) return null;
+  return dem.detail ? detailZ(dem.detail, p) : gridValue(model.grid, dem.values, p);
+}
+export function terrainAt(model, p) {
+  const z = demZ(model, p);
+  if (z == null) return { z: elevAt(model, p), slope: slopeAt(model, p), src: 'grid' };
+  const h = 5, kx = M_PER_DEG * Math.cos(p.lat * Math.PI / 180);
+  const e = demZ(model, { lon: p.lon + h / kx, lat: p.lat }), w = demZ(model, { lon: p.lon - h / kx, lat: p.lat });
+  const nn = demZ(model, { lon: p.lon, lat: p.lat + h / M_PER_DEG }), ss = demZ(model, { lon: p.lon, lat: p.lat - h / M_PER_DEG });
+  const slope = e != null && w != null && nn != null && ss != null ? Math.atan(Math.hypot((e - w) / (2 * h), (nn - ss) / (2 * h))) * 180 / Math.PI : slopeAt(model, p);
+  return { z, slope, src: 'geomapper' };
+}
 // The engine's way home from p: follow the return pointers to the habitat. Times are differences of
 // the stored walking times, so slope and detours come from the engine, not from this code.
 export function pointerTrack(model, p, which = 'allowed') {

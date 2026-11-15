@@ -3,7 +3,6 @@
  "generator": "pipeline/astar_import.py",
  "placeholder_fields": [
   "scenario_station",
-  "drift_zone",
   "eva_start_lmst",
   "sol",
   "sunset_lmst",
@@ -17,7 +16,6 @@
   -4.8106
  ],
  "scenario_station": 3,
- "drift_zone": "B",
  "eva_number": 7,
  "sol": 5120,
  "eva_start_lmst": "09:00",

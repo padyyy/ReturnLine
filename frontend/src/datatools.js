@@ -8,7 +8,7 @@
 //   route-duration model (Tobler, src/route-duration.js) on the DEM elevation. Maps need GeoMapper and
 //   therefore the local tools.
 import { esc, R } from './format.js';
-import { cellIndex, ttbAt, elevAt, slopeAt, zoneAt, distM, pointerTrack, zoneHits } from './model.js';
+import { cellIndex, ttbAt, elevAt, slopeAt, terrainAt, zoneAt, distM, pointerTrack, zoneHits } from './model.js';
 import { estimateDuration } from './route-duration.js';
 import { sectionsFromTrack } from './route-duration-input.js';
 
@@ -26,10 +26,11 @@ export function pointPreview(model, p) {
   const i = cellIndex(g, p);
   if (i < 0) return { ok: false, why: 'outside the console grid' };
   const col = i % g.header.nx, row = Math.floor(i / g.header.nx);
-  const slope = slopeAt(model, p), z = elevAt(model, p), T = ttbAt(model, p, 'penalized'), zone = zoneAt(model, p);
+  // the 10 m grid decides (the same grid the routes are made on); the GeoMapper elevation map is shown beside it
+  const slope = slopeAt(model, p), z = elevAt(model, p), T = ttbAt(model, p, 'penalized'), zone = zoneAt(model, p), ter = terrainAt(model, p);
   const blocked = slope != null && slope > model.sc.slope_block_deg;
   const reach = Number.isFinite(T);
-  return { ok: reach && !blocked && !zone, col, row, i, slope, z, T, zone, blocked, reach,
+  return { ok: reach && !blocked && !zone, col, row, i, slope, z, T, zone, blocked, reach, dem: ter.src === 'geomapper' ? ter : null,
     why: zone ? `inside ${zone.name}, a protected zone` : blocked ? `slope ${slope.toFixed(1)}° over the ${model.sc.slope_block_deg}° limit` : !reach ? 'no way home from here' : '' };
 }
 
@@ -67,7 +68,9 @@ function renderPreview(model) {
   if (!Number.isFinite(lon) || !Number.isFinite(lat)) { box.innerHTML = '<p class="cap">Enter a position or pick it on the map.</p>'; $('#ad-add').disabled = true; return null; }
   const p = { lon, lat }, pv = pointPreview(model, p);
   box.innerHTML = (pv.col != null ? row('Grid cell (GeoMapper)', `col ${pv.col} · row ${pv.row}`) + row('Elevation', pv.z != null ? `${R(pv.z)} m` : '–') +
-    row('Slope, 10 m', pv.slope != null ? `${pv.slope.toFixed(1)}°` : '–') + row('Time to base', pv.reach ? `${R(pv.T)} min` : '–') : '') +
+    row('Slope, 10 m', pv.slope != null ? `${pv.slope.toFixed(1)}°` : '–') +
+    (pv.dem ? row('GeoMapper DEM 1 m', `${R(pv.dem.z)} m · ${pv.dem.slope != null ? `${pv.dem.slope.toFixed(1)}°` : '–'}`) : '') +
+    row('Time to base', pv.reach ? `${R(pv.T)} min` : '–') : '') +
     `<p class="ad-verdict ${pv.ok ? 'ok' : 'bad'}">${pv.ok ? 'Can become a target' : esc(pv.why)}</p>`;
   $('#ad-add').disabled = !pv.ok || !$('#ad-name').value.trim();
   return p;
@@ -93,7 +96,11 @@ function busy(on, msg = '') {
   $('#ad-status').textContent = msg;
 }
 
-export function initDataTools(model, mapApi, { onStationsChanged, reloadData }) {
+// An added target can be removed: a saved one (data/points/points.json) while the local tools run,
+// a session one always. The four A* targets of the routing engine cannot.
+export const canRemove = (s) => !!s && (!!s.session || (!!tools && !!s.point_id));
+
+export function initDataTools(model, mapApi, { onStationsChanged, reloadData, onToolsChanged }) {
   const panel = $('#tools');
   const open = () => { panel.hidden = false; $('#btn-add-data').setAttribute('aria-expanded', 'true'); refresh(); $('#ad-name').focus(); };
   const close = () => { panel.hidden = true; $('#btn-add-data').setAttribute('aria-expanded', 'false'); stopPick(); mapApi.setPick(null); };
@@ -103,6 +110,23 @@ export function initDataTools(model, mapApi, { onStationsChanged, reloadData }) 
       tools = r.ok ? await r.json() : null;
     } catch { tools = null; }
     setMode(); renderLists();
+    if (onToolsChanged) onToolsChanged();
+  }
+  // remove an added target by its id in points.json (tools) or its station number (session)
+  async function removePoint(id) {
+    if (tools) {
+      busy(true, 'Removing and rebuilding the plan…');
+      const out = await (await fetch(`/__tools/points?id=${encodeURIComponent(id)}`, { method: 'DELETE', headers: HDR })).json().catch(() => ({ ok: false }));
+      busy(false, out.ok ? 'Removed. Loading the plan…' : `Not removed: ${out.error ?? 'pipeline failed'}`);
+      if (out.ok) reloadData();
+      return out;
+    }
+    const k = session.findIndex((t) => String(t.station.n) === String(id));
+    if (k < 0) return { ok: false, error: 'not an added target' };
+    const [t] = session.splice(k, 1);
+    model.stations.splice(model.stations.indexOf(t.station), 1); model.routes.delete(t.station.n); mapApi.removeStation(t.station.n);
+    renderLists(); onStationsChanged(null);
+    return { ok: true };
   }
   function stopPick() { picking = false; $('#ad-pick').setAttribute('aria-pressed', 'false'); $('#map').classList.remove('is-picking'); }
   $('#btn-add-data').addEventListener('click', (e) => { e.stopPropagation(); $('#layers').hidden = true; $('#btn-layers').setAttribute('aria-expanded', 'false'); open(); });
@@ -144,20 +168,8 @@ export function initDataTools(model, mapApi, { onStationsChanged, reloadData }) 
       renderLists(); onStationsChanged(t.station.n);
     } catch (err) { busy(false, `Not added: ${err.message}`); }
   });
-  $('#ad-points').addEventListener('click', async (e) => {
-    const b = e.target.closest('[data-rm-point]'); if (!b) return;
-    const id = b.dataset.rmPoint;
-    if (tools) {
-      busy(true, 'Removing and rebuilding the plan…');
-      const out = await (await fetch(`/__tools/points?id=${encodeURIComponent(id)}`, { method: 'DELETE', headers: HDR })).json().catch(() => ({ ok: false }));
-      busy(false, out.ok ? 'Removed. Loading the plan…' : `Not removed: ${out.error ?? 'pipeline failed'}`);
-      if (out.ok) reloadData();
-      return;
-    }
-    const k = session.findIndex((t) => String(t.station.n) === id); if (k < 0) return;
-    const [t] = session.splice(k, 1);
-    model.stations.splice(model.stations.indexOf(t.station), 1); model.routes.delete(t.station.n); mapApi.removeStation(t.station.n);
-    renderLists(); onStationsChanged(null);
+  $('#ad-points').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-rm-point]'); if (b) removePoint(b.dataset.rmPoint);
   });
   $('#ad-file').addEventListener('change', () => { $('#ad-radius-row').hidden = !/\.csv$/i.test($('#ad-file').files[0]?.name ?? ''); });
   $('#ad-map-add').addEventListener('click', async () => {
@@ -181,4 +193,6 @@ export function initDataTools(model, mapApi, { onStationsChanged, reloadData }) 
   });
   renderPreview(model);
   refresh();
+  // for the station list and the station details: remove an added target (station s)
+  return { removeStation: (s) => (canRemove(s) ? removePoint(s.session ? s.n : s.point_id) : Promise.resolve({ ok: false, error: 'not an added target' })) };
 }

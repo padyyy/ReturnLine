@@ -82,8 +82,8 @@ function renderMap() {
   const sp = st.drift ? script(model) : null, det = detourMin(model);
   const cand = [], callouts = [], rings = [];
   if (b >= 5 && !st.abort && F.protTrack) {   // the two ways home after the injury, as habitat control weighs them
-    cand.push({ track: F.protTrack, kind: 'cand-prot', label: `Protected route · ${R(F.prot)} min · ${F.protFits ? 'fits' : 'too long'}`, tone: 'ink', at: 0.6 });
-    const at = F.abrtTrack;
+    cand.push({ track: F.protTrack, kind: 'cand-prot', label: `${F.nZones ? 'Protected route' : 'Way home'} · ${R(F.prot)} min · ${F.protFits ? 'fits' : 'too long'}`, tone: 'ink', at: 0.6 });
+    const at = F.nZones ? F.abrtTrack : null;   // without zones both ways are the same
     if (at) cand.push({ track: at, kind: 'cand-abort', label: `Through the zone · ${R(F.abrt)} min · ${F.abrtFits ? 'fits' : 'too long'}`, tone: 'red', at: 0.4 });
   }
   if (sp && st.driftAt != null && st.t >= st.driftAt) rings.push(sp.D);
@@ -186,7 +186,7 @@ function renderHc() {
     }
   } else if (b === 5 || !st.abort) {
     o += word('ABORT', 'abort', `life support ${R(F.lsInj)} min`);
-    if (F.prot != null) o += `<ul class="v-facts">${fact(F.protFits, `Protected route: ${F.protFits ? 'fits' : 'too long'}`, `${R(F.prot)} min`)}${fact(F.abrtFits, `Through the zone: ${F.abrtFits ? 'fits' : 'too long'}`, `${R(F.abrt)} min`)}</ul>`;
+    if (F.prot != null) o += `<ul class="v-facts">${F.nZones ? `${fact(F.protFits, `Protected route: ${F.protFits ? 'fits' : 'too long'}`, `${R(F.prot)} min`)}${fact(F.abrtFits, `Through the zone: ${F.abrtFits ? 'fits' : 'too long'}`, `${R(F.abrt)} min`)}` : fact(F.protFits, `Way home: ${F.protFits ? 'fits' : 'too long'}`, `${R(F.prot)} min`)}</ul>`;
     o += action('act-abort', 'btn-abort', 'check', 'Confirm ABORT');
   } else if (st.done) {
     o += word('HOME', 'go') + note(`Inside at ${lmst(model, st.t)} LMST · ${R(model.ls - st.t)} min of life support left`);

@@ -2,7 +2,7 @@
 // planned stay, verdict, the four safety rules, info rows, station details, the plan bar and the
 // assumptions panel. They read the model (engine routes, grid, scenario) and the plan; nothing is searched.
 import { hm, R, icon, numCell, esc, setHTML } from './format.js';
-import { lmst, maxStay, doseAt, zoneAt, zoneHits, ttbAt, elevAt, zoneDistance, M_PER_DEG } from './model.js';
+import { lmst, maxStay, doseAt, zoneAt, zoneHits, ttbAt, terrainAt, zoneDistance, M_PER_DEG } from './model.js';
 import { src } from './sources.js';
 import { orthoImage } from './crewviz.js';
 
@@ -11,6 +11,9 @@ const $$ = (s) => Array.from(document.querySelectorAll(s));
 
 // The plan habitat control is making: picked station, planned stay (-1 = as long as possible), test start
 export const PLAN = { n: null, stay: 30, t0: 0 };
+// set by main.js: whether station s is an added target that can be removed (datatools.js canRemove)
+export const HOOKS = { canRemove: () => false };
+const rmBtn = (s, cls, txt) => `<button type="button" class="${cls}" data-rm-n="${s.n}" data-txt="${txt}" aria-label="Remove target ${s.n}, ${esc(s.name)}" title="Remove this added target">${icon('close')}<span>${txt}</span></button>`;
 
 // The plan for station n: walk out and back on the engine's routes, stay, home time, max stay
 export function planOf(model, n) {
@@ -88,10 +91,11 @@ export function renderPicker(model) {
       cap = `${R(P.walk)} min out · ${R(P.back)} back · ${P.ok ? `max stay ${hm(P.max)}` : P.inside ? `<b class="red">inside ${esc(P.inside.name)}</b>` : '<b class="red">cannot get home in time</b>'}`;
       if (P.crossed.length) cap += ` · <b class="red">route enters ${esc(P.crossed.join(', '))}</b>`;
     }
-    return `<li><button type="button" class="np-row${on ? ' is-on' : ''}" data-n="${s.n}" aria-pressed="${on}">` +
+    return `<li class="np-item"><button type="button" class="np-row${on ? ' is-on' : ''}" data-n="${s.n}" aria-pressed="${on}">` +
       `<span class="badge${on ? ' done' : ''}">${s.n}</span>` +
       `<span class="np-l">${esc(s.name)}<span class="cap">${cap}</span></span>` +
-      `<span class="np-v">${P.noRoute ? '–' : `${(P.out.length_m / 1000).toFixed(2)} km`}<small>route</small></span></button></li>`;
+      `<span class="np-v">${P.noRoute ? '–' : `${(P.out.length_m / 1000).toFixed(2)} km`}<small>route</small></span></button>` +
+      `${HOOKS.canRemove(s) ? rmBtn(s, 'np-rm', '') : ''}</li>`;
   }).join('');
   $$('#np-t0 button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.t0 === PLAN.t0)));
   $$('#np-stay button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.stay === PLAN.stay)));
@@ -139,7 +143,8 @@ export function renderTarget(model, onImage) {
     let up = 0, dn = 0, haveZ = vs.every((q) => q.elev_m != null);
     if (haveZ) for (let i = 1; i < vs.length; i++) { const dz = vs[i].elev_m - vs[i - 1].elev_m; if (dz > 0) up += dz; else dn -= dz; }
     const T = ttbAt(model, s, 'penalized'), zd = zoneDistance(model, s);
-    const z = s.elev_m ?? elevAt(model, s) ?? vs[vs.length - 1].elev_m;
+    const ter = terrainAt(model, s), z = s.elev_m ?? ter.z ?? vs[vs.length - 1].elev_m;
+    const geo = s.elev_m == null && ter.z != null && ter.src === 'geomapper';
     rows = row('Route length', 'habitat to the station, zones avoided', (P.out.length_m / 1000).toFixed(2), 'km', 'ROUTE') +
       row('Walk out · back', `at ${model.sc.walk_speed_kmh} km/h, Tobler slope penalty; uphill and downhill differ`, `${R(P.walk)}·${R(P.back)}`, 'min', 'TOBLER') +
       row('Climb on the way out', haveZ ? `descent ${R(dn)} m` : 'needs elevation on the route', haveZ ? `+${R(up)}` : null, 'm', 'DEM') +
@@ -147,9 +152,9 @@ export function renderTarget(model, onImage) {
       row('Max stay', P.max > 0 ? 'life support or daylight left, minus the way home' : 'cannot get home in time', P.max > 0 ? hm(P.max) : null, '', 'ASSUME') +
       row('Time to base from here', 'engine grid, zones avoided', Number.isFinite(T) ? R(T) : null, 'min', 'GRID') +
       row('Nearest protected zone', zd ? `${esc(zd.zone.name)} · route inside zones: ${R(P.out.zone_m ?? 0)} m` : 'no zones', zd ? Math.max(0, R(zd.d)) : null, 'm', 'PP') +
-      row('Elevation', 'from the DEM', z != null ? R(z) : null, 'm', 'DEM');
+      row('Elevation', geo ? esc(model.dem.name.replace(/^Elevation,\s*/i, '')) : 'from the DEM, 10 m grid', z != null ? R(z) : null, 'm', geo ? 'GEOM' : 'DEM');
   }
-  el.innerHTML = `<div class="tg-head"><span class="badge done">${s.n}</span><div><b>${esc(s.name)}</b><div class="cap">${esc(s.reason ?? '')}</div></div></div>` +
+  el.innerHTML = `<div class="tg-head"><span class="badge done">${s.n}</span><div><b>${esc(s.name)}</b><div class="cap">${esc(s.reason ?? '')}</div></div>${HOOKS.canRemove(s) ? rmBtn(s, 'btn tg-rm', 'Remove target') : ''}</div>` +
     `<div class="lg-media">${img}<div class="cap">${imgCap}</div></div><ul class="rows">${rows}</ul>`;
   const c = $('#tg-thumb');
   const im = c && orthoImage(model, onImage);

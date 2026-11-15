@@ -4,6 +4,7 @@
 // object built by nav.js or rehearsal.js; nothing is searched here.
 import { M_PER_DEG, onTrack, distM } from './model.js';
 import { contour } from './contour.js';
+import { LS, navView } from './layerstate.js';
 
 const BASE = import.meta.env.BASE_URL;
 export const ZOOMS = [0.45, 0.75, 1.2, 1.9, 3];   // screen px per metre on the navigation map
@@ -87,7 +88,7 @@ function hatch(ctx) {
 }
 
 // ---------- the tablet's navigation map (heading up, crew arrow fixed) ----------
-// v: view object (see nav.js); o: { zoomI, base: 'ortho' | 'plain' | a map layer id, small }
+// v: view object (see nav.js); o: { zoomI, base: a tablet map id of layerstate.js ('ortho', 'stack', 'layer:<id>', 'plain'), small }
 export function drawNavMap(canvas, model, v, o, onReady) {
   const host = canvas.parentNode.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1, w = Math.max(1, host.width), h = Math.max(1, host.height);
@@ -103,16 +104,19 @@ export function drawNavMap(canvas, model, v, o, onReady) {
   ctx.fillStyle = '#8E918B'; ctx.fillRect(0, 0, w, h);
   ctx.save();
   ctx.translate(cx, cy); ctx.rotate(-b); ctx.scale(s, s);
-  // base map: orthophoto, a map layer on the console grid, or plain paper
-  let base = null;
-  const lyr = model.layers.find((l) => l.id === o.base);
-  if (o.base === 'ortho') base = orthoImage(model, onReady) && { im: orthoImage(model), bx: { w: model.ortho.bounds[0][1], s: model.ortho.bounds[0][0], e: model.ortho.bounds[1][1], n: model.ortho.bounds[1][0] }, filter: 'grayscale(1) contrast(.78) brightness(1.07)' };
-  if (lyr) base = layerImage(lyr, onReady) && { im: layerImage(lyr), bx: { w: lyr.meta.bounds[0][1], s: lyr.meta.bounds[0][0], e: lyr.meta.bounds[1][1], n: lyr.meta.bounds[1][0] } };
-  if (base && base.im) {
-    if (lyr) { ctx.fillStyle = '#EDF0E6'; ctx.fillRect(-1e4, -1e4, 2e4, 2e4); }
-    ctx.filter = base.filter || 'none'; ctx.globalAlpha = lyr ? (lyr.meta.layer?.opacity ?? 0.6) : 1;
-    ctx.drawImage(base.im, ...rect(base.bx)); ctx.filter = 'none'; ctx.globalAlpha = 1;
-  } else { ctx.fillStyle = '#EDF0E6'; ctx.fillRect(-1e4, -1e4, 2e4, 2e4); }
+  // base map: paper, then the parts of the chosen tablet map bottom first (orthophoto and map layers
+  // anchored on the console grid, each at the opacity set in the Layers menu); see layerstate.js
+  ctx.fillStyle = '#EDF0E6'; ctx.fillRect(-1e4, -1e4, 2e4, 2e4);
+  const box = (b) => ({ w: b[0][1], s: b[0][0], e: b[1][1], n: b[1][0] });
+  for (const part of navView(model, o.base).parts) {
+    if (part === 'ortho') {
+      const im = orthoImage(model, onReady);
+      if (im) { ctx.filter = 'grayscale(1) contrast(.78) brightness(1.07)'; ctx.drawImage(im, ...rect(box(model.ortho.bounds))); ctx.filter = 'none'; }
+    } else {
+      const im = layerImage(part, onReady);
+      if (im) { ctx.globalAlpha = LS.opacity[part.id] ?? part.meta.layer?.opacity ?? 0.6; ctx.drawImage(im, ...rect(box(part.meta.bounds))); ctx.globalAlpha = 1; }
+    }
+  }
   // return stages (rule B): green = 15+ min spare, yellow = under 15 min, red = cannot get home in time
   ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   const g = model.grid;

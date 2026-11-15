@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "pipeline/map_layers.py",
-  "created_utc": "2026-11-15T08:32:26.875956+00:00",
+  "created_utc": "2026-11-15T09:35:27.747023+00:00",
   "image": "gale_dem_csv.png",
   "image_path": "data/layers/gale_dem_csv.png",
   "numeric_file": "layers/gale_dem_csv.f32",
@@ -47,15 +47,28 @@
       "slope": "slope_10m.f32"
     },
     "source": {
-      "source": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/MSL_Gale_DEM_Mosaic_1m_v3.tif",
-      "level_m": 4.0,
-      "nodata": -32767.0,
+      "mapped_by": "GeoMapper (backend/geoMapper)",
+      "sources": [
+        {
+          "source": "data/gale_dem_1000x1000_current.csv",
+          "label": "Gale DEM CSV, 1 m points (branch newData)",
+          "cells": 10201,
+          "method": "GeoMapper csv_to_matrices, nearest point",
+          "resolution_m": 1.0
+        },
+        {
+          "source": "data/raw/gale_dem_4m.tif",
+          "label": "USGS Gale DEM mosaic, 4 m level (pipeline/fetch_sources.py)",
+          "cells": 215899,
+          "method": "GeoMapper raster_to_matrix, nearest pixel",
+          "resolution_m": 4.0
+        }
+      ],
+      "level_m": 1.0,
       "reused_from": "elev_10m.f32 of the previous full run"
     },
     "placeholder": false,
-    "placeholder_inputs": [
-      "zones"
-    ]
+    "placeholder_inputs": []
   },
   "bounds": [
     [
@@ -132,7 +145,26 @@
     "name": "Elevation, Gale DEM 1 m (CSV)",
     "priority": 12,
     "opacity": 0.7,
-    "visible": false
+    "visible": false,
+    "role": "elevation"
+  },
+  "detail": {
+    "numeric_file": "layers/gale_dem_csv_detail.f32",
+    "cols": 1010,
+    "rows": 1010,
+    "bounds": [
+      [
+        -4.819106416816768,
+        137.37216439753908
+      ],
+      [
+        -4.802067105910072,
+        137.38920370844576
+      ]
+    ],
+    "step_m": 1.0,
+    "sample_position": "sub-cell centre",
+    "sampling": "GeoMapper, the same sub-cell samples as the detail picture"
   },
   "use": "display only; read values from the .f32 grid, never from the picture"
 }

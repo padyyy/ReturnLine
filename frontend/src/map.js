@@ -80,13 +80,14 @@ export function createMap(el, data, model, { onStation } = {}) {
     crew: L.layerGroup().addTo(map),
     slope: L.layerGroup(), // off by default; switched on in the Layers menu
   };
-  // map layers on the console grid (pipeline/map_layers.py, GeoMapper); display only, off at the start
+  // map layers on the console grid (pipeline/map_layers.py, GeoMapper); display only. Order, opacity and
+  // which are on are set in the Layers menu (layerstate.js, main.js: setLayerStyle and setLayer).
+  const overlays = {};
   for (const ly of data.layers || []) {
     const m = ly.meta;
     const g = L.layerGroup();
-    L.imageOverlay(`${BASE}${m.image_path}`, m.bounds, { pane: 'slope', opacity: m.layer?.opacity ?? 0.6, className: 'slope-img', interactive: false, zIndex: m.layer?.priority ?? 10 }).addTo(g);
+    overlays[ly.id] = L.imageOverlay(`${BASE}${m.image_path}`, m.bounds, { pane: 'slope', opacity: m.layer?.opacity ?? 0.6, className: 'slope-img', interactive: false, zIndex: m.layer?.priority ?? 10 }).addTo(g);
     layers[`layer:${ly.id}`] = g;
-    if (m.layer?.visible) g.addTo(map);
   }
 
   if (data.traverse) {
@@ -288,6 +289,13 @@ export function createMap(el, data, model, { onStation } = {}) {
       crewMarker.setLatLng(p).setStyle({ fillColor: color });
       crewHalo.setLatLng(p).setStyle({ color });
       crewMarker.setTooltipContent(label);
+    },
+    // a map layer's place in the stack (higher zIndex lies on top) and its opacity
+    setLayerStyle(id, { zIndex, opacity }) {
+      const ov = overlays[id];
+      if (!ov) return;
+      if (zIndex != null) ov.setZIndex(zIndex);
+      if (opacity != null) ov.setOpacity(opacity);
     },
     setLayer(name, on) {
       const lg = layers[name];

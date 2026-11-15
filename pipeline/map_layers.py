@@ -232,6 +232,14 @@ def export(grid: MappingGrid, e: dict, out: Path, upsample: int) -> dict:
     lid = e["id"]
     Image.fromarray(rgba).save(out / f"{lid}.png")
     values.astype("<f4").tofile(out / f"{lid}.f32")
+    # an elevation map (role "elevation") also keeps its fine values: the crew views read elevation and
+    # the 10 m slope at the crew from them (GeoMapper's sub-cell samples, the same ones as the picture)
+    detail = None
+    if e.get("role") == "elevation" and window:
+        np.asarray(pic, dtype="<f4").tofile(out / f"{lid}_detail.f32")
+        detail = dict(numeric_file=f"layers/{lid}_detail.f32", cols=window["cols"] * ppc, rows=window["rows"] * ppc,
+                      bounds=bounds, step_m=round(grid.cell_size_m / ppc, 3), sample_position="sub-cell centre",
+                      sampling="GeoMapper, the same sub-cell samples as the detail picture")
     meta = dict(
         schema_version=1, generator=GENERATOR, created_utc=datetime.now(timezone.utc).isoformat(),
         image=f"{lid}.png", image_path=f"data/layers/{lid}.png", numeric_file=f"layers/{lid}.f32",
@@ -248,7 +256,8 @@ def export(grid: MappingGrid, e: dict, out: Path, upsample: int) -> dict:
         covered_cells=int(ok.sum()), missing_cells=int((~ok).sum()),
         covered_box_cells=dict(col=[int(cols.min()), int(cols.max())], row=[int(rows.min()), int(rows.max())]),
         layer=dict(id=lid, name=e.get("name", lid), priority=e.get("priority", 20), opacity=e.get("opacity", 0.6),
-                   visible=e.get("visible", False)),
+                   visible=e.get("visible", False), role=e.get("role")),
+        detail=detail,
         use="display only; read values from the .f32 grid, never from the picture",
     )
     (out / f"{lid}.json").write_text(json.dumps(meta, indent=2, allow_nan=False) + "\n", encoding="utf-8")

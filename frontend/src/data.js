@@ -59,7 +59,17 @@ async function loadLayers(grid) {
         if (buf && buf.byteLength === grid.header.nx * grid.header.ny * 4) values = new Float32Array(buf);
       } catch { /* picture only */ }
     }
-    out.push({ id: meta.layer?.id ?? path, name: meta.layer?.id === 'slope' ? 'Slope, 10 m baseline' : meta.layer?.name ?? path, units: meta.units ?? (meta.layer?.id === 'slope' ? '°' : null), meta, values });
+    // an elevation map keeps its fine GeoMapper samples too (pipeline/map_layers.py, role "elevation")
+    let detail = null;
+    const dm = meta.detail;
+    if (dm?.numeric_file) {
+      try {
+        const res = await fetch(BASE + 'data/' + dm.numeric_file);
+        const buf = res.ok ? await res.arrayBuffer() : null;
+        if (buf && buf.byteLength === dm.cols * dm.rows * 4) detail = { ...dm, values: new Float32Array(buf) };
+      } catch { /* value grid only */ }
+    }
+    out.push({ id: meta.layer?.id ?? path, name: meta.layer?.id === 'slope' ? 'Slope, 10 m baseline' : meta.layer?.name ?? path, units: meta.units ?? (meta.layer?.id === 'slope' ? '°' : null), role: meta.layer?.role ?? null, meta, values, detail });
   }
   return out;
 }

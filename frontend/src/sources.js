@@ -5,6 +5,7 @@ import { srcChip } from './format.js';
 export const SRC = {
   xEVA: ['NASA EVA', 'NASA, Exploration EVA System Concept of Operations, Rev B, 2020: 60-minute safe-haven rule, suit slope requirement up to 20°, radio-loss procedure.'],
   DEM: ['USGS', 'Elevation and 10 m slope from the USGS Gale DEM (pipeline).'],
+  GEOM: ['GeoMapper', 'Elevation map placed on the console grid by GeoMapper (pipeline/map_layers.py): elevation between its 1 m samples, slope from the elevations 5 m to each side (10 m baseline).'],
   REMS: ['REMS', 'Curiosity REMS weather feed: sunrise and sunset per sol (last reading sol 4995).'],
   RAD: ['Hassler', 'Hassler et al. 2014, Science 343: 0.64 ± 0.12 mSv per day at Gale. Information only, never a gate.'],
   LOO: ['LOO', 'Leave-one-out comparison with Curiosity\'s drives (routing engine).'],

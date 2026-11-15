@@ -2,14 +2,14 @@
 // tablet (left, about 3/4: navigation map, heading up, four hardware keys), the helmet HUD (top right)
 // and the data sheet (bottom right; key 1 swaps it with the map). The crew keeps the plan: walk out on
 // the engine's route, stay the planned time, then walk home on the engine's way back. Nothing is searched.
-import { onTrack, ttbAt, elevAt, slopeAt, zoneDistance, doseAt } from './model.js';
+import { onTrack, ttbAt, terrainAt, zoneDistance, doseAt } from './model.js';
 import { renderViews } from './crew.js';
 import { trackBearing, angNorm, angDiff, ZOOMS } from './crewviz.js';
 import { icon } from './format.js';
+import { navViews, navView as navMap } from './layerstate.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
-const bases = (model) => ['ortho', ...model.layers.map((l) => l.id), 'plain']; // key 4 cycles through them
 
 export const NAV = { on: false, model: null, P: null, t: 0, phase: 'out', playing: true, speedX: 60, zoomI: 2, base: 'ortho', swapped: false, hd: null, onEnd: null };
 
@@ -29,9 +29,9 @@ export function placeValues(model, pos, track, tt) {
     let k = 0; while (k < vs.length - 1 && vs[k + 1].t_min <= tt) k++;
     vSlope = vs[k].slope_deg ?? null; vElev = vs[k].elev_m ?? null;
   }
-  const zd = zoneDistance(model, pos);
+  const zd = zoneDistance(model, pos), ter = terrainAt(model, pos);   // GeoMapper elevation map, else the 10 m grid
   return {
-    slope: slopeAt(model, pos) ?? vSlope, z: elevAt(model, pos) ?? vElev,
+    slope: ter.slope ?? vSlope, z: ter.z ?? vElev, zSrc: ter.z != null ? ter.src : 'route',
     zone: zd ? { d: zd.d, name: zd.zone.name } : null,
     rem: tv ? { m: tv.leftM, min: tv.leftMin } : { m: 0, min: 0 },
     ahead: track ? onTrack(track, 0, Math.min(track.minutes, tt + 2)) : null,
@@ -120,6 +120,7 @@ function syncPause() {
 export function navStart(model, P, onEnd) {
   if (!P || !P.ok) return;
   Object.assign(NAV, { on: true, model, P, t: P.t0, phase: 'out', playing: true, hd: null, swapped: false, onEnd });
+  if (!navViews(model).some((c) => c.id === NAV.base)) NAV.base = navViews(model)[0].id;   // the first ticked map
   document.body.classList.add('nav');
   $('#navmode').hidden = false; $('#nav-controls').hidden = false;
   placeViews(); syncPause();
@@ -140,9 +141,9 @@ function key(id) {
   if (id === 'k-data') { NAV.swapped = !NAV.swapped; placeViews(); }
   if (id === 'k-zin') NAV.zoomI = Math.min(ZOOMS.length - 1, NAV.zoomI + 1);
   if (id === 'k-zout') NAV.zoomI = Math.max(0, NAV.zoomI - 1);
-  if (id === 'k-map') {
-    const list = bases(NAV.model).filter((b) => b !== 'ortho' || NAV.model.ortho);
-    NAV.base = list[(list.indexOf(NAV.base) + 1) % list.length];
+  if (id === 'k-map') { // the maps ticked under "Tablet map" in the Layers menu, in that order
+    const list = navViews(NAV.model).map((c) => c.id);
+    NAV.base = list[(list.indexOf(navMap(NAV.model, NAV.base).id) + 1) % list.length];
   }
   frame(0, true);
 }

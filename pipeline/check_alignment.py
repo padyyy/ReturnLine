@@ -11,8 +11,9 @@ Checked:
 - A* paths (backend/routes/science_routes): GeoMapper's LocalMetricGrid cells of start and goal land in
   the habitat's and the station's console cells; the A* grid lies inside the console grid
 - map layers (layers/index.json): same grid_id, bounds = grid bounds, picture and value grid sized for it
-- orthophoto: shown with its own bounds (its pixels are offset from the DEM's on purpose); it must
-  cover the grid
+- elevation: elev_10m.f32 is what GeoMapper places from the elevation maps (time_grid.map_elevation,
+  run again here and compared cell by cell)
+- orthophoto: made by GeoMapper on the console grid (pipeline/ortho_overlay.py); it must cover the grid
 Run (repo root):  .venv/Scripts/python pipeline/check_alignment.py     exit code 1 when a check fails
 """
 from __future__ import annotations
@@ -144,6 +145,22 @@ def main() -> int:
         tol = grid.cell_size_m / tg.M_PER_DEG
         check(ow <= gw + tol and oe >= ge - tol and os_ <= gs + tol and on >= gn - tol,
               f"orthophoto covers the grid (own bounds; offset west {(gw - ow) * tg.M_PER_DEG:+.1f} m, north {(on - gn) * tg.M_PER_DEG:+.1f} m)")
+        check(o.get("grid_id") == grid.grid_id and "GeoMapper" in o.get("sampling", ""),
+              f"orthophoto made by GeoMapper on grid {o.get('grid_id')} ({o.get('width_px')} x {o.get('height_px')} px, {o.get('pixel_size_m')} m)")
+    else:
+        check(False, "orthophoto missing; run pipeline/ortho_overlay.py")
+
+    # the elevation grid is GeoMapper's: place the elevation maps again and compare
+    if all(s["path"].exists() for s in tg.ELEVATION_SOURCES):
+        import contextlib, io
+        with contextlib.redirect_stdout(io.StringIO()):
+            zg, info = tg.map_elevation(grid.x0, grid.y0, grid.columns, grid.rows)
+        ze = np.fromfile(DATA / gj["files"]["elev"], dtype="<f4").reshape(grid.rows, grid.columns)
+        same = np.allclose(ze, zg.astype(np.float32), equal_nan=True)
+        check(same and "GeoMapper" in json.dumps(gj.get("source", {})),
+              f"elevation grid = GeoMapper placement of {', '.join(f'{u['label']} ({u['cells']} cells)' for u in info['sources'])}")
+    else:
+        check(False, "elevation sources missing; run pipeline/fetch_sources.py")
 
     for ok, text in results:
         print(("PASS  " if ok else "FAIL  ") + text)

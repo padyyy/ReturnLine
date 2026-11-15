@@ -5,9 +5,13 @@ grid.json, ttb_penalized.f32, ttb_allowed.f32, ptr_penalized.i32, ptr_allowed.i3
 slope_10m.f32, and routes.json (habitat <-> each station, along the zones-penalized pointers).
 
 How it works
-- Elevation: the USGS Gale DEM (1 m, read over HTTP range requests from its 4 m overview level),
-  averaged onto 10 m cells that sit on the DEM's 1 m pixel grid. Slope in degrees from that grid
-  (central differences). The 1 m ridge mask cannot be built from the 4 m level; that is a known gap.
+- Elevation: GeoMapper places the real elevation maps on the 10 m cells (cells on the USGS DEM's 1 m
+  pixel grid), one value at every cell centre, in this order of priority:
+  1. the Gale DEM CSV of branch newData (1 m points, 1 km around the base): GeoMapper CsvPointLayer +
+     csv_to_matrices, nearest point within 2 m;
+  2. the USGS Gale DEM, its 4 m level cut out unchanged by pipeline/fetch_sources.py
+     (data/raw/gale_dem_4m.tif): GeoMapper GeoRaster + raster_to_matrix, nearest pixel.
+  Slope in degrees from that grid (central differences). The 1 m ridge mask is still a known gap.
 - Blocked: no data, or slope above the suit limit (scenario.json slope_block_deg, 20 degrees).
 - Walking time: Tobler's hiking function (Tobler 1993, NCGIA Technical Report 93-1), normalised so
   that level ground gives the base speed (scenario.json walk_speed_kmh, 1.5 km/h):
@@ -24,9 +28,12 @@ How it works
 - Inputs: habitat, stations, zones and constants from frontend/public/data/, else from
   frontend/public/data/placeholder/ (the marked placeholders), the same rule the console uses.
 
-Run (repo root, Windows Git Bash):  .venv/Scripts/python pipeline/time_grid.py
-With --reuse-grid the elevation comes from the grid.json and elev_10m.f32 already in the output folder
-(same cells, no DEM download, no rasterio), e.g. after the habitat moved (pipeline/astar_import.py).
+Run (repo root, Windows Git Bash):  .venv/Scripts/python pipeline/fetch_sources.py   (once)
+                                    .venv/Scripts/python pipeline/time_grid.py
+The cells stay those of the grid.json already in the output folder (layers, routes and the console
+depend on them); --new-grid lays new cells over the mission extent. With --reuse-grid the elevation
+comes from the elev_10m.f32 already there (no GeoMapper run), e.g. after the habitat moved
+(pipeline/astar_import.py).
 """
 from __future__ import annotations
 
@@ -43,16 +50,11 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "frontend" / "public" / "data"
-DEM_URL = ("https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/"
-           "MSL_Gale_DEM_Mosaic_1m_v3.tif")
 M_PER_DEG = 3396190.0 * math.pi / 180.0          # 59274.70 m; eqc: x = lon * M_PER_DEG, y = lat * M_PER_DEG
 CELL = 10.0                                       # m, projected
 DEFAULT_EXTENT = dict(west=137.34, east=137.42, north=-4.77, south=-4.85)  # docs/mission-scenario.md
 ZONE_PENALTY = 20.0
 CLEARANCE_PENALTY = 3.0
-GDAL_ENV = dict(GDAL_DISABLE_READDIR_ON_OPEN="YES", CPL_VSIL_CURL_ALLOWED_EXTENSIONS=".tif,.ovr",
-                GDAL_HTTP_MULTIRANGE="YES", GDAL_HTTP_MERGE_CONSECUTIVE_RANGES="YES",
-                CPL_VSIL_CURL_USE_HEAD="NO", VSI_CACHE="TRUE", GDAL_HTTP_MAX_RETRY="4", GDAL_HTTP_RETRY_DELAY="2")
 # 16 neighbours (dr, dc) and the cells a move passes, which must not be blocked (no corner cutting)
 MOVES = []
 for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1),
@@ -89,29 +91,53 @@ def in_ring(lon: float, lat: float, ring: list) -> bool:
     return inside
 
 
-def read_elevation(src_url: str, x0: float, y0: float, nx: int, ny: int) -> tuple[np.ndarray, dict]:
-    """Mean elevation per 10 m cell from the DEM's 4 m overview level (NaN where no data)."""
-    import rasterio  # only needed when the DEM is read
-    from rasterio.enums import Resampling
-    from rasterio.windows import Window
-    path = "/vsicurl/" + src_url if src_url.startswith("http") else src_url
-    with rasterio.Env(**GDAL_ENV):
-        with rasterio.open(path) as base:
-            nodata = base.nodata
-            res = abs(base.transform.a)
-            bx0, by0 = base.transform.c, base.transform.f
-            factors = base.overviews(1)
-        level = 0 if factors and factors[0] * res <= CELL else None
-        factor = factors[0] if level == 0 else 1
-        kw = {} if level is None else {"overview_level": level}
-        with rasterio.open(path, **kw) as src:
-            pix = res * factor
-            win = Window((x0 - bx0) / pix, (by0 - y0) / pix, nx * CELL / pix, ny * CELL / pix)
-            arr = src.read(1, window=win, out_shape=(ny, nx), resampling=Resampling.average, masked=True)
-    z = np.asarray(arr.filled(np.nan), dtype=np.float64)
-    if nodata is not None:
-        z[np.isclose(z, nodata)] = np.nan
-    return z, {"source": src_url, "level_m": pix, "nodata": nodata}
+ELEVATION_SOURCES = [   # priority order; GeoMapper fills each cell from the first map that covers it
+    dict(path=ROOT / "data" / "gale_dem_1000x1000_current.csv", column="Elevation_m",
+         label="Gale DEM CSV, 1 m points (branch newData)"),
+    dict(path=ROOT / "data" / "raw" / "gale_dem_4m.tif", band=1,
+         label="USGS Gale DEM mosaic, 4 m level (pipeline/fetch_sources.py)"),
+]
+
+
+class CellGrid:
+    """The 10 m console cells as a GeoMapper grid (rows, columns, cell centres in lon/lat)."""
+
+    def __init__(self, x0: float, y0: float, nx: int, ny: int):
+        self.x0, self.y0, self.columns, self.rows = x0, y0, nx, ny
+
+    def lonlat_mesh(self):
+        lon = (self.x0 + (np.arange(self.columns) + 0.5) * CELL) / M_PER_DEG
+        lat = (self.y0 - (np.arange(self.rows) + 0.5) * CELL) / M_PER_DEG
+        return np.broadcast_to(lon, (self.rows, self.columns)), np.broadcast_to(lat[:, None], (self.rows, self.columns))
+
+
+def map_elevation(x0: float, y0: float, nx: int, ny: int) -> tuple[np.ndarray, dict]:
+    """Elevation per 10 m cell, placed by GeoMapper from ELEVATION_SOURCES (NaN where none covers)."""
+    sys.path.insert(0, str(ROOT / "pipeline"))
+    sys.path.insert(0, str(ROOT / "backend" / "geoMapper"))
+    from map_layers import Source   # GeoMapper: GeoRaster + raster_to_matrix, CsvPointLayer + csv_to_matrices
+    grid = CellGrid(x0, y0, nx, ny)
+    z = np.full((ny, nx), np.nan)
+    used = []
+    for s in ELEVATION_SOURCES:
+        if not s["path"].exists():
+            hint = " (run pipeline/fetch_sources.py)" if "raw" in s["path"].parts else ""
+            print(f"  elevation source missing, skipped: {s['path'].relative_to(ROOT)}{hint}", file=sys.stderr)
+            continue
+        src = Source(s["path"], column=s.get("column"), band=s.get("band", 1))
+        try:
+            v = src.sample(grid).astype(np.float64)
+        finally:
+            src.close()
+        fill = np.isnan(z) & np.isfinite(v)
+        z[fill] = v[fill]
+        used.append(dict(source=str(s["path"].relative_to(ROOT)).replace("\\", "/"), label=s["label"], cells=int(fill.sum()),
+                         method="GeoMapper csv_to_matrices, nearest point" if src.csv else "GeoMapper raster_to_matrix, nearest pixel",
+                         resolution_m=round(src.res_m, 3)))
+        print(f"  GeoMapper: {s['label']}: {int(fill.sum())} cells")
+    if not used:
+        raise SystemExit("no elevation source found; run pipeline/fetch_sources.py first")
+    return z, {"mapped_by": "GeoMapper (backend/geoMapper)", "sources": used, "level_m": min(u["resolution_m"] for u in used)}
 
 
 def tobler_factor(dz: float, d: float) -> float:
@@ -165,10 +191,11 @@ def search(z, blocked, cost_mult, start, cos_lat, speed_mpm):
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    p.add_argument("--source", default=DEM_URL, help="DEM GeoTIFF URL or local path")
     p.add_argument("--out", default=str(DATA), help="output folder (default frontend/public/data)")
     p.add_argument("--reuse-grid", action="store_true",
-                   help="take the cells and the elevation from grid.json and elev_10m.f32 in --out instead of the DEM")
+                   help="take the cells and the elevation from grid.json and elev_10m.f32 in --out (no GeoMapper run)")
+    p.add_argument("--new-grid", action="store_true",
+                   help="lay new 10 m cells over the mission extent instead of keeping those of grid.json")
     a = p.parse_args(argv)
     t0 = time.time()
     sc, sc_ph = load("scenario.json")
@@ -181,17 +208,22 @@ def main(argv: list[str] | None = None) -> int:
     buffer_m = sc.get("zone_buffer_m", 40)
 
     out = Path(a.out)
-    if a.reuse_grid:  # the same cells and elevation as the last full run
+    keep = (out / "grid.json").exists() and not a.new_grid
+    if a.reuse_grid or keep:  # the same cells as the last run
         old = json.loads((out / "grid.json").read_text(encoding="utf-8"))
         x0, y0, nx, ny = old["origin_m"]["x"], old["origin_m"]["y"], old["nx"], old["ny"]
+    if a.reuse_grid:          # and the same elevation
         z = np.fromfile(out / old["files"].get("elev", "elev_10m.f32"), dtype="<f4").astype(np.float64).reshape(ny, nx)
-        src_info = dict(old["source"], reused_from="elev_10m.f32 of the previous full run")
-    else:
-        # 10 m grid on the DEM's 1 m pixel grid, covering the map extent
-        import rasterio
-        with rasterio.Env(**GDAL_ENV):
-            with rasterio.open("/vsicurl/" + a.source if a.source.startswith("http") else a.source) as base:
-                bx0, by0 = base.transform.c, base.transform.f
+        src_info = dict(old["source"])
+        src_info.setdefault("reused_from", "elev_10m.f32 of the previous full run")
+    elif not keep:
+        # new 10 m cells on the USGS DEM's 1 m pixel grid (sidecar of fetch_sources.py), covering the map extent
+        side = ROOT / "data" / "raw" / "gale_dem_4m.json"
+        if not side.exists():
+            print("run pipeline/fetch_sources.py first", file=sys.stderr)
+            return 2
+        pg = json.loads(side.read_text(encoding="utf-8"))["source_pixel_grid"]
+        bx0, by0 = pg["x"], pg["y"]
         e = DEFAULT_EXTENT
         x0 = bx0 + CELL * math.floor((e["west"] * M_PER_DEG - bx0) / CELL)
         y0 = by0 - CELL * math.floor((by0 - e["north"] * M_PER_DEG) / CELL)
@@ -202,8 +234,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"grid {nx} x {ny} cells of {CELL:g} m, origin x {x0:.4f} y {y0:.4f}")
 
     if not a.reuse_grid:
-        z, src_info = read_elevation(a.source, x0, y0, nx, ny)
-    print(f"elevation read from the {src_info['level_m']:g} m level in {time.time() - t0:.1f}s, "
+        z, src_info = map_elevation(x0, y0, nx, ny)
+    print(f"elevation from {src_info.get('mapped_by', 'the DEM')} ({src_info.get('level_m', 0):g} m finest) in {time.time() - t0:.1f}s, "
           f"{np.isnan(z).sum()} cells without data, range {np.nanmin(z):.1f} .. {np.nanmax(z):.1f} m")
     gy, gx = np.gradient(z, CELL, CELL * cos_lat)
     slope = np.degrees(np.arctan(np.hypot(gx, gy)))
@@ -252,7 +284,7 @@ def main(argv: list[str] | None = None) -> int:
         arr.astype(arr.dtype.newbyteorder("<")).tofile(out / name)
     placeholders = [n for n, ph in (("habitat and constants (scenario.json)", sc_ph), ("stations", st_ph), ("zones", zn_ph)) if ph]
     grid = {
-        "note": "Time-to-base grid from the real Gale DEM (4 m level averaged to 10 m), Python fallback for the routing engine"
+        "note": "Time-to-base grid on real Gale elevation placed by GeoMapper (1 m CSV DEM near the base, USGS DEM 4 m level elsewhere), Python fallback for the routing engine"
                 + (f"; placeholder inputs: {', '.join(placeholders)}" if placeholders else ""),
         "generator": "pipeline/time_grid.py", "placeholder": False, "placeholder_inputs": placeholders,
         "crs": "+proj=eqc +lat_ts=0 +lon_0=0 +R=3396190 +units=m (Mars 2000 sphere, as the USGS Gale DEM)",
