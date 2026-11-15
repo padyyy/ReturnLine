@@ -246,6 +246,8 @@ g.finding.old.is-hl .ring { opacity: 1; }
 .subs-beat { font: 700 15px/1.2 var(--f-text); color: var(--paper); white-space: nowrap; }
 .subs-beat span { color: var(--cover); }
 .subs-text { font-size: 20px; font-weight: 600; line-height: 1.3; text-wrap: balance; }
+.subs-watch { margin-top: 4px; font-size: 14px; font-weight: 500; line-height: 1.3; color: rgba(237, 240, 230, .78); }
+.subs-watch:empty { display: none; }
 .transport { display: flex; align-items: center; gap: 6px; }
 .transport button { width: 34px; height: 34px; display: grid; place-items: center; border: 1.5px solid rgba(237,240,230,.55); background: transparent; color: var(--paper); border-radius: 2px; cursor: pointer; }
 .transport button:hover { border-color: var(--paper); background: rgba(237,240,230,.08); }
