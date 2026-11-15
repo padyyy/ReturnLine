@@ -39,3 +39,4 @@
 - Ausgaben für das Frontend folgen der Grid-Spezifikation und dem Datenvertrag in `../shared/` (Ausschnitt, 10-m-Zellen, Zeilenordnung, float32 little-endian, Kodierung der Rückweg-Zeiger, Dateinamen).
 - Keine Laufzeit-Abhängigkeit des Frontends von diesem Code; der Browser rechnet keine Routen.
 - Ergänze bei Implementierungen relevante Tests und dokumentiere Build, Aufruf und Prüfungen.
+- Halte diese Datei mit tatsächlichen Einstiegspunkten und Abhängigkeiten aktuell.
