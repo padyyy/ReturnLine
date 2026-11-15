@@ -38,7 +38,7 @@ The user is **habitat control**. Every action in ReturnLine is a decision of thi
 1. **Plan.** Habitat control picks a science stop. ReturnLine draws the route there and back around every protected zone and checks four safety rules:
    - time to shelter at most 60 minutes from every point of the route [xEVA];
    - slope at most 20° over 10 m, the suit design requirement [xEVA];
-   - longest radio gap at most 5 minutes, from line of sight to the habitat along the route (5 minutes is our threshold; the procedure after a radio loss follows [xEVA]);
+   - longest radio gap at most 5 minutes, from line of sight to the habitat along the route. The 5 minutes are our own planning threshold, not a NASA number. The reason behind them is NASA's procedure: after a radio loss, the crew first walks back into line of sight of the habitat's antennas [xEVA §9.5], so no part of the route should be far from it;
    - back before sunset.
 
    The verdict is GO, GO with constraints, NO-GO with the first rule that failed, or NO DATA. It is a recommendation; the decision stays with habitat control.
@@ -122,7 +122,7 @@ Yes. We used AI tools as follows:
 - **Not used:** no AI-generated images, video, audio or data values, and no machine learning in the product. Every number shown is computed by committed code from the cited data, or is a labeled assumption.
 - **Where to see it:** `docs/ai-log/` in the repository (one file per AI contribution) and the co-author lines on commits made with Claude Code.
 
-⟨Team to confirm, then keep or rewrite: "The concept came from the two halves of our team before the event: an EVA planner built around getting the crew home, and planetary protection zones. AI did not come up with the idea."⟩
+**The idea:** it came from our team members: an EVA planner built around getting the crew home, and protected zones for planetary protection. AI tools helped us research it, stress-test it and build it; every decision was made by the team.
 
 ## NASA Data
 
@@ -137,7 +137,7 @@ Yes. We used AI tools as follows:
 - **[REMS] Curiosity REMS weather feed**, NASA JPL: https://mars.nasa.gov/rss/api/?feed=weather&category=msl&feedtype=json. Used for sunrise and sunset. ⟨Delete if the data team does not deliver REMS.⟩
 - **[Hassler] Curiosity RAD measurement.** Hassler, D. M. et al., 2014, "Mars' Surface Radiation Environment Measured with the Mars Science Laboratory's Curiosity Rover", *Science* 343, 1244797. https://doi.org/10.1126/science.1244797. Used for the dose rate, 0.64 mSv per day.
 - **[xEVA] NASA, Exploration EVA System Concept of Operations**, EVA-EXP-0042 Rev B, 2020: https://www.nasa.gov/wp-content/uploads/2017/02/eva-exp-0042_xeva_system_con_ops_rev_b_final_dtd_10192020_ref_doc.pdf
-  - Used for the 60-minute safe-haven rule, the 20° slope requirement, EVA duration, the radio-loss procedure and the role of habitat control.
+  - Used for the 60-minute safe-haven rule, the 20° slope requirement, EVA duration, the radio-loss procedure (§9.5) and the role of habitat control.
 - **[EWT] Norcross, J. et al., 2009, "Feasibility of Performing a Suited 10-km Ambulation on the Moon: Final Report of the EVA Walkback Test (EWT)"**, NASA TP-2009-214796. Used for suited walking speed.
 - **[GECO] Adams, R. J. et al., 2013, "Glove-Enabled Computer Operations (GECO): Design and Testing of an Extravehicular Activity Glove Adapted for Human-Computer Interface"**, NASA NTRS 20130014736: https://ntrs.nasa.gov/citations/20130014736. Used as the reason for the crew displays without touch input.
 - **NASA Space Apps 2026 challenge** "Interplanetary Survival Guide: Martian Map": https://www.spaceappschallenge.org/2026/challenges/interplanetary-survival-guide-martian-map/
@@ -165,7 +165,7 @@ Yes. We used AI tools as follows:
 - Node.js
 
 **Fonts**
-- Atkinson Hyperlegible Next and Atkinson Hyperlegible Mono, Braille Institute of America, SIL Open Font License 1.1.
+- Atkinson Hyperlegible Next and Atkinson Hyperlegible Mono, version 2.001, © 2020–2024 The Atkinson Hyperlegible Next Project Authors and The Atkinson Hyperlegible Mono Project Authors, SIL Open Font License 1.1 (license file in the repository: `frontend/src/assets/fonts/OFL.txt`).
 
 **AI tools**
 - OpenAI Codex and Anthropic Claude Code (Claude Opus 5.5), see "Prior research and AI use".
@@ -179,7 +179,9 @@ Yes. We used AI tools as follows:
 
 **Herkunft der Feldnamen.** Sie stammen aus dem Project Submission Guide 2026 (Stand 13.11.2026). Die Antwort zu „Use of Super Intelligence (SI)“ sehen die Juroren nicht. KI-Hinweise im Projekt selbst sehen sie, also in der Beschreibung, im Repo und in den Commits. Darum steht der KI-Absatz auch in der „Detailed Project Description“.
 
-**Wichtige Regel im Guide:** „SI should not be used to come up with your idea of how to solve the challenge.“ Den markierten Satz am Ende von „Use of Super Intelligence“ nur stehen lassen, wenn er für beide Teamhälften stimmt. Sonst ehrlich umschreiben.
+**Wichtige Regel im Guide:** „SI should not be used to come up with your idea of how to solve the challenge.“
+- **Teamentscheidung 15.11.2026:** Die Idee stammt von den Teammitgliedern. So steht es jetzt am Ende von „Use of Super Intelligence“.
+- **Der Punkt „Plan review before the event“ (LLM-Council) bleibt drin.** Das Council-Urteil liegt öffentlich im Repo (`docs/preparation/council-urteil-prototyp.md`, `docs/preparation/preparations.md`), und die Antwort muss dazu passen.
 
 **Zahlen.** Nur aus den committeten Dateien in `frontend/public/data/` übernehmen.
 - Die Demo-Zahlen in `⟨…⟩` stammen aus dem Platzhalter-Layout vom 15.11.2026, 01:00 Uhr: Warnung 5:05, Verletzung 5:06, geschützter Heimweg 57 min gegen Grenze 54 min, Weg durch die Zone 52 min, 157 m in Drill site B, zu Hause 5:58.
@@ -188,7 +190,8 @@ Yes. We used AI tools as follows:
 **Checkliste vor „Submit for Judging“** (Heilbronn: Checkpoint So 14:30, Abgabe So 15:45):
 - [ ] Alle `⟨…⟩` gefüllt oder gestrichen. Kein „validated“ im Text.
 - [ ] Video höchstens 30 s, englische Untertitel, öffentlich. Link im privaten Fenster geprüft.
-- [ ] Demo-Link und Repo im privaten Fenster geprüft, ohne Login. Das Repo muss öffentlich sein.
+- [ ] Demo-Link und Repo im privaten Fenster geprüft, ohne Login.
+- [x] Das Repo ist öffentlich (bestätigt am 15.11.2026).
 - [ ] Alle externen Quellen, Bibliotheken und Schriften unter „References“. Das verlangt die Bestätigung beim Absenden.
 - [ ] Keine NASA-Logos in Seite, Video oder App.
 - [ ] Teamseite: Challenge, Heilbronn und alle fünf Mitglieder eingetragen. Alle bestätigt beim Local Event Heilbronn.
