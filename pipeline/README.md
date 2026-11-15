@@ -191,3 +191,25 @@ Vollständige Schnittstelle, Node.js-Aufruf, Quellen/Annahmen, Zellformeln und n
   - Wer die Annahmen ändert, prüft Beat 1 neu.
 - **Grenzen:** Das 10-m-Gelände ist aus der 4-m-Stufe gemittelt. Grate von 1–2 m fehlen, die Prüfung kann also zu optimistisch sein. Geprüft werden nur die geplanten Routen, nicht die Drift und nicht der ABORT-Weg. Keine Relais.
 - **Neu laufen lassen,** wenn sich `routes.json` ändert (neue Positionen, Grat-Maske).
+
+## Kartenebenen und „Add a map“: `map_layers.py`
+
+Übernommen am 15.11.2026 aus Alex' Branch `navigation-view-/-hud`. Die Strahlungsebene fehlt bewusst: Strahlung ist laut Teamentscheidung nur Information, und das gleichförmige Raster trägt keine räumliche Aussage.
+
+- **Was es tut:** GeoMapper legt jede Karte aus `data/layers/layers.json` auf das Konsolen-Raster (`grid.json`). GeoTIFFs nimmt es per `raster_to_matrix` auf, CSVs mit Breite und Länge per `csv_to_matrices`.
+  - Je Ebene entstehen `frontend/public/data/layers/<id>.png` (Anzeige), `.f32` (Werte) und `.json` (Grenzen, Legende, Quelle).
+  - `layers/index.json` listet alle Ebenen.
+- **Aufruf:** `.venv/Scripts/python pipeline/map_layers.py`, etwa 4 s.
+- **Übernommene Ebenen**, alle aus Magnus' Branch `newData`, 1 km um die Basis:
+  - Orthofoto 25 cm;
+  - Höhenmodell 1 m (CSV);
+  - Boxwork-Schutzmaske 50 m.
+
+  Die Rohdateien (108 MB) sind nicht in main. Ihre Exporte sind committet, und `map_layers.py` behält sie, wenn die Quelle fehlt und der Export auf demselben Raster liegt.
+- **Boxwork-Schutzmaske:** Sie ist nur Anzeige. Die Routenplanung nutzt sie nicht; sie plant um die Schutzzonen aus `zones.geojson`.
+- **In der Konsole:** Layers-Menü → „Maps“. Je Ebene gibt es einen Schalter, die Deckkraft, die Legende und die Quelle. Alle Ebenen sind beim Start aus.
+- **„Add a map“:** funktioniert nur mit `npm run dev`. Der Dev-Server von Vite hat dann lokale Endpunkte (`frontend/tools/data-tools.js`, nur mit dem Header `X-RL-Tools: 1`).
+  - Sie speichern die Datei in `data/layers/` und starten `map_layers.py`.
+  - Die hochgeladenen Quelldateien ignoriert Git (`.gitignore`).
+  - Auf GitHub Pages bleibt die Seite statisch und sagt das im Menü.
+- **Geprüft:** Eine synthetische Test-GeoTIFF (1 km um das Habitat, Mars-eqc) lief durch: 10 000 Zellen abgedeckt, Ebene im Menü, danach per DELETE wieder entfernt.

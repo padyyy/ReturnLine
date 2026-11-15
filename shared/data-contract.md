@@ -33,6 +33,7 @@ Folder `frontend/public/data/` unless noted.
 | `curiosity_comparison.json` | mean deviation (leave-one-out), straight-line baseline, number of drives | engine | info row |
 | `temperature.json` | REMS air temperature of one sol: five-minute LMST medians of quality-filtered measurements (`samples[].air_c`, null where there is none), source URL and hash; separately labeled model estimates (`air_model_c`) that the console never shows | `backend/rems/rems_temperature.py` (Paul) | info row "Air temperature now": the measurement at the same local time, or "no measurement"; information only, never a gate |
 | `drill_holes.geojson` | Curiosity's real drill holes of the boxwork campaign (Point; `name`, `setting`, `drilled`, `position_sol`, `source_url`); positions are the rover's MMGIS waypoints while drilling | team, from the NASA mission blog | map markers and the label "Curiosity drill holes"; information only, not protected zones |
+| `layers/index.json`, `layers/<id>.png/.f32/.json` | map layers on the console grid (GeoMapper): display picture, sampled values, metadata with grid, bounds, legend and source | `pipeline/map_layers.py` from `data/layers/layers.json`; "Add a map" in `npm run dev` | Layers menu "Maps": switch, opacity, legend; display only, off at start |
 
 ## What the sketches compute in the browser, and the replacement
 

@@ -107,6 +107,11 @@ TestResults/
 data/raw/*
 !data/raw/.gitkeep
 
+# Maps added with "Add a map" (frontend/tools/data-tools.js): the uploaded source files stay local;
+# the catalog data/layers/layers.json is versioned, the exports go to frontend/public/data/layers/
+data/layers/*
+!data/layers/layers.json
+
 # Generated map assets
 frontend/public/maps/*
 !frontend/public/maps/.gitkeep

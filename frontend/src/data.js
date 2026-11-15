@@ -40,7 +40,33 @@ export async function loadData() {
     console.warn('slope layer does not match grid.json; not drawn');
     slopeLayer = null;
   }
-  return { scenario, stations, zones, routes, traverse, radio, comparison, temperature, drillHoles, ortho, grid, slopeLayer, placeholders, missing };
+  const mapLayers = await loadMapLayers(grid);
+  return { scenario, stations, zones, routes, traverse, radio, comparison, temperature, drillHoles, ortho, grid, slopeLayer, mapLayers, placeholders, missing };
+}
+
+// Map layers anchored on the console grid by GeoMapper (pipeline/map_layers.py, idea and layers from
+// Alex's branch). layers/index.json lists them; the slope layer keeps its own switch and is skipped here.
+// A layer is drawn only when it was made for exactly this grid (same origin, cell size and size).
+// Display only: the values in the .f32 files are not used by the console.
+async function loadMapLayers(grid) {
+  const index = await fetchJson('data/layers/index.json').catch(() => null);
+  if (!index?.layers || !grid) return [];
+  const h = grid.header;
+  const same = (g) => g && g.cell_m === h.cell_m && g.nx === h.nx && g.ny === h.ny
+    && Math.abs(g.origin_m.x - h.origin_m.x) < 1e-3 && Math.abs(g.origin_m.y - h.origin_m.y) < 1e-3;
+  const out = [];
+  for (const path of index.layers) {
+    if (path === 'data/slope_10m.json') continue;
+    const meta = await fetchJson(path).catch(() => null);
+    if (!meta?.image_path || !meta.bounds) continue;
+    if (!same(meta.grid)) { console.warn(`map layer ${meta.layer?.id ?? path} does not match grid.json; not drawn`); continue; }
+    out.push({
+      id: meta.layer?.id ?? path, name: meta.layer?.name ?? path, units: meta.units ?? null,
+      image: meta.image_path, bounds: meta.bounds, opacity: meta.layer?.opacity ?? 0.6, priority: meta.layer?.priority ?? 20,
+      visible: !!meta.layer?.visible, legend: meta.legend ?? [], note: meta.source?.note ?? '',
+    });
+  }
+  return out.sort((a, b) => a.priority - b.priority);
 }
 
 // Time-to-base grids and return pointers from the routing engine (grid spec in shared/).

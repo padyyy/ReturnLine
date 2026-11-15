@@ -52,7 +52,20 @@
           <span><i class="sw" style="background:#51575B"></i>10–20°, slow</span>
           <span><i class="sw" style="background:#C8361F"></i>over 20°, blocked</span>
         </div>
-        <span class="cap">From the USGS Gale DEM (pipeline). Science layers are not in this build.</span>
+        <span class="cap">From the USGS Gale DEM (pipeline).</span>
+        <h3 id="ly-maps-h" hidden>Maps</h3>
+        <div id="ly-maps"></div>
+        <details class="ly-add" id="ly-add">
+          <summary>Add a map</summary>
+          <p class="cap" id="ly-add-note">Checking for the local data tools …</p>
+          <form id="ly-add-form">
+            <label class="ly-field">File <input type="file" id="ly-add-file" accept=".tif,.tiff,.csv" required></label>
+            <label class="ly-field">Name <input type="text" id="ly-add-name" maxlength="80" placeholder="e.g. Thermal inertia"></label>
+            <label class="ly-field">Units <input type="text" id="ly-add-units" maxlength="20" placeholder="optional"></label>
+            <button type="submit" class="btn" id="ly-add-btn" disabled>Add map</button>
+          </form>
+          <p class="cap" id="ly-add-status" role="status"></p>
+        </details>
       </div>
     </div>
     <button class="btn" id="btn-assume" aria-expanded="false" aria-controls="assume"><svg class="i"><use href="#i-sliders"/></svg><span class="t">Assumptions</span></button>

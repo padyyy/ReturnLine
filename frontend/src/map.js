@@ -87,6 +87,15 @@ export function createMap(el, data, model) {
     L.imageOverlay(`${BASE}${s.image_path}`, s.bounds, { pane: 'slope', opacity: s.layer?.opacity ?? 0.6, className: 'slope-img', interactive: false })
       .addTo(layers.slope);
   }
+  // map layers on the console grid (pipeline/map_layers.py, GeoMapper); display only, switched in the
+  // Layers menu. They sit in the terrain pane: above the base image, below return area, zones and routes.
+  const mapOverlays = {};
+  for (const ly of data.mapLayers || []) {
+    const g = L.layerGroup();
+    mapOverlays[ly.id] = L.imageOverlay(`${BASE}${ly.image}`, ly.bounds, { pane: 'slope', opacity: ly.opacity, zIndex: ly.priority, className: 'slope-img', interactive: false }).addTo(g);
+    layers[`map:${ly.id}`] = g;
+    if (ly.visible) g.addTo(map);
+  }
 
   if (data.traverse) {
     data.traverse.features.forEach((f) => {
@@ -296,5 +305,6 @@ export function createMap(el, data, model) {
       if (on && !map.hasLayer(lg)) lg.addTo(map);
       if (!on && map.hasLayer(lg)) map.removeLayer(lg);
     },
+    setMapLayerOpacity(id, v) { mapOverlays[id]?.setOpacity(v); },
   };
 }

@@ -7,6 +7,60 @@ import { st, route, crewState, resetRun, scenarioStation, isScripted, limits, wa
 import { renderCrew, crewFrame, cuffKey } from './crew.js';
 import { BEATS, SKIN_FOR_BEAT, CUFF_MODE_FOR_BEAT } from './beats.js';
 import * as ui from './ui.js';
+import { esc } from './format.js';
+
+// Map layers in the Layers menu (pipeline/map_layers.py; idea and layers from Alex's branch): a switch and
+// an opacity slider per layer, its legend and source. "Add a map" works only with the local data tools of
+// `npm run dev` (frontend/tools/data-tools.js); the published static app says so instead.
+function wireMapLayers() {
+  const list = $('#ly-maps');
+  $('#ly-maps-h').hidden = !model.mapLayers.length;
+  list.innerHTML = model.mapLayers.map((ly) => {
+    // a legend of bare numbers without units (the orthophoto's 0 and 255) says nothing, so it is left out
+    const plain = !ly.units && ly.legend.every((g) => /^-?[\d.]+$/.test(String(g.label)));
+    const key = plain ? '' : ly.legend.map((g) => `<span><i class="sw" style="background:rgba(${g.rgba.join(',')})"></i>${esc(g.label)}${ly.units ? ` ${esc(ly.units)}` : ''}</span>`).join('');
+    return `<div class="ly-map"><label><input type="checkbox" data-map="${esc(ly.id)}"${ly.visible ? ' checked' : ''}> ${esc(ly.name)}</label>` +
+      `<div class="ly-map-more"${ly.visible ? '' : ' hidden'}><div class="ly-key">${key}</div>` +
+      `<label class="ly-op">Opacity <input type="range" min="0" max="100" value="${Math.round(ly.opacity * 100)}" data-map-op="${esc(ly.id)}" aria-label="Opacity of ${esc(ly.name)}"></label>` +
+      `${ly.note ? `<span class="cap">${esc(ly.note)}</span>` : ''}</div></div>`;
+  }).join('');
+  list.addEventListener('change', (e) => {
+    const id = e.target.dataset.map;
+    if (!id) return;
+    mapApi.setLayer(`map:${id}`, e.target.checked);
+    e.target.closest('.ly-map').querySelector('.ly-map-more').hidden = !e.target.checked;
+  });
+  list.addEventListener('input', (e) => { const id = e.target.dataset.mapOp; if (id) mapApi.setMapLayerOpacity(id, e.target.value / 100); });
+
+  const note = $('#ly-add-note'), btn = $('#ly-add-btn'), status = $('#ly-add-status');
+  const tools = (path, opts = {}) => fetch(path, { ...opts, headers: { 'X-RL-Tools': '1', ...(opts.headers || {}) } });
+  tools('/__tools/status').then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))).then((s) => {
+    if (!s?.ok) throw new Error('no tools');
+    note.textContent = 'Local data tools found. GeoMapper places a georeferenced GeoTIFF or a CSV with latitude and longitude on the console grid (pipeline/map_layers.py).';
+    btn.disabled = false;
+  }).catch(() => {
+    note.textContent = 'Adding a map needs the local console (npm run dev) with Python and GeoMapper. The published demo is static.';
+    $('#ly-add-form').querySelectorAll('input').forEach((i) => { i.disabled = true; });
+  });
+  $('#ly-add-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const file = $('#ly-add-file').files[0];
+    if (!file) return;
+    btn.disabled = true;
+    status.textContent = `Placing ${file.name} on the grid …`;
+    const q = new URLSearchParams({ file: file.name, name: $('#ly-add-name').value.trim(), units: $('#ly-add-units').value.trim() });
+    try {
+      const r = await tools(`/__tools/layers?${q}`, { method: 'POST', body: file });
+      const res = await r.json().catch(() => ({}));
+      if (!r.ok || !res.ok) throw new Error(res.error || `HTTP ${r.status}`);
+      status.textContent = `Added: ${(res.layers || [res.id]).join(', ')}. Reloading …`;
+      setTimeout(() => location.reload(), 600);
+    } catch (err) {
+      status.textContent = `Not added: ${err.message}`;
+      btn.disabled = false;
+    }
+  });
+}
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
@@ -220,6 +274,7 @@ function wire() {
   // slope layer from the pipeline: only offered when its file is there
   $('#ly-slope-row').hidden = !model.hasSlopeLayer;
   $('#ly-slope').addEventListener('change', (e) => { mapApi.setLayer('slope', e.target.checked); $('#ly-slope-key').hidden = !e.target.checked; });
+  wireMapLayers();
   // collapsible map key; the choice is a per-viewer convenience, so browser storage is fine
   const lgd = $('#legend'), lgt = $('#legend-toggle');
   const setLegend = (open) => { lgd.classList.toggle('is-collapsed', !open); lgt.setAttribute('aria-expanded', String(open)); };

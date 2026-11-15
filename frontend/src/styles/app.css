@@ -147,5 +147,17 @@ button.cuff-key:focus-visible { outline: 2px solid var(--cover); outline-offset:
 .ly-key { display: grid; gap: 3px; margin: 2px 0 4px 24px; font-size: 12.5px; }
 .ly-key span { display: flex; align-items: center; gap: 7px; }
 .ly-key .sw { width: 14px; height: 10px; border: 1px solid var(--graphite); flex: none; }
+/* map layers (pipeline/map_layers.py) and "Add a map" in the Layers menu */
+.ly-map-more { margin: 0 0 6px 24px; display: grid; gap: 4px; }
+.ly-map-more .ly-key { margin-left: 0; }
+.popover label.ly-op { padding: 2px 0; font-size: 12.5px; gap: 8px; }
+.ly-op input[type="range"] { flex: 1; min-width: 0; accent-color: var(--graphite); }
+.ly-add { margin-top: 10px; border-top: 1px solid var(--line, rgba(43,45,47,.18)); padding-top: 8px; }
+.ly-add summary { cursor: pointer; font-size: var(--t-cap); font-weight: 700; color: var(--graphite-2); }
+.ly-add form { display: grid; gap: 6px; margin-top: 6px; }
+.popover label.ly-field { display: grid; gap: 2px; padding: 0; font-size: 12.5px; cursor: default; }
+.popover .ly-field input[type="text"] { width: 100%; height: auto; font: inherit; padding: 4px 6px; border: 1px solid var(--graphite); background: var(--paper); box-sizing: border-box; }
+.popover .ly-field input[type="file"] { width: 100%; height: auto; font-size: 12px; }
+.popover .ly-op input[type="range"] { height: auto; }
 /* the slope image is already smooth (interpolated before classifying); let the browser scale it smoothly too */
 .slope-img { image-rendering: auto; }
