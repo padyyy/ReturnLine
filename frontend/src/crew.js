@@ -4,7 +4,7 @@
 //   navigation map, heading up. Its keys only change the crew's view (DATA, MAP, ZOOM +/-).
 // - HUD: the helmet HUD, a compass ring with a minimap, the return stage and up to three warnings.
 // Cuff map and HUD follow Alex's navigation sketch (docs/design/navigation-hud-sketch.html).
-import { hm, R, icon, numCell, esc } from './format.js';
+import { hm, R, icon, numCell, esc, setHTML } from './format.js';
 import { lmst, doseAt, maxStay, zoneDistance, zoneAt } from './model.js';
 import { st, crewState, limits, stage, station, route, proximity, detourMin, activeLeg, walkFactor, homeTime } from './sim.js';
 import { drawNavMap, hudSvg, heading, ZOOMS, STAGE } from './crewviz.js';
@@ -137,7 +137,7 @@ function cuffSkin(d) {
 }
 
 function hudSkin() {
-  return '<div class="hud"><div class="hud-face"></div><div class="hud-line"></div><ul class="hud-warn" aria-live="polite"></ul>' +
+  return '<div class="hud"><div class="hud-face"></div><div class="hud-line"></div><ul class="hud-warn"></ul>' +
     '<div class="cuff-note">Helmet HUD, read-only. Heading = walking direction; ring colour = return stage (rule B). *assumption</div></div>';
 }
 
@@ -146,7 +146,8 @@ export function renderCrew(model) {
   el.setAttribute('data-skin', st.skin);
   el.querySelectorAll('.crew-head .seg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.skin === st.skin)));
   const d = data(model);
-  document.getElementById('crew-body').innerHTML = st.skin === 'cuff' ? cuffSkin(d) : st.skin === 'hud' ? hudSkin() : valuesSkin(d);
+  // only rebuild when the markup changes: keeps the map canvas and the HUD elements between clock ticks
+  setHTML(document.getElementById('crew-body'), st.skin === 'cuff' ? cuffSkin(d) : st.skin === 'hud' ? hudSkin() : valuesSkin(d));
   crewFrame(model, true);
 }
 
@@ -184,8 +185,9 @@ export function crewFrame(model, force = false) {
       : n.at ? `Stn ${n.target.n} · max stay ${hm(Math.max(0, n.stay ?? 0))}`
       : `${n.target.kind === 'base' ? 'Base' : `Stn ${n.target.n}`} ${R(n.remM)} m · ${R(n.remMin)} min`;
     const right = st.phase === 'plan' || n.home ? '' : `Home ${lmst(model, n.homeAt)}`;
-    face.parentElement.querySelector('.hud-line').innerHTML = `<span>${left}</span>${right ? `<span>${right}</span>` : ''}`;
-    face.parentElement.querySelector('.hud-warn').innerHTML = warnings(model, n).map(([cls, ic, txt]) => `<li class="${cls}">${icon(ic)}${esc(txt)}</li>`).join('');
+    setHTML(face.parentElement.querySelector('.hud-line'), `<span>${left}</span>${right ? `<span>${right}</span>` : ''}`);
+    // the warning list is a live region: write it only when the warnings change
+    setHTML(face.parentElement.querySelector('.hud-warn'), warnings(model, n).map(([cls, ic, txt]) => `<li class="${cls}">${icon(ic)}${esc(txt)}</li>`).join(''));
   }
 }
 
