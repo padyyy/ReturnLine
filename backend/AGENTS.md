@@ -23,7 +23,7 @@
 - Einzelweg: `uv run --extra plot python -m backend.mapper_route /pfad/dem.tif --start LON LAT --goal LON LAT --plot`.
 - Vier Wissenschaftsorte: `uv run --extra plot python -m backend.science_routes /pfad/dem.tif --plot`.
 - Tests: `uv run python -m unittest discover -s backend/tests -v`.
-- Ausgaben standardmäßig nach ignoriertem `backend/routes/` (CLI `--output-dir`). Batch: pro Ziel `path_xy.json`/`summary.json`, gemeinsam `paths_xy.json`, `routes_summary.json`, `grid.json`, `mapped_layers.npz` mit Metadaten sowie `routes.png` bei `--plot`.
+- Ausgaben standardmäßig nach `backend/routes/` (CLI `--output-dir`); TIFF/NPZ sind gemäß `.gitignore` ausgenommen, JSON-/PNG-Ausgaben können versioniert sein. Batch: pro Ziel `path_xy.json`/`summary.json`, gemeinsam `paths_xy.json`, `routes_summary.json`, `grid.json`, `mapped_layers.npz` mit Metadaten sowie `routes.png` bei `--plot`.
 - `uv run python -m backend.radiation --paths backend/routes/science_routes/paths_xy.json`: erzeugt unter `backend/routes/radiation/` TIFF, Metadaten, Grid-/Layer-JSON sowie `routes_dose.json` für vorhandene Pfade. Ohne `--paths` nur den Layer erzeugen. Beide Routing-CLIs akzeptieren `--layers`, `--grid` und die Dosisoptionen; Details in `MAPPER_ROUTING.md`.
 - Ergebniswerte sind Demo-Kosten, keine kalibrierten Gehzeiten. Aktuelle Grenzen 20° Neigung/0,5 m Rauigkeit und Gewichte sind Testannahmen. Kein Fahrzeug-/Astronauten-Footprint oder vollständiges Hindernismodell.
 - Vor Frontend-Export mit `../shared/data-contract.md` abstimmen; lokale NPZ-/XY-Ausgaben sind kein neuer Browservertrag. Kein Commit/Push ohne Auftrag.
