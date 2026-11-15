@@ -34,7 +34,7 @@ Made on 2026-11-08 and 2026-11-09:
 
 Corrected after the review of 2026-11-12 (details and sources in `docs/preparation/preparations.md`):
 - The main user is the intravehicular crew member who directs the EVA. A field display is optional and, if built, is a forearm cuff display with hardware keys, because touch screens fail with suit gloves.
-- The verdict rests on four rules that can fire: time to shelter ≤ 60 min, 10 m slope ≤ 20° plus a 1 m ridge mask, longest radio gap ≤ 5 min, daylight.
+- The verdict rests on four rules: time to shelter ≤ 60 min, 10 m slope ≤ 20° plus a 1 m ridge mask, longest radio gap ≤ 5 min, daylight. Since 2026-11-15 (team decision) a radio gap over 5 min is a warning, not a NO-GO; the other three can say NO-GO.
 - Dropped: the THEMIS sand rule, the per-EVA dose limit, the CME storm cut-off, the hand-written A\* (reversed on 2026-11-13: an offline C# Dijkstra, see below), the claim that the route is "validated" against Curiosity.
 - Resolved on 2026-11-13: one page (the habitat console with a crew display inside), and the pitch opens on the shrinking return area.
 

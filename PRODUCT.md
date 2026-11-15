@@ -40,7 +40,7 @@ Success for the hackathon: a submitted demo, video and project page by the Heilb
 - **The return area is the hero.** A terrain-shaped area that shows where the crew can still get home from, and visibly shrinks as time runs out. Rivals show a route and a GO/NO-GO verdict; at least one already has rover photos per stop and solar storm data.
 - **Planetary protection as a real constraint.** Astronauts carry Earth microbes. A step over a drill site can contaminate it or fake a discovery. No rival we found plans around this.
 - **The priority order in one moment.** When a crew member is injured, the only way home in time crosses a protected zone. Habitat control overrides, and the entry is logged. Safety beats protection, and the record shows it.
-- **Safety that follows NASA's own EVA rules.** An incapacitated crew member must reach a safe haven within 60 minutes. Slope against the suit's 20° design limit, radio gaps and daylight complete the four rules.
+- **Safety that follows NASA's own EVA rules.** An incapacitated crew member must reach a safe haven within 60 minutes. Slope against the suit's 20° design limit and daylight complete the rules that can say NO-GO; a long radio gap is a warning.
 - **Honest about Curiosity.** The route is *compared with* Curiosity's drives with a leave-one-out test, never called "validated".
 - **Every number carries its source.** Assumptions are labeled and adjustable.
 
@@ -71,7 +71,7 @@ Success for the hackathon: a submitted demo, video and project page by the Heilb
 
 **Cut:** HUD over a rover photo (the photo shows the rover's position, not the crew's); free steering of the astronaut; route computation in the browser; a full viewshed; the word "validated". Also out of scope: 3D globe, backend, machine learning, login, a per-EVA dose limit, sand detection from THEMIS.
 
-**The four rules:** time to shelter at most 60 minutes, 10 m slope at most 20° and no ridge crossing, longest radio gap at most 5 minutes, return before sunset. Verdict states: GO, GO with constraints, NO-GO with the first violated rule, NO DATA.
+**The four rules:** time to shelter at most 60 minutes, 10 m slope at most 20° and no ridge crossing, longest radio gap at most 5 minutes, return before sunset. Three of them can say NO-GO; a radio gap over 5 minutes is a warning (team decision 2026-11-15). Verdict states: GO, GO with constraints, NO-GO with the first violated rule, NO DATA.
 
 **Labeled assumptions:** walking speed 1.5 km/h on level ground; a named slope penalty (Tobler-type, scaled to 1.5 km/h) with one ±30 % sensitivity check; walking speed halved for an injured crew member; buffer radius of the protected zones; EVA duration 6 ± 2 h plus 1 h backup.
 
