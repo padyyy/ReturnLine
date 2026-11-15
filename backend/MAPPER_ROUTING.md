@@ -9,7 +9,7 @@ uv run --extra plot python -m backend.mapper_route "/pfad/zum/dem.tif" --start 1
 
 IDE: Modul `backend.mapper_route`, Repository als Arbeitsverzeichnis, `.venv/bin/python`; TIFF-Pfad sowie `--start LON LAT --goal LON LAT --plot` als Argumente.
 
-Ausgabe im ignorierten `backend/routes/mapper_route/` (änderbar durch `--output-dir`):
+Ausgabe unter `backend/routes/mapper_route/` (änderbar durch `--output-dir`):
 
 - `path_xy.json`: geordneter Array `[[x,y], ...]`, Start bis Ziel; `null` falls nicht erreichbar. Außerhalb liegende Endpunkte lösen einen Fehler aus und werden nicht verschoben.
 - `summary.json`: Endpunkte, Geometrie, Herkunft der Merkmale, Konfiguration, Kosten, Weglänge und `radiation` mit Dauer, Dosisäquivalent und kumulativem Profil.
@@ -48,9 +48,11 @@ Schutzstatus bleibt separat: `--protected-penalty N` multipliziert Geländekoste
 uv run python -m backend.radiation
 ```
 
-Ergebnis unter `backend/routes/radiation/`: `radiation_background_msv_per_day.tif`, zugehörige `.metadata.json`, `grid.json` und eine fertige `layers.json`. Das TIFF ist ein komprimiertes Float32-Raster, Band 1 = `radiation_msv_per_day`, NoData −9999, nordorientierte lokale Equirectangular-Projektion auf der Marskugel R = 3396190 m. Auflösung, Zellmittelpunkte und Ausdehnung entsprechen genau dem gewählten Grid. Die erzeugten Dateien bleiben gemäß `.gitignore` lokal; Generator und Gridkonfiguration ermöglichen die Reproduktion.
+Ergebnis unter `backend/routes/radiation/`: `radiation_background_msv_per_day.tif`, zugehörige `.metadata.json`, `grid.json` und eine fertige `layers.json`. Das TIFF ist ein komprimiertes Float32-Raster, Band 1 = `radiation_msv_per_day`, NoData −9999, nordorientierte lokale Equirectangular-Projektion auf der Marskugel R = 3396190 m. Auflösung, Zellmittelpunkte und Ausdehnung entsprechen genau dem gewählten Grid. TIFF/NPZ sind gemäß `.gitignore` vom Tracking ausgenommen; JSON-/PNG-Ausgaben können versioniert sein. Generator und Gridkonfiguration ermöglichen die Reproduktion der TIFF.
 
 Standardrate 0,64 mSv je 24 h; Quelle [Hassler et al. 2014](https://doi.org/10.1126/science.1244797), Messzeitraum 2012–2013. Die Quellunsicherheit ±0,12 mSv/Tag steht in den Metadaten. Die Pixel sind **keine einzelnen Messungen**. Es sind weder lokale Gelände-/Anzugabschirmung noch aktuelles Weltraumwetter oder solare Teilchenereignisse modelliert. `--rate-msv-per-day` ändert die Szenariorate; die gespeicherte Quellreferenz und deren Unsicherheit bleiben als Referenz gekennzeichnet. Die Quelle ist ein Dosisäquivalent in mSv, keine absorbierte Dosis in Gy oder berechnete menschliche Effektivdosis. Gy/h nicht ohne Strahlungsqualitätsmodell als mSv/Tag binden.
+
+Zusätzlich liegt ein Export der TIFF-Werte unter `backend/routes/radiation/radiation_background_msv_per_day.csv` vor: eine Million Zeilen, Spalten `x,y,Longitude,Latitude,radiation_msv_per_day`, UTF-8, Kommatrennung und Dezimalpunkt. x/y sind nullbasierte Zellindices; Longitude/Latitude beschreiben die Mars-Zellmittelpunkte. Reihenfolge: zeilenweise von oben links. Leere Werte kennzeichnen NoData. `radiation_background_msv_per_day.csv.metadata.json` beschreibt Schema und Szenario. Für den CSV-Import dieselbe Griddatei und `--layers backend/routes/radiation/layers_csv.json` verwenden. Der Suchradius von 0,1 m dient ausschließlich dem Abgleich identischer Zellmittelpunkte. Die CSV enthält dieselben Szenariowerte, keine zusätzlichen Messungen; sie wird derzeit separat aus der TIFF exportiert, nicht vom Generator-CLI erzeugt.
 
 Beispiel mit Dosis und zehn Minuten Aufenthalt am Ziel:
 
