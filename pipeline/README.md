@@ -163,3 +163,21 @@ Stand 14.11.2026, abends. Das ist der geplante Python-Fallback für die Engine. 
 Ausgabe: 4 RGBA-Pixel pro Zellkante (2,5 m), die Hangwerte zwischen den Zellmitten interpoliert und dann eingefärbt (glatte Klassengrenzen; Daten bleiben der Hang über 10 m), NoData transparent, Klassen bis 10°, 10–20° und über 20°. Numerische Dateien und Routing bleiben unverändert. Das bestehende Orthofoto behält seine eigenen georeferenzierten Grenzen. Installation: `pipeline/requirements.txt`, sie enthält seit dem 14.11. auch pyproj und SciPy für `sample_raster`. Farben: Vermessungspapier bis 10°, Graphit 10–20°, Rot über 20° (gesperrt).
 
 Vollständige Schnittstelle, Node.js-Aufruf, Quellen/Annahmen, Zellformeln und noch offene Frontend-Schritte: [MAPPING.md](MAPPING.md). Nach Datenteam-Auftrag wurde nichts in `frontend/src/` geändert. Die Konsole zeigt den Hang-Layer im Layers-Menü (Terrain → „Slope, 10 m baseline“).
+
+## Funkprüfung entlang der Routen: `radio_check.py`
+
+- **Aufruf:** `py -3.11 pipeline/radio_check.py`, nur Standardbibliothek, unter einer Sekunde. Optionen `--habitat-antenna` (Standard 3 m) und `--crew-antenna` (Standard 2 m); beide Höhen sind Annahmen.
+- **Ergebnis:** `frontend/public/data/radio_check.json` mit der längsten Funklücke je Station und Strecke (`out`, `ret`) und den Lücken selbst. Die Konsole wertet die Lücke der gewählten Station gegen `radio_gap_max_min` (5 min, eigene Schwelle).
+- **Methode:** Routenpunkte höchstens 5 m auseinander; Sichtlinie von der Habitat-Antenne zur Crew-Antenne über dem 10-m-Gelände (bilinear), alle 5 m abgetastet, Mars-Krümmung d1 · d2 / (2R). Eine Lücke reicht vom Mittelpunkt vor dem ersten bis zum Mittelpunkt nach dem letzten Punkt ohne Sicht, in Gehminuten.
+- **Stand 15.11.2026, 10:40** (Platzhalter-Positionen):
+  - Station 1: Hinweg 2,1 min, Rückweg 2,9 min;
+  - Station 2: 2,1 bzw. 2,9 min;
+  - Stationen 3 und 4: durchgehend Sicht.
+
+  Alle Strecken liegen unter 5 min. Mit 1 m statt 5 m Abtastung ändert sich das kaum (2,97 statt 2,94 min).
+- **Empfindlich gegen die Antennenhöhen:**
+  - Mit 2 m am Habitat und 1,5 m an der Crew wären es an Station 1 5,4 min, also NO-GO in Beat 1.
+  - Ab einem 10-m-Mast am Habitat gibt es keine Lücke mehr.
+  - Wer die Annahmen ändert, prüft Beat 1 neu.
+- **Grenzen:** Das 10-m-Gelände ist aus der 4-m-Stufe gemittelt. Grate von 1–2 m fehlen, die Prüfung kann also zu optimistisch sein. Geprüft werden nur die geplanten Routen, nicht die Drift und nicht der ABORT-Weg. Keine Relais.
+- **Neu laufen lassen,** wenn sich `routes.json` ändert (neue Positionen, Grat-Maske).
