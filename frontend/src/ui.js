@@ -1,7 +1,7 @@
 // Console renderers: header, target picker, verdict, rules, info rows, station log, time budget,
 // subtitles, banner, summary and the assumptions panel. They read the model and the sim state only.
 import { hm, R, icon, numCell, srcChip, esc, setHTML } from './format.js';
-import { lmst, pickerRows, doseAt, zoneAt, zoneHits } from './model.js';
+import { lmst, pickerRows, doseAt, zoneAt, zoneHits, airTempAt } from './model.js';
 import { st, route, station, crewState, limits, homeTime, scenarioStation, isScripted, zoneEvents, zoneNow, proximity, script, detourMin, rerouteTrack, warnM, injuryOptions, ruleChecks, firstViolated, radioLimit } from './sim.js';
 import { BEATS } from './beats.js';
 
@@ -16,6 +16,7 @@ const SRC = {
   TOBLER: ['Tobler', 'Tobler 1993, NCGIA Technical Report 93-1: hiking speed against slope, normalised so level ground gives the base speed; uphill and downhill differ. A terrestrial function, not validated for suited crews on Mars.'],
   EWT: ['EWT', 'About 2 km/h in NASA lunar planning (xEVA); 1.5 km/h on Mars is a labeled slowdown after Norcross et al., NASA TP-2009-214796.'],
   PP: ['COSPAR', 'COSPAR policy for human missions to Mars and NASA NID 8715.129 (2020): the reason for protected zones. Still to be checked against the primary texts.'],
+  TEMP: ['REMS', 'Curiosity REMS air temperature from the NASA PDS Atmospheres Node (MODRDR table): five-minute medians of quality-filtered samples, prepared by backend/rems/rems_temperature.py. Measured at the rover on a past sol, not at the habitat; gaps stay empty, no estimates are shown.'],
   RADIO: ['assum.', 'Our planning threshold, not a NASA number. Reason: after a radio loss, NASA\'s first step is to walk back into line of sight of the habitat (xEVA §9.5), so no part of the route should be far from it.'],
 };
 const src = (k) => srcChip(SRC[k][0], SRC[k][1], k === 'ASSUME' || k === 'RADIO');
@@ -175,7 +176,13 @@ export function renderRules(model) {
 
 export function renderInfo(model) {
   const cmp = model.comparison;
-  $('#info').innerHTML =
+  // air temperature: Curiosity's REMS measurement at the same local time on a past sol (information only)
+  const tp = model.temperature;
+  const air = tp ? airTempAt(model, st.t) : null;
+  const tempRow = tp
+    ? `<li class="row4"><span class="a"><span class="stat info">${icon('info')}<span class="w">info</span></span></span><span class="l">Air temperature now<span class="cap">measured by Curiosity on sol ${esc(tp.sol)}, same local time · information only</span></span><span class="v">${numCell(air == null ? null : R(air).toString().replace('-', '−'), '°C', air == null ? 'no measurement' : 'measured')}</span><span class="s">${src('TEMP')}</span></li>`
+    : '';
+  $('#info').innerHTML = tempRow +
     `<li class="row4"><span class="a"><span class="stat info">${icon('info')}<span class="w">info</span></span></span><span class="l">Radiation dose this EVA<span class="cap">information only, never a gate · ${model.sc.dose_rate_msv_per_day} mSv per day</span></span><span class="v">${numCell(doseAt(model, st.t).toFixed(2), 'mSv', 'so far')}</span><span class="s">${src('RAD')}</span></li>` +
     `<li class="row4"><span class="a"><span class="stat info">${icon('info')}<span class="w">info</span></span></span><span class="l">Compared with Curiosity<span class="cap">mean deviation of our routes from its drives${cmp ? ` · straight line ${R(cmp.straight_line_m)} m` : ''}</span></span><span class="v">${numCell(cmp ? R(cmp.mean_deviation_m) : null, 'm', cmp ? 'leave-one-out' : 'from engine')}</span><span class="s">${src('LOO')}</span></li>`;
 }

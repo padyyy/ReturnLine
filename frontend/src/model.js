@@ -28,7 +28,25 @@ export function buildModel(d) {
     ortho: d.ortho,
     hasSlopeLayer: !!d.slopeLayer,
     comparison: d.comparison,
+    temperature: d.temperature,
   };
+}
+
+// REMS air temperature at EVA minute t: the measured five-minute median of that LMST bin, or of the
+// nearest bin within 5 minutes. Only measurements; the file's model estimates (air_model_c) are never
+// shown. null where there is no measurement.
+export function airTempAt(model, t) {
+  const tp = model.temperature;
+  if (!tp?.samples?.length) return null;
+  const bin = tp.bin_min || 5;
+  const m = ((Math.round(model.startMin + t) % 1440) + 1440) % 1440;
+  let best = null;
+  for (const s of tp.samples) {
+    if (s.air_c == null || !Number.isFinite(s.air_c)) continue;
+    const d = Math.abs(s.lmst_min + bin / 2 - m);
+    if (d <= bin && (!best || d < best.d)) best = { c: s.air_c, d };
+  }
+  return best ? best.c : null;
 }
 
 export function lmst(model, t) {

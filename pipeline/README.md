@@ -148,9 +148,11 @@ Stand 14.11.2026, abends. Das ist der geplante Python-Fallback für die Engine. 
 
 - **Aufruf:** `py -3.11 pipeline/rems_daylight.py`. Nur Standardbibliothek. Der Feed wird in `data/raw/rems_weather.json` zwischengespeichert; `--feed DATEI` nimmt eine geladene Kopie, `--sol N` wählt den Sol von Hand.
 - **Ergebnis:** `sunrise_lmst`, `sunset_lmst` und `daylight_source_sol` in `frontend/public/data/scenario.json`. Fehlt die Datei, startet sie als Kopie des Platzhalters; alle anderen Felder bleiben erhalten.
-- **Welcher Sol:** standardmäßig der Sol, an dem Curiosity an der Szenario-Station stand (heute 4596, 11.07.2025: Aufgang 05:47, Untergang 17:31 LMST). Fehlen dort Zeiten, nimmt das Skript den nächsten Sol mit Zeiten.
+- **Welcher Sol:** Ohne `--sol` nimmt das Skript den Sol, an dem Curiosity an der Szenario-Station stand. Fehlen dort Zeiten, nimmt es den nächsten Sol mit Zeiten.
+  - Seit dem 15.11.2026 läuft es mit `--sol 4839` (18.03.2026: Aufgang 05:39, Untergang 17:55 LMST).
+  - Grund: Die Lufttemperatur in `frontend/public/data/temperature.json` (`backend/rems/`) stammt von diesem Sol, und die Konsole soll kein Wetter von zwei verschiedenen Tagen zeigen.
 - **Annahme:** Die EVA liegt auf einem künftigen Sol (`sol` bleibt). Die Sonnenzeiten eines gemessenen Tages zu übernehmen, ist eine Annahme und steht so in `sources`. Über die Boxwork-Kampagne (Sol 4591–4839) liegt der Untergang zwischen 17:20 und 17:55 LMST; die Crew ist im Demo-Lauf um 14:58 zu Hause.
-- **Neu laufen lassen,** wenn sich die Szenario-Station oder ihr Sol ändert.
+- **Neu laufen lassen** nur zusammen mit einer neuen Temperatur-Datei vom selben Sol: `py -3.11 pipeline/rems_daylight.py --sol <Sol der Temperatur>`.
 
 ## Stolperstellen
 

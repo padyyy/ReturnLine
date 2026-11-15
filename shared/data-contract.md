@@ -31,6 +31,7 @@ Folder `frontend/public/data/` unless noted.
 | `routes.json` | per station `i`: `out` (habitat → station) and `ret` (station → habitat), zones penalized. Each a track of vertices `{lon, lat, d_m, t_min, elev_m, slope_deg}` plus totals `length_m`, `minutes`, `zone_m` (must be 0), `max_slope_deg`, `max_ttb_min` | engine (elevation and slope sampled by pipeline) | target picker, crew position over time, heading, remaining distance and time, elevation profile, rules panel |
 | `radio_check.json` | per leg: longest gap (min) and the gap segments, from the DEM line-of-sight sampling | pipeline | rules panel: the picked station's own legs when listed under `stations`, otherwise the top-level `longest_gap_min`; fails above `radio_gap_max_min` |
 | `curiosity_comparison.json` | mean deviation (leave-one-out), straight-line baseline, number of drives | engine | info row |
+| `temperature.json` | REMS air temperature of one sol: five-minute LMST medians of quality-filtered measurements (`samples[].air_c`, null where there is none), source URL and hash; separately labeled model estimates (`air_model_c`) that the console never shows | `backend/rems/rems_temperature.py` (Paul) | info row "Air temperature now": the measurement at the same local time, or "no measurement"; information only, never a gate |
 
 ## What the sketches compute in the browser, and the replacement
 
