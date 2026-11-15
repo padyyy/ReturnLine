@@ -10,7 +10,7 @@ ReturnLine
 
 ## High-Level Project Summary
 
-ReturnLine is a planning and rehearsal console for one Marswalk to the boxwork ridges of Mount Sharp in Gale crater, where NASA's Curiosity rover worked in 2025 and 2026. It is built for habitat control: the crew member inside the habitat who directs two suited astronauts outside. For every 10 m of a 4.75 km × 4.76 km area it knows the walking time back to the habitat, computed from NASA orbital elevation data with a walking speed that depends on the slope. From that it draws the return area: the ground from which the crew can still get home in time. Three limits shape it: NASA's rule that an injured crew member must reach shelter within 60 minutes, the life support left, and sunset. Four safety rules can each say NO-GO. Protected zones around sensitive science sites keep Earth microbes away from the evidence, but only while safety allows. When a crew member is injured and the only way home in time crosses a zone, habitat control overrides, and the entry is logged. A scripted rehearsal shows all of this in about 90 seconds.
+ReturnLine is a planning and rehearsal console for one Marswalk to the boxwork ridges of Mount Sharp in Gale crater, where NASA's Curiosity rover worked in 2025 and 2026. It is built for habitat control: the crew member inside the habitat who directs two suited astronauts outside. For every 10 m of a 4.75 km × 4.76 km area it knows the walking time back to the habitat, computed from NASA orbital elevation data with a walking speed that depends on the slope. From that it draws the return area: the ground from which the crew can still get home in time. Three limits shape it: NASA's rule that an injured crew member must reach shelter within 60 minutes, the life support left, and sunset. Four safety rules can each say NO-GO. A protected zone around sensitive science ground keeps Earth microbes away from the evidence, but only while safety allows: every entry is shown and logged. Habitat control follows the walk on the same read-only views the crew sees, a forearm tablet and a helmet head-up display. A step-by-step rehearsal plays an injured crew member's ABORT on the real elevation data.
 
 Explore Mars. Return Safely. Preserve the Evidence.
 
@@ -42,17 +42,21 @@ The user is **habitat control**. Every action in ReturnLine is a decision of thi
    - back before sunset.
 
    The verdict is GO, GO with constraints, NO-GO with the first rule that failed, or NO DATA. It is a recommendation; the decision stays with habitat control.
-2. **Watch the return area.** For the first five hours of a 6-hour spacewalk, the 60-minute rule is the tightest limit, so the area stays put. Late in the walk, life support takes over and the area shrinks. It shrinks along the terrain, around slopes and hollows, not in circles.
+2. **Watch the return stages.** A band along the route shows, for every 10 m, whether the crew could still get home in time from there: green with 15 minutes or more to spare, yellow with less, red no longer in time. For the first five hours of a 6-hour spacewalk, the 60-minute rule is the tightest limit. Late in the walk, life support takes over and the band changes colour.
 3. **Rehearse what goes wrong.** A demo plays six steps with subtitles:
-   1. Plan the walk: GO.
+   1. Plan the walk to Valle de la Luna / Nevado Sajama, where Curiosity drilled: GO with constraints. The station lies inside the boxwork protection zone, so the route runs 54 m inside it, and that entry is logged.
    2. Jump to EVA hour 4:45 at the stop.
-   3. The return area pulls away as life support runs low.
-   4. The crew drifts toward a protected zone. The console warns, and habitat control reroutes; the detour shows in minutes.
-   5. A crew member is injured and walking speed halves. The return area collapses. The protected way home now takes too long (⟨57⟩ minutes against a limit of ⟨54⟩); only the way through a protected zone fits (⟨52⟩ minutes).
-   6. Habitat control confirms ABORT. The crew gets home, and the log keeps the record: "Override logged · ⟨157⟩ m inside Protected site B · reason: ABORT".
+   3. The crew heads home at 14:00 LMST. Less than an hour of life support is left, so life support now sets the return limit.
+   4. On the way home, the helmet display counts down life support.
+   5. A crew member is injured and walking speed halves. An injury means ABORT: return to shelter now. At half speed the way home takes 6 minutes, well within the 54 minutes of life support left.
+   6. The crew is home at 14:12 LMST with 48 minutes of life support left. The log keeps the record: "ABORT logged · no override needed", because the way home stays outside the protected zone.
+
+   Each step can be played on its own, stepped back, or auto-played; the right column shows what the crew sees at that moment.
 4. **Show what the crew sees.** Touch screens work poorly in pressurized suit gloves [GECO], so the crew displays have no touch input. There are two:
-   - a forearm cuff display with hardware keys, showing the key values or a heading-up map;
+   - a forearm tablet with four hardware keys: a heading-up navigation map, zoom, a switch between base maps and a data sheet with the key values and the elevation profile;
    - a helmet head-up display: a compass with home and target, the return stage and up to three warnings.
+
+   "Start route" runs any planned walk in this navigation view: way out, the planned stay, and the way home.
 
 ### A fixed order, not a score
 
@@ -82,13 +86,13 @@ Crew safety comes first, then planetary protection, then science. Nothing is wei
   - 1.5 km/h on level ground (NASA's lunar planning uses about 2 km/h [xEVA]; our slowdown for Mars is informed by suited walking tests [EWT]);
   - walking speed halved for an injured crew member;
   - 6 hours of life support.
-- **Hand-picked layout.** We chose these ourselves: the habitat site, which Curiosity waypoints become protected sites (they are not Curiosity's drill sites; its real drill holes, Valle de la Luna and Nevado Sajama, are marked on the map as information and lie between the two sites), the zone size (⟨80⟩ m), and the stop the rehearsal uses. We searched the real elevation grid for a layout where the injury story actually happens. With other choices, the same tool may give a plain GO or a NO-GO. ⟨Update once the data team has delivered stations and zones.⟩
-- **Ridge mask.** The 1–2 m boxwork ridges need a 1 m ridge mask. ⟨It is in the data. / It is not in the data yet; the console says "ridge mask pending".⟩
-- **Daylight.** Sunrise and sunset ⟨come from Curiosity's REMS weather station for sol ⟨…⟩. / are placeholder values.⟩
+- **Hand-picked layout.** We chose these ourselves: the habitat site, the four stations at named places of Curiosity's boxwork campaign, and the stop the rehearsal uses. The protected zone is a boxwork protection mask ⟨team: name its source and how it was made⟩. It is small (about 0.9 ha), so on this layout the way home never has to cross it, and the rehearsal needs no override. With other choices, the same tool gives other verdicts: station 1 is a NO-GO because of a 10.3-minute radio gap.
+- **Ridge mask.** The 1–2 m boxwork ridges need a 1 m ridge mask. It is not in the data yet; the console says "ridge mask pending".
+- **Daylight.** Sunrise and sunset come from Curiosity's REMS weather station for sol 4839 and are used for the EVA sol. The EVA sol number itself is a placeholder; the header says "Placeholder data".
 - **Radio.** The radio check samples line of sight along the route only. There is no full viewshed and no relays.
 - **Radiation.** The dose is shown as information: 0.64 mSv per day, measured by Curiosity's RAD instrument [Hassler]. It is not a rule.
-- **Curiosity.** ⟨Curiosity comparison: deliver the number or delete this point.⟩ We say "compared with Curiosity", never "validated": a rover's drives are not an astronaut's route.
-- **Protected zones.** The idea of protected zones comes from planetary protection guidance for human missions to Mars [COSPAR, NID]. Our zones are simple buffers, not an implementation of those policies.
+- **Curiosity.** We do not compare our routes with Curiosity's drives yet; the console says "not available". A rover's drives are not an astronaut's route. Curiosity's pictures appear in the station details as Curiosity's own view, never as the crew's.
+- **Protected zones.** The idea of protected zones comes from planetary protection guidance for human missions to Mars [COSPAR, NID]. Our zone is a simple mask, not an implementation of those policies.
 - **No outside testing.** Astronauts have not tested ReturnLine, and nobody, including NASA, endorses it.
 
 ### Why it matters
@@ -108,7 +112,7 @@ Crew safety comes first, then planetary protection, then science. Nothing is wei
 
 **Prior research.** Before kickoff we chose the challenge and the site and researched NASA data sources and EVA rules. All code, designs and results were made during the hackathon, from 14 November 2026 at 9:00.
 
-**AI use.** AI coding assistants wrote a large part of the code and documentation, directed and reviewed by the team: OpenAI Codex, and Anthropic Claude Code with Claude Opus 5.5. Every AI contribution is logged in the repository in `docs/ai-log/` (⟨81⟩ entries so far). Commits made with Claude Code carry a co-author line. All map data come from the sources below. No image, video or audio in this project was generated by AI. ⟨Confirm for the video.⟩
+**AI use.** AI coding assistants wrote a large part of the code and documentation, directed and reviewed by the team: OpenAI Codex, and Anthropic Claude Code with Claude Opus 5.5. Every AI contribution is logged in the repository in `docs/ai-log/` (192 entries on 15 November 2026, 14:45). Commits made with Claude Code carry a co-author line. All map data come from the sources below. No image, video or audio in this project was generated by AI. ⟨Confirm for the video.⟩
 
 ## Use of Super Intelligence (SI)
 
@@ -133,19 +137,23 @@ Yes. We used AI tools as follows:
   - Built from HiRISE, CTX and HRSC elevation models, tied to MOLA.
   - Used for elevation, slope, walking times and the radio line-of-sight check.
 - **[MMGIS] Curiosity traverse and waypoints**, NASA JPL MMGIS: https://mars.nasa.gov/mmgis-maps/MSL/Layers/json/MSL_traverse.json and https://mars.nasa.gov/mmgis-maps/MSL/Layers/json/MSL_waypoints.json
-  - Used for Curiosity's route through the boxwork campaign (sols 4591–4839) and the positions of the stops, the protected sites and Curiosity's drill holes.
-- **[Drill holes] NASA Curiosity mission blog**, for Curiosity's real drill holes in the boxwork campaign, marked on the map:
+  - Used for Curiosity's route through the boxwork campaign (sols 4591–4839) and the positions of the stops.
+- **[Curiosity pictures] NASA Curiosity mission blog and JPL**, for the station names and the Curiosity pictures in the station details:
+  - PIA26559, Curiosity's first 360-degree view of boxwork patterns: https://www.jpl.nasa.gov/images/pia26559-curiositys-first-360-degree-view-of-boxwork-patterns/
+  - Sols 4668–4674, Laguna Escondida and Laguna Socompa: https://science.nasa.gov/blog/curiosity-blog-sols-4668-4674-winding-our-way-along/
+  - Sols 4695–4701, Valle de la Luna: https://science.nasa.gov/blog/curiosity-blog-sols-4695-4701-searching-for-answers-at-monte-grande/
+  - Sols 4716–4722, Nevado Sajama: https://science.nasa.gov/blog/curiosity-blog-sols-4716-4722-drilling-success-at-nevado-sajama/
+- **[Drill holes] NASA Curiosity mission blog**, for Curiosity's drill campaign at the rehearsal station:
   - Sols 4689–4694, Valle de la Luna: https://science.nasa.gov/blog/curiosity-blog-sols-4689-4694-drill-in-the-boxwork-unit-is-go/
   - Sols 4709–4715, Nevado Sajama: https://science.nasa.gov/blog/curiosity-blog-sols-4709-4715-drilling-high-and-low-in-the-boxwork-unit
   - Sols 4804–4811, Nevado Sajama 2: https://science.nasa.gov/blog/curiosity-blog-sols-4804-4811-kicking-off-the-final-phase-of-boxwork-exploration
-- **[REMS] Curiosity REMS weather feed**, NASA JPL: https://mars.nasa.gov/rss/api/?feed=weather&category=msl&feedtype=json. Used for sunrise and sunset. ⟨Delete if the data team does not deliver REMS.⟩
+- **[REMS] Curiosity REMS weather feed**, NASA JPL: https://mars.nasa.gov/rss/api/?feed=weather&category=msl&feedtype=json. Used for sunrise and sunset (sol 4839).
 - **[Hassler] Curiosity RAD measurement.** Hassler, D. M. et al., 2014, "Mars' Surface Radiation Environment Measured with the Mars Science Laboratory's Curiosity Rover", *Science* 343, 1244797. https://doi.org/10.1126/science.1244797. Used for the dose rate, 0.64 mSv per day.
 - **[xEVA] NASA, Exploration EVA System Concept of Operations**, EVA-EXP-0042 Rev B, 2020: https://www.nasa.gov/wp-content/uploads/2017/02/eva-exp-0042_xeva_system_con_ops_rev_b_final_dtd_10192020_ref_doc.pdf
   - Used for the 60-minute safe-haven rule, the 20° slope requirement, EVA duration, the radio-loss procedure (§9.5) and the role of habitat control.
 - **[EWT] Norcross, J. et al., 2009, "Feasibility of Performing a Suited 10-km Ambulation on the Moon: Final Report of the EVA Walkback Test (EWT)"**, NASA TP-2009-214796. Used for suited walking speed.
 - **[GECO] Adams, R. J. et al., 2013, "Glove-Enabled Computer Operations (GECO): Design and Testing of an Extravehicular Activity Glove Adapted for Human-Computer Interface"**, NASA NTRS 20130014736: https://ntrs.nasa.gov/citations/20130014736. Used as the reason for the crew displays without touch input.
 - **NASA Space Apps 2026 challenge** "Interplanetary Survival Guide: Martian Map": https://www.spaceappschallenge.org/2026/challenges/interplanetary-survival-guide-martian-map/
-- ⟨If the stations get their reasons from NASA's boxwork blog posts: add each post used.⟩
 
 ## Space Agency Partner Data and Other References
 
@@ -188,8 +196,9 @@ Yes. We used AI tools as follows:
 - **Der Punkt „Plan review before the event“ (LLM-Council) bleibt drin.** Das Council-Urteil liegt öffentlich im Repo (`docs/preparation/council-urteil-prototyp.md`, `docs/preparation/preparations.md`), und die Antwort muss dazu passen.
 
 **Zahlen.** Nur aus den committeten Dateien in `frontend/public/data/` übernehmen.
-- Die Demo-Zahlen in `⟨…⟩` stammen aus dem Platzhalter-Layout vom 15.11.2026, 01:00 Uhr: Warnung 5:05, Verletzung 5:06, geschützter Heimweg 57 min gegen Grenze 54 min, Weg durch die Zone 52 min, 157 m in Protected site B, zu Hause 5:58.
-- Sobald das Datenteam Stationen und Zonen liefert, ändern sie sich: `frontend/scripts/find-scenario.mjs` neu laufen lassen und die Werte hier ersetzen.
+- Stand 15.11.2026, 14:50: Seite auf Alex' Konsole (Branch `navigation-view-/-hud`) umgestellt. Die Demo-Zahlen stammen aus deren Daten: Station 3 Valle de la Luna / Nevado Sajama, 54 m in der Schutzmaske (geplant, geloggt), Rückweg ab 14:00, Verletzung 5:06 (14:06), Heimweg 6 min bei halbem Tempo, 54 min Lebenserhaltung übrig, zu Hause 14:12 mit 48 min. Kein Override: Auf diesem Raster sind `ttb_penalized` und `ttb_allowed` in jeder Zelle gleich.
+- Das Video zeigt die alte Konsole von main (Override durch Protected site B). Video und Demo-Link müssen dasselbe zeigen, sonst neu aufnehmen.
+- Offen: wie die Boxwork-Schutzmaske entstanden ist (Quelle eintragen).
 
 **Checkliste vor „Submit for Judging“** (Heilbronn: Checkpoint So 14:30, Abgabe So 15:45):
 - [ ] Alle `⟨…⟩` gefüllt oder gestrichen. Kein „validated“ im Text.
