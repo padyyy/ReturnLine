@@ -15,6 +15,7 @@ export const st = {
   rerouted: false,
   rerouteAt: null,     // EVA minute when habitat control sent the reroute
   injuredAt: null,     // EVA minute of the injury
+  slow: 1,             // times home are multiplied by this after the injury (1 / injury_factor)
   abort: false,
   abortAt: null,       // EVA minute when habitat control confirmed the ABORT
   done: false,
@@ -26,7 +27,7 @@ export const st = {
 };
 
 export function resetRun(target) {
-  Object.assign(st, { phase: 'plan', target, beat: 0, t: 0, retStart: null, drift: false, driftAt: null, rerouted: false, rerouteAt: null, injuredAt: null, abort: false, abortAt: null, done: false, skin: 'values', cuffMode: 'values' });
+  Object.assign(st, { phase: 'plan', target, beat: 0, t: 0, retStart: null, drift: false, driftAt: null, rerouted: false, rerouteAt: null, injuredAt: null, slow: 1, abort: false, abortAt: null, done: false, skin: 'values', cuffMode: 'values' });
 }
 
 // The six scripted beats belong to the scenario station; other targets navigate without events.
@@ -35,18 +36,26 @@ export const isScripted = (model) => st.target != null && st.target === scenario
 
 export const route = (model) => (st.target == null ? null : model.routes.get(st.target));
 export const station = (model) => model.stations.find((s) => s.n === st.target) || null;
-export const walkFactor = (t = st.t) => (st.injuredAt != null && t >= st.injuredAt ? 2 : 1);
+export const walkFactor = (t = st.t) => (st.injuredAt != null && t >= st.injuredAt ? st.slow : 1);
 export const warnM = (model) => model.sc.zone_warn_m ?? 10;
 
-// Track time on a leg started at EVA minute t0; after the injury the crew covers half the track per minute
+// The injury (beat 5): from now on the crew walks at injury_factor of its speed (scenario.json, a
+// labeled assumption), so every time home grows by 1 / injury_factor.
+export function injure(model, t = st.t) {
+  const k = Number(model.sc.injury_factor);
+  st.injuredAt = t;
+  st.slow = k > 0 && k <= 1 ? 1 / k : 2;
+}
+
+// Track time on a leg started at EVA minute t0; after the injury the crew covers less track per minute
 function legTime(t0, t) {
-  if (st.injuredAt != null && t > st.injuredAt) return Math.max(0, st.injuredAt - t0) + (t - Math.max(st.injuredAt, t0)) / 2;
+  if (st.injuredAt != null && t > st.injuredAt) return Math.max(0, st.injuredAt - t0) + (t - Math.max(st.injuredAt, t0)) / st.slow;
   return t - t0;
 }
 function legTimeInv(t0, tt) { // track minutes -> EVA minute
   if (st.injuredAt == null || t0 + tt <= st.injuredAt) return t0 + tt;
   const base = Math.max(st.injuredAt, t0);
-  return base + (tt - (base - t0)) * 2;
+  return base + (tt - (base - t0)) * st.slow;
 }
 
 // ---------- beat 4: the scripted drift, as in the design sketch ----------
@@ -146,6 +155,27 @@ export function abortTrack(model) {
   const key = `${st.target}|${st.abortAt}|${st.retStart}|${st.injuredAt}|${st.drift}|${st.rerouteAt}`;
   if (abortMemo.key !== key) abortMemo = { key, track: pointerTrack(model, positionAt(model, st.abortAt, false).p, 'allowed') };
   return abortMemo.track;
+}
+
+// Beat 5: the two ways home from where the crew stood when the injury happened, at injured speed,
+// against the return limit at that moment. Both follow the engine's pointers (zones penalized, zones
+// allowed); the browser computes no route. null without the grid or before the injury.
+let optMemo = { key: '', v: null };
+export function injuryOptions(model) {
+  if (st.injuredAt == null || !model.grid || !route(model)) return null;
+  const key = `${st.target}|${st.injuredAt}|${st.slow}|${st.retStart}|${st.drift}|${st.rerouteAt}`;
+  if (optMemo.key === key) return optMemo.v;
+  const p = positionAt(model, st.injuredAt, false).p;
+  const lim = limits(model, st.injuredAt);
+  const way = (which) => {
+    const T = ttbAt(model, p, which);
+    const track = Number.isFinite(T) ? pointerTrack(model, p, which) : null;
+    if (!track) return null;
+    const min = T * st.slow;
+    return { which, track, min, ok: min <= lim.L, zones: zoneHits(model, track).map((h) => h.zone), lsLeft: model.ls - st.injuredAt - min };
+  };
+  optMemo = { key, v: { lim, protectedWay: way('penalized'), throughWay: way('allowed') } };
+  return optMemo.v;
 }
 
 // Where the crew is and what it is doing at EVA time t

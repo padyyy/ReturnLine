@@ -2,6 +2,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { gridBounds, M_PER_DEG } from './model.js';
 import { contour } from './contour.js';
+import { icon, R, esc } from './format.js';
 
 const MARS_RADIUS_M = 3396190;
 // Leaflet's plate carrée CRS with the Mars radius. This fixes map.distance() and the scale bar
@@ -207,6 +208,28 @@ export function createMap(el, data, model) {
     L.polyline(pts, { color, weight: w, dashArray: kind === 'preview' ? '8 5' : null, renderer: svg, interactive: false }).addTo(layers.routes);
   }
 
+  // Beat 5: the two ways home after the injury, dashed because neither is chosen yet (design sketch).
+  // Red pencil for the way through the zone, graphite for the protected one; the label carries the
+  // injured minutes and the fit as a word and a mark, so colour is never the only signal.
+  function drawOptions(options) {
+    const ways = [options.protectedWay, options.throughWay].filter((w) => w && (w.which === 'penalized' || w.zones.length));
+    const along = (track, f) => track.vertices.find((q) => q.d_m >= track.length_m * f) || track.vertices[track.vertices.length - 1];
+    const marks = ways.map((w) => ({ w, at: along(w.track, w.which === 'penalized' ? 0.62 : 0.78) }));
+    const east = marks.length > 1 ? Math.max(...marks.map((m) => m.at.lon)) : null;
+    for (const { w, at } of marks) {
+      const zone = w.which === 'allowed';
+      const pts = trackLatLngs(w.track);
+      L.polyline(pts, { color: '#EDF0E6', weight: zone ? 7 : 6, opacity: 0.9, renderer: svg, interactive: false }).addTo(layers.routes);
+      L.polyline(pts, { color: zone ? '#C8361F' : '#2B2D2F', weight: zone ? 3.6 : 2.6, dashArray: zone ? '10 5' : '8 5', renderer: svg, interactive: false }).addTo(layers.routes);
+      const name = zone ? `Through ${esc(w.zones[0].name)}` : 'Protected route';
+      const right = east == null || at.lon === east;
+      L.tooltip({ permanent: true, direction: right ? 'right' : 'left', className: `map-lbl opt${zone ? ' opt-zone' : ''}`, offset: [right ? 12 : -12, 0] })
+        .setLatLng(ll(at))
+        .setContent(`${icon(w.ok ? 'check' : 'cross')}${name} · ${R(w.min)} min · ${w.ok ? 'fits' : 'too long'}`)
+        .addTo(layers.routes);
+    }
+  }
+
   // room the floating panels take, so the plan is fitted into the free part of the map
   function overlayPad() {
     const wrap = el.parentElement;
@@ -220,21 +243,26 @@ export function createMap(el, data, model) {
     fitPlan() { const p = overlayPad(); map.fitBounds(planBounds(), { paddingTopLeft: p.tl, paddingBottomRight: p.br, maxZoom: 18 }); },
     setArea,
     setGrid,
-    showRoutes(route, { ret = false, preview = false, abort = null, drift = null, reroute = null, rerouteLabel = null, ring = null } = {}) {
-      const key = route ? [route.station, ret, preview, abort?.minutes.toFixed(3), drift?.vertices.length, reroute?.minutes.toFixed(3), rerouteLabel, ring?.lat].join('|') : '';
+    showRoutes(route, { ret = false, preview = false, abort = null, drift = null, reroute = null, rerouteLabel = null, ring = null, options = null } = {}) {
+      const opt = options ? [options.protectedWay?.min, options.throughWay?.min].map((m) => m?.toFixed(2)).join('/') : '';
+      const key = route ? [route.station, ret, preview, abort?.minutes.toFixed(3), drift?.vertices.length, reroute?.minutes.toFixed(3), rerouteLabel, ring?.lat, opt].join('|') : '';
       if (key === routeKey) return;
       routeKey = key;
       layers.routes.clearLayers();
       if (!route) return;
-      drawTrack(route.out, preview ? 'preview' : 'plan');
-      if (ret) drawTrack(route.ret, reroute ? 'faded' : 'plan');
-      if (drift) drawTrack(drift, 'drift');
+      // while habitat control decides between the two ways home (beat 5), the walked history steps
+      // back so the protected way does not hide under the reroute it shares
+      const deciding = !!options;
+      drawTrack(route.out, preview ? 'preview' : deciding ? 'faded' : 'plan');
+      if (ret) drawTrack(route.ret, reroute || deciding ? 'faded' : 'plan');
+      if (drift) drawTrack(drift, deciding ? 'faded' : 'drift');
       if (reroute) {
-        drawTrack(reroute, 'plan');
-        if (rerouteLabel) L.tooltip({ permanent: true, direction: 'right', className: 'map-lbl', offset: [14, 10] }).setLatLng(ll(reroute.vertices[0])).setContent(rerouteLabel).addTo(layers.routes);
+        drawTrack(reroute, deciding ? 'faded' : 'plan');
+        if (rerouteLabel && !deciding) L.tooltip({ permanent: true, direction: 'right', className: 'map-lbl', offset: [14, 10] }).setLatLng(ll(reroute.vertices[0])).setContent(rerouteLabel).addTo(layers.routes);
       }
       // finding ring (DESIGN.md signature): red pencil around the place of the warning, pixel-sized
       if (ring) L.circleMarker(ll(ring), { radius: 17, color: '#C8361F', weight: 2.4, fill: false, renderer: svg, interactive: false }).addTo(layers.routes);
+      if (options) drawOptions(options);
       if (abort) drawTrack(abort, 'abort');
     },
     setStation(n, state) {

@@ -3,7 +3,7 @@ import './styles/app.css';
 import { loadData } from './data.js';
 import { buildModel } from './model.js';
 import { createMap } from './map.js';
-import { st, route, crewState, resetRun, scenarioStation, isScripted, limits, walkFactor, abortTrack, script, rerouteTrack, detourMin } from './sim.js';
+import { st, route, crewState, resetRun, scenarioStation, isScripted, limits, walkFactor, abortTrack, script, rerouteTrack, detourMin, injure, injuryOptions } from './sim.js';
 import { renderCrew, crewFrame, cuffKey } from './crew.js';
 import { BEATS, SKIN_FOR_BEAT, CUFF_MODE_FOR_BEAT } from './beats.js';
 import * as ui from './ui.js';
@@ -33,6 +33,8 @@ function renderMap() {
       reroute: rerouteTrack(model),
       rerouteLabel: det != null ? `Reroute · +${Math.max(0, Math.round(det))} min` : null,
       ring: sp && st.driftAt != null && st.t >= st.driftAt ? sp.D : null,
+      // beat 5 until habitat control confirms: both ways home, labeled with injured minutes
+      options: st.injuredAt != null && st.abortAt == null ? injuryOptions(model) : null,
     });
     // once home, the crew is inside: the habitat marker stands for it
     if (st.done) mapApi.setCrew(null);
@@ -123,7 +125,7 @@ async function playDemo() {
       await runClock(st.t + 2, tok);
     }
     await sleep(1000, tok);
-    st.injuredAt = st.t;
+    injure(model);
     beat(5);
     await sleep(5000, tok);
     beat(6);
@@ -170,7 +172,7 @@ function goBeat(n) {
     if (sp) { st.drift = true; st.driftAt = sp.tD; st.rerouted = true; st.rerouteAt = sp.tD + 0.5; st.t = st.rerouteAt; }
     else { st.driftAt = st.t + 1; st.t += 2; }
   }
-  if (n >= 5) { st.t += 1.5; st.injuredAt = st.t; }
+  if (n >= 5) { st.t += 1.5; injure(model); }
   if (n >= 6) { st.abort = true; st.abortAt = st.t; st.t += crewState(model).backMin; st.done = true; st.phase = 'done'; }
   st.beat = n;
   st.skin = SKIN_FOR_BEAT[n];
