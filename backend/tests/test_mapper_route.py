@@ -81,6 +81,48 @@ class MapperRouteTests(unittest.TestCase):
             protected_penalty=10, derive=False)
         self.assertNotIn([3, 3], path)
 
+    def test_protected_variants_share_mask_and_preserve_original(self):
+        from backend.protected_routes import calculate_variants, export_comparison
+        protection = np.zeros((7, 7)); protection[1:6, 3] = 1
+        zone = self.root/'zone.tif'; self.write(zone, protection)
+        prepared = prepare_maps(self.dem, grid=self.grid, derive=False,
+                                layer_specs={'protected_zone': {'path': str(zone)}})
+        original = [row[:] for row in prepared.costs]
+        routes = calculate_variants(prepared, self.grid.lonlat_center(1, 3),
+                                    self.grid.lonlat_center(5, 3))
+        avoid, allowed = routes['avoid_protected'], routes['allow_protected']
+        self.assertEqual(avoid['summary']['protected_cells_on_path'], 0)
+        self.assertEqual(allowed['summary']['protected_cells_on_path'], 1)
+        self.assertEqual(allowed['summary']['length_m'], 4)
+        self.assertEqual(avoid['summary']['length_m'], 10)
+        self.assertEqual(prepared.costs, original)
+        for route in routes.values():
+            self.assertEqual(route['path_xy'][0], [1, 3])
+            self.assertEqual(route['path_xy'][-1], [5, 3])
+        export_comparison(self.root/'comparison', prepared, routes)
+        saved = json.loads((self.root/'comparison/routes.json').read_text())
+        self.assertEqual(saved['allow_protected']['path_xy'], allowed['path_xy'])
+
+    def test_variants_require_mask_and_preserve_hard_blocks(self):
+        from backend.protected_routes import calculate_variants
+        start, goal = self.grid.lonlat_center(1, 3), self.grid.lonlat_center(5, 3)
+        prepared = prepare_maps(self.dem, grid=self.grid, derive=False)
+        with self.assertRaises(ValueError):
+            calculate_variants(prepared, start, goal)
+        zone = self.root/'zone.tif'; self.write(zone, np.ones((7, 7)))
+        wall = np.zeros((7, 7)); wall[:, 3] = 1
+        blocked = self.root/'blocked.tif'; self.write(blocked, wall)
+        prepared = prepare_maps(self.dem, grid=self.grid, derive=False, layer_specs={
+            'protected_zone': {'path': str(zone)}, 'blocked': {'path': str(blocked)}})
+        routes = calculate_variants(prepared, start, goal)
+        self.assertTrue(all(route['path_xy'] is None for route in routes.values()))
+        for penalty in (0, -1, float('nan'), float('inf')):
+            with self.assertRaises(ValueError):
+                calculate_variants(prepared, start, goal, penalty)
+        prepared.arrays['protected_zone'][0, 0] = np.nan
+        with self.assertRaises(ValueError):
+            calculate_variants(prepared, start, goal)
+
     def test_multiple_routes_and_ordered_xy_export(self):
         base = self.grid.lonlat_center(1, 3)
         targets = [self.grid.lonlat_center(5, 3), self.grid.lonlat_center(2, 1)]

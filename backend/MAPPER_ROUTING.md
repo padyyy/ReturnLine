@@ -113,3 +113,40 @@ uv run --extra plot python -m backend.science_routes "/pfad/zum/dem.tif" --plot
 Basis und Ziele stehen in `config/science_targets.json` (oder eigener Datei mit `--targets`). `prepare_maps` lädt und normalisiert die Karten einmal; `route_prepared` führt A* für jedes Ziel unabhängig von derselben Basis aus. `route_from_maps` für einzelne Wege bleibt verfügbar. Die Höhenableitung liegt in `terrain_features.py`; alte Demo-Skripte wurden entfernt. Batch unterstützt dieselben `--grid`, `--layers`, `--walking-speed-m-s`, `--goal-dwell-seconds`, `--radiation-weight`, `--protected-penalty` und `--no-derive` wie der Einzelweg; der Aufenthalt gilt je Ziel.
 
 Ausgabe unter `backend/routes/science_routes/`: `sol_4612/path_xy.json`, `sol_4671/path_xy.json`, `sol_4709/path_xy.json`, `sol_4818/path_xy.json` sowie `paths_xy.json` mit allen vier Arrays nach Ziel-ID. `routes_summary.json` dokumentiert die Ausgangskoordinaten, Endzellen, Parameter, Längen und Routendosen; `grid.json` definiert die gemeinsame XY-Geometrie. Gemeinsame Karten werden nur einmal als NPZ gespeichert. `routes.png` zeigt die Wege zusammen. Alle Koordinatenarrays sind vom Start zur jeweiligen Zielzelle geordnet. Nicht erreichbare Wege werden als null ausgegeben. Koordinaten außerhalb des Rasters sind Eingabefehler; sie werden nicht abgeschnitten oder verschoben.
+
+## Zwei Varianten mit Schutzmaske
+
+`protected_routes.py` lädt die Karten einmal über den GeoMapper und berechnet
+zwei unabhängige A*-Wege auf demselben Raster. Die explizite `protected_zone`-
+Bindung muss nach dem Mapping für jede Zelle 0 oder 1 liefern; fehlende Werte
+werden für diesen Vergleich abgelehnt.
+
+```sh
+uv run --extra plot python -m backend.protected_routes /pfad/dem.tif \
+  --layers /pfad/layers.json --start 137.3807 -4.8106 \
+  --goal 137.379296 -4.804945 --avoidance-penalty 100 --plot
+```
+
+`layers.json`: `{"protected_zone": {"path": "/pfad/schutzmaske.tif"}}`.
+CSV-Masken können mit `column` und `radius_m` wie andere Layer gebunden werden.
+
+- `avoid_protected`: Geländekosten geschützter Zellen × (1 + Zuschlag), Standard 100.
+- `allow_protected`: Zuschlag 0. Durchquerung erlaubt, nicht erzwungen.
+- Harte Sperren bleiben in beiden Varianten bestehen. Ein endlicher Zuschlag
+  garantiert keine vollständige Umgehung, etwa wenn das Ziel in der Zone liegt.
+- Strahlungskosten werden danach addiert. A* bewertet weiterhin Schrittlänge ×
+  Kosten der Zielzelle; die Startzelle hat keine Eintrittskosten.
+
+API: `calculate_variants(prepared, start_lonlat, goal_lonlat, avoidance_penalty=100)`.
+`with_protected_penalty` erzeugt neue Kostenraster aus den in `PreparedMaps.terrain_costs`
+gespeicherten unveränderten Geländekosten, ohne erneuten Kartenimport und ohne
+Zuschläge aufzusummieren. Kartenarrays werden gemeinsam lesend verwendet.
+
+Ausgabe standardmäßig `backend/routes/protected_routes/`: `grid.json`,
+`routes.json`, je Variante `path_xy.json` und `summary.json`, bei `--plot`
+`routes.png` mit zwei Ansichten. Die Zusammenfassungen enthalten
+`protected_cells_on_path` (inklusive Start) und `protected_distance_m`
+(Schrittlängen mit geschützter Zielzelle, ohne Eintritt am Start). Diese Distanz
+folgt der Rasterkostenkonvention und ist keine exakte Polygon-Schnittlänge.
+Kosten unterschiedlicher Varianten haben unterschiedliche Zielfunktionen und
+sind nicht als gemeinsame Reisezeit vergleichbar.
