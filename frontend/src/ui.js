@@ -1,7 +1,7 @@
 // Console renderers: header, target picker, verdict, rules, info rows, station log, time budget,
 // subtitles, banner, summary and the assumptions panel. They read the model and the sim state only.
 import { hm, R, icon, numCell, srcChip, esc, setHTML } from './format.js';
-import { lmst, pickerRows, doseAt, zoneAt, zoneHits, ttbAt } from './model.js';
+import { lmst, pickerRows, doseAt, zoneAt, zoneHits } from './model.js';
 import { st, route, station, crewState, limits, homeTime, scenarioStation, isScripted, zoneEvents, zoneNow, proximity, script, detourMin, rerouteTrack, warnM, injuryOptions } from './sim.js';
 import { BEATS } from './beats.js';
 
