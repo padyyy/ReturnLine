@@ -8,7 +8,7 @@ import { BEATS } from './beats.js';
 const $ = (s) => document.querySelector(s);
 const SRC = {
   xEVA: ['NASA EVA', 'NASA, Exploration EVA System Concept of Operations, Rev B, 2020: 60-minute safe-haven rule, suit slope requirement up to 20°, radio-loss procedure.'],
-  REMS: ['REMS', 'Curiosity REMS weather feed: sunrise and sunset per sol (last reading sol 4995).'],
+  REMS: ['REMS', 'Curiosity REMS weather feed (NASA JPL): sunrise and sunset measured on a past sol. The console uses that day for the future EVA sol, which is an assumption (Assumptions panel).'],
   RAD: ['Hassler', 'Hassler et al. 2014, Science 343: 0.64 ± 0.12 mSv per day at Gale. Information only, never a gate.'],
   LOO: ['LOO', 'Leave-one-out comparison with Curiosity\'s drives (routing engine).'],
   ROUTE: ['routes', 'Precomputed routes from the routing engine (shared/data-contract.md).'],
@@ -157,7 +157,7 @@ export function renderRules(model) {
     shelter: 'max on the route · limit 60 min',
     slope: `limit ${x.lim}° · ${ridge ? 'ridge crossings: 0' : 'ridge mask pending'}`,
     radio: `${x.scope === 'all' ? 'longest on any route' : x.scope === 'route' ? 'longest on this route' : 'longest on the route'} · limit ${x.lim} min`,
-    daylight: `home before sunset ${model.sc.sunset_lmst}`,
+    daylight: `home before sunset ${model.sc.sunset_lmst}${model.sc.daylight_source_sol ? ` · measured sol ${model.sc.daylight_source_sol}` : ''}`,
   }[x.id]);
   const cell = (x) => {
     if (x.v == null) return numCell(null, '', 'from data');
@@ -311,11 +311,14 @@ export function renderAssume(model) {
     { l: 'Warning distance to a zone', v: `${warnM(model)} m`, s: ['ASSUME'], note: 'Closer than this, the console warns and habitat control can reroute (beat 4).', f: 'zone_warn_m' },
     { l: 'EVA duration', v: `${hm(sc.life_support_min)} + ${hm(sc.backup_min)} backup`, s: ['xEVA'], note: 'Life support; the backup hour is never planned with.', f: 'life_support_min' },
     { l: 'Caution margin, return stages', v: `${sc.caution_margin_min} min`, s: ['ASSUME'], note: 'Amber when less spare time than this is left (rule B).', f: 'caution_margin_min' },
-    { l: 'Sunset', v: `${sc.sunset_lmst} LMST`, s: ['REMS'], note: 'Daylight rule: home before sunset.', f: 'sunset_lmst' },
+    // measured on a past sol, used for the future EVA sol: say both, so measurement and assumption stay apart
+    { l: 'Sunset', v: `${sc.sunset_lmst} LMST`, s: sc.daylight_source_sol ? ['REMS', 'ASSUME'] : ['REMS'], f: 'sunset_lmst',
+      kind: sc.daylight_source_sol ? `Measured by Curiosity on sol ${sc.daylight_source_sol}, used for the EVA sol ${sc.sol} (assumption)` : null,
+      note: 'Daylight rule: home before sunset.' },
     { l: 'Radiation dose rate', v: `${sc.dose_rate_msv_per_day} mSv/day`, s: ['RAD'], note: 'Information only, never a gate.', f: 'dose_rate_msv_per_day' },
   ];
   $('#assume-body').innerHTML = rows.map((a) => {
-    const kind = a.s[0] === 'ASSUME' || a.s[0] === 'RADIO' ? 'Labeled assumption' : 'Sourced value';
+    const kind = a.kind ?? (a.s[0] === 'ASSUME' || a.s[0] === 'RADIO' ? 'Labeled assumption' : 'Sourced value');
     const cap = `${kind}${ph.has(a.f) ? ' · placeholder value for now' : ''} · ${a.note}`;
     return `<div class="as"><div class="as-top"><span class="as-l">${a.l}</span><output>${esc(a.v)}</output></div>` +
       `<div class="as-src">${a.s.map(src).join('')}<span class="cap">${esc(cap)}</span></div></div>`;
