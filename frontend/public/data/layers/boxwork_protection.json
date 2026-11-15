@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "pipeline/map_layers.py",
-  "created_utc": "2026-11-15T10:06:34.435716+00:00",
+  "created_utc": "2026-11-15T10:18:15.865415+00:00",
   "image": "boxwork_protection.png",
   "image_path": "data/layers/boxwork_protection.png",
   "numeric_file": "layers/boxwork_protection.f32",

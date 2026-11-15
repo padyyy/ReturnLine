@@ -8,6 +8,7 @@ import { contour } from './contour.js';
 import { LS, navView } from './layerstate.js';
 
 const BASE = import.meta.env.BASE_URL;
+export const NAMES = { on: true };                // place names on the tablet map too (Layers menu)
 export const ZOOMS = [0.45, 0.75, 1.2, 1.9, 3];   // screen px per metre on the navigation map
 const HUD_RANGE = 250;                             // metres from the HUD centre to its rim
 export const STAGE = {
@@ -150,6 +151,17 @@ export function drawNavMap(canvas, model, v, o, onReady) {
     const q = scr({ lon: c[0], lat: c[1] }), ly = q[1] + rM * s + 16, half = (z.name.length + 12) * 3.6;
     const clash = model.stations.some((sn) => { const t = scr(sn); return Math.abs(t[1] - ly + 4) < 18 && t[0] > q[0] - half - 16 && t[0] < q[0] + half + (v.targetN === sn.n ? 220 : 16); });
     if (!clash) text(`${z.name} · protected`, q[0], ly, '#2459A8', 'center');
+  }
+  // place names: small ring and the name in graphite italics (not on the small map)
+  if (NAMES.on && !o.small) {
+    ctx.font = 'italic 600 12px "Atkinson Hyperlegible Next", sans-serif';
+    for (const q of model.names) {
+      const [x, y] = scr(q);
+      if (x < -60 || y < -20 || x > w + 60 || y > h + 20) continue;
+      ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fillStyle = '#EDF0E6'; ctx.fill(); ctx.lineWidth = 1.6; ctx.strokeStyle = '#2B2D2F'; ctx.stroke();
+      text(q.name, x + (q.label === 'left' ? -8 : 8), y + 4, '#51575B', q.label === 'left' ? 'right' : 'left');
+    }
+    ctx.font = '700 13px "Atkinson Hyperlegible Next", sans-serif';
   }
   const hq = scr(model.habitat);
   text('Habitat', hq[0] + Math.max(10, 7 * s) + 6, hq[1] + 5, '#2B2D2F');

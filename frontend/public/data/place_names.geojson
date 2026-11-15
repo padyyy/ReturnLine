@@ -1,0 +1,145 @@
+{
+ "type": "FeatureCollection",
+ "generator": "pipeline/place_names.py",
+ "date": "2026-11-15",
+ "source": "backend/config/place_names.json",
+ "grid_id": "mars-eqc-76ee605d6394f17a713f",
+ "note": "Local place names of the Curiosity mission around the base: rover-visit positions, shown as labels on the console map. Not official IAU names.",
+ "position_accuracy": "approximate rover-visit positions, not surveyed targets",
+ "provenance": "NASA/JPL Curiosity mission blogs and the MMGIS rover waypoint feed, as drawn in boxwork_local_names_points_1000m_center137.3807_-4.8106.tif (added to the console on 2026-11-15)",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     137.380431,
+     -4.802964
+    ]
+   },
+   "properties": {
+    "id": "volcan_pena_blanca",
+    "name": "Volcán Peña Blanca",
+    "label": "right",
+    "cell": [
+     240,
+     196
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     137.379758,
+     -4.805857
+    ]
+   },
+   "properties": {
+    "id": "bococo",
+    "name": "Bococo",
+    "label": "right",
+    "cell": [
+     236,
+     213
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     137.381667,
+     -4.80735
+    ]
+   },
+   "properties": {
+    "id": "tapiche",
+    "name": "Tapiche",
+    "label": "right",
+    "cell": [
+     247,
+     222
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     137.381037,
+     -4.80784
+    ]
+   },
+   "properties": {
+    "id": "valle_de_la_luna_monte_grande",
+    "name": "Valle de la Luna / Monte Grande",
+    "label": "right",
+    "cell": [
+     243,
+     225
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     137.381003,
+     -4.808008
+    ]
+   },
+   "properties": {
+    "id": "nevado_sajama",
+    "name": "Nevado Sajama",
+    "label": "left",
+    "cell": [
+     243,
+     226
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     137.381003,
+     -4.813791
+    ]
+   },
+   "properties": {
+    "id": "antofagasta",
+    "name": "Antofagasta (Kraterrand)",
+    "label": "right",
+    "cell": [
+     243,
+     260
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     137.381705,
+     -4.814267
+    ]
+   },
+   "properties": {
+    "id": "atacama",
+    "name": "Atacama",
+    "label": "right",
+    "cell": [
+     247,
+     263
+    ]
+   }
+  }
+ ]
+}

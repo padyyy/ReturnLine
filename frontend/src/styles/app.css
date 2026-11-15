@@ -166,3 +166,7 @@
 b.blue { color: var(--blue); }
 .seg button:disabled { opacity: .4; cursor: default; }
 .hab-lbl { font-weight: 700; }
+
+/* place names (backend/config/place_names.json): quieter than the stations, graphite italics */
+.mk-name { display: block; width: 8px; height: 8px; border: 1.6px solid var(--graphite); border-radius: 50%; background: #EDF0E6; box-sizing: border-box; margin: 1px; }
+.mk-lbl.name { font-style: italic; font-weight: 600; color: var(--graphite-2); font-size: 12px; }

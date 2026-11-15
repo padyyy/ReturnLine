@@ -1,0 +1,16 @@
+{
+  "note": "Local place names of the Curiosity mission around the base: rover-visit positions, shown as labels on the console map. Not official IAU names.",
+  "source": "NASA/JPL Curiosity mission blogs and the MMGIS rover waypoint feed, as drawn in boxwork_local_names_points_1000m_center137.3807_-4.8106.tif (added to the console on 2026-11-15)",
+  "extracted": "Marker centres read from that GeoTIFF (0.25 m pixels, eqc around 137.3807 E / -4.8106) and converted to lon/lat on the Mars sphere R = 3396190 m",
+  "label": "side of the marker the name is written on: right unless \"left\" (as in the source picture)",
+  "position_accuracy": "approximate rover-visit positions, not surveyed targets",
+  "names": [
+    { "id": "volcan_pena_blanca", "name": "Volcán Peña Blanca", "lon": 137.380431, "lat": -4.802964 },
+    { "id": "bococo", "name": "Bococo", "lon": 137.379758, "lat": -4.805857 },
+    { "id": "tapiche", "name": "Tapiche", "lon": 137.381667, "lat": -4.80735 },
+    { "id": "valle_de_la_luna_monte_grande", "name": "Valle de la Luna / Monte Grande", "lon": 137.381037, "lat": -4.80784 },
+    { "id": "nevado_sajama", "name": "Nevado Sajama", "lon": 137.381003, "lat": -4.808008, "label": "left" },
+    { "id": "antofagasta", "name": "Antofagasta (Kraterrand)", "lon": 137.381003, "lat": -4.813791 },
+    { "id": "atacama", "name": "Atacama", "lon": 137.381705, "lat": -4.814267 }
+  ]
+}

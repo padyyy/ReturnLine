@@ -33,6 +33,8 @@ export function buildModel(d) {
     // elevation and slope from it where it covers the ground, else from the pipeline's 10 m grid
     dem: (d.layers || []).find((l) => l.role === 'elevation' && (l.detail || l.values)) || null,
     comparison: d.comparison,
+    // local place names of the Curiosity mission (labels only, approximate positions, not IAU names)
+    names: (d.names?.features || []).map((f) => ({ ...f.properties, lon: f.geometry.coordinates[0], lat: f.geometry.coordinates[1] })),
   };
 }
 

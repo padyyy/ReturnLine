@@ -76,3 +76,4 @@
   - Das Habitat ist eine feste Fläche von 10 × 10 m: seine Zelle im Konsolen-Raster (`habitatBox()` in `src/model.js`), maßstäblich auf Basiskarte, Tablet und HUD.
   - Zwei A*-Routen je Station (`routes.json`: `out`/`ret` meiden die Schutzzonen, `fastest` darf sie queren). In der Planung wählbar unter „Route“; die andere Variante erscheint blass zum Vergleich. Stationen, bei denen beide gleich sind, zeigen „Fastest“ ausgegraut.
   - Bewertung nach PRODUCT.md: Nur die vier Regeln sagen NO-GO. Eine Route durch die Schutzmaske ist „GO with constraints“ (blau, protokolliert). Die Funkregel liest `radio_check.json` je Station und Variante, Grenze `radio_gap_max_min` aus `scenario.json`.
+- Ortsnamen (15.11.2026): `public/data/place_names.geojson` (aus `../backend/config/place_names.json`) erscheint als Beschriftung auf Basiskarte und Tablet, schaltbar im Layers-Menü („Place names“). Grafit kursiv, damit sie sich von den blauen Stationen abheben.

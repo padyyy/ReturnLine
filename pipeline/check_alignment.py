@@ -150,6 +150,17 @@ def main() -> int:
     else:
         check(False, "orthophoto missing; run pipeline/ortho_overlay.py")
 
+    # place names: every one in backend/config/place_names.json sits in its GeoMapper cell
+    pn = DATA / "place_names.geojson"
+    if pn.exists():
+        src_names = json.loads((ROOT / "backend" / "config" / "place_names.json").read_text(encoding="utf-8"))["names"]
+        fc = json.loads(pn.read_text(encoding="utf-8"))
+        cells = {f["properties"]["id"]: f["properties"]["cell"] for f in fc["features"]}
+        ok = fc.get("grid_id") == grid.grid_id and all(list(grid.xy(q["lon"], q["lat"]) or []) == cells.get(q["id"]) for q in src_names)
+        check(ok, f"place names: {len(cells)} of {len(src_names)} in their GeoMapper cells on grid {fc.get('grid_id')}")
+    else:
+        check(False, "place_names.geojson missing; run pipeline/place_names.py")
+
     # the elevation grid is GeoMapper's: place the elevation maps again and compare
     if all(s["path"].exists() for s in tg.ELEVATION_SOURCES):
         import contextlib, io

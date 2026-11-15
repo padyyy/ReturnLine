@@ -9,6 +9,7 @@ import { PLAN, planOf } from './ui.js';
 import { navStart, navWire, limitsAt, NAV } from './nav.js';
 import { simStart, simWire, simJump, SIM } from './rehearsal.js';
 import { initDataTools, canRemove } from './datatools.js';
+import { NAMES } from './crewviz.js';
 import { LS, initLayers, saveLayers, moveLayer, layerById, navChoices, navViews } from './layerstate.js';
 
 const $ = (s) => document.querySelector(s);
@@ -189,6 +190,8 @@ function wire() {
   $('#ly-area').addEventListener('change', (e) => mapApi.setLayer('area', e.target.checked));
   $('#ly-zones').addEventListener('change', (e) => mapApi.setLayer('zones', e.target.checked));
   $('#ly-trav').addEventListener('change', (e) => mapApi.setLayer('traverse', e.target.checked));
+  $('#ly-names').addEventListener('change', (e) => { NAMES.on = e.target.checked; mapApi.setLayer('names', e.target.checked); });
+  if (!model.names.length) { const z = $('#ly-names').parentElement; z.classList.add('is-off'); $('#ly-names').disabled = true; }
   // map layers: one row per layer in layers/index.json (order, opacity, legend) and the tablet maps
   initLayers(model); applyLayers(); renderLayerMenu(); wireLayerMenu();
   if (!model.zones.length) { const z = $('#ly-zones').parentElement; z.classList.add('is-off'); z.lastChild.textContent = ' Protected zones · none yet'; }

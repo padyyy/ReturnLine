@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "pipeline/map_layers.py",
-  "created_utc": "2026-11-15T10:06:39.171615+00:00",
+  "created_utc": "2026-11-15T10:18:18.848234+00:00",
   "image": "radiation.png",
   "image_path": "data/layers/radiation.png",
   "numeric_file": "layers/radiation.f32",

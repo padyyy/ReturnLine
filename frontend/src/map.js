@@ -80,6 +80,7 @@ export function createMap(el, data, model, { onStation } = {}) {
     markers: L.layerGroup().addTo(map),
     crew: L.layerGroup().addTo(map),
     slope: L.layerGroup(), // off by default; switched on in the Layers menu
+    names: L.layerGroup(),  // place names (backend/config/place_names.json); switched in the Layers menu
   };
   // map layers on the console grid (pipeline/map_layers.py, GeoMapper); display only. Order, opacity and
   // which are on are set in the Layers menu (layerstate.js, main.js: setLayerStyle and setLayer).
@@ -113,6 +114,14 @@ export function createMap(el, data, model, { onStation } = {}) {
   const hb = habitatBox(model);
   L.rectangle([[hb.s, hb.w], [hb.n, hb.e]], { color: '#EDF0E6', weight: 1.6, fillColor: '#2B2D2F', fillOpacity: 1, renderer: svg, interactive: false, className: 'hab-box' }).addTo(layers.markers);
   L.tooltip({ permanent: true, direction: 'right', className: 'map-lbl hab-lbl', offset: [6, 0], interactive: false }).setLatLng([(hb.s + hb.n) / 2, hb.e]).setContent('Habitat · 10 × 10 m').addTo(layers.markers);
+
+  // place names: a small ring at the rover-visit position, the name beside it in graphite italics
+  for (const q of model.names) {
+    const left = q.label === 'left';
+    L.marker(ll(q), { interactive: false, keyboard: false, icon: L.divIcon({ className: 'mk', iconSize: [10, 10], iconAnchor: [5, 5],
+      html: `<span class="mk-name"></span><span class="mk-lbl name${left ? ' left' : ''}">${q.name.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`)}</span>` }) }).addTo(layers.names);
+  }
+  layers.names.addTo(map);
 
   const stationMarkers = new Map();
   function stationIcon(s, state) {

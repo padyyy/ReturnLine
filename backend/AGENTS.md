@@ -41,3 +41,4 @@
 - Keine Laufzeit-Abhängigkeit des Frontends von diesem Code; der Browser rechnet keine Routen.
 - Ergänze bei Implementierungen relevante Tests und dokumentiere Build, Aufruf und Prüfungen.
 - Halte diese Datei mit tatsächlichen Einstiegspunkten und Abhängigkeiten aktuell.
+- `config/place_names.json` (15.11.2026): sieben lokale Ortsnamen der Curiosity-Mission rund um die Basis (ungefähre Positionen, keine IAU-Namen), aus dem GeoTIFF `boxwork_local_names_points_1000m_center137.3807_-4.8106.tif` ausgelesen (liegt lokal in `data/raw/`). `pipeline/place_names.py` legt sie per GeoMapper aufs Konsolen-Raster.
