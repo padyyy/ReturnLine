@@ -28,17 +28,39 @@ export async function loadData() {
     load('curiosity_comparison.json', { placeholder: false }),
     fetchJson('maps/ortho_gale_1m.json').catch(() => null),
   ]);
-  // slope display layer (pipeline/mapping_bridge.py); optional, display only
-  let slopeLayer = await fetchJson('data/slope_10m.json').catch(() => null);
   if (!scenario || !stations || !routes) throw new Error('scenario, stations and routes are required');
   const grid = await loadGrid(missing, placeholders);
-  // the slope image must cover exactly the grid it was made from (pixels_per_cell pixels per cell edge)
-  const ppc = slopeLayer?.pixels_per_cell || 1;
-  if (slopeLayer && grid && (slopeLayer.width_px !== grid.header.nx * ppc || slopeLayer.height_px !== grid.header.ny * ppc)) {
-    console.warn('slope layer does not match grid.json; not drawn');
-    slopeLayer = null;
+  const layers = await loadLayers(grid);
+  const slopeLayer = layers.find((l) => l.id === 'slope')?.meta || null;
+  return { scenario, stations, zones, routes, traverse, radio, comparison, ortho, grid, layers, slopeLayer, placeholders, missing };
+}
+
+// Map layers anchored on the console grid by GeoMapper (pipeline/map_layers.py): layers/index.json lists
+// them; without the index the slope picture of mapping_bridge.py alone. A layer is drawn only when it was
+// made for this grid: its pictures cover exactly nx x ny cells and its bounds are the grid's bounds.
+async function loadLayers(grid) {
+  const index = await fetchJson('data/layers/index.json').catch(() => null);
+  const paths = index?.layers ?? ['data/slope_10m.json'];
+  const out = [];
+  for (const path of paths) {
+    const meta = await fetchJson(path).catch(() => null);
+    if (!meta) continue;
+    const ppc = meta.pixels_per_cell || 1;
+    if (grid && (meta.width_px !== grid.header.nx * ppc || meta.height_px !== grid.header.ny * ppc || (index && meta.grid_id !== index.grid_id))) {
+      console.warn(`layer ${meta.layer?.id ?? path} does not match grid.json; not drawn`);
+      continue;
+    }
+    let values = null; // the sampled values, for the readout (never read from the picture)
+    if (meta.numeric_file && grid) {
+      try {
+        const res = await fetch(BASE + 'data/' + meta.numeric_file);
+        const buf = res.ok ? await res.arrayBuffer() : null;
+        if (buf && buf.byteLength === grid.header.nx * grid.header.ny * 4) values = new Float32Array(buf);
+      } catch { /* picture only */ }
+    }
+    out.push({ id: meta.layer?.id ?? path, name: meta.layer?.id === 'slope' ? 'Slope, 10 m baseline' : meta.layer?.name ?? path, units: meta.units ?? (meta.layer?.id === 'slope' ? '°' : null), meta, values });
   }
-  return { scenario, stations, zones, routes, traverse, radio, comparison, ortho, grid, slopeLayer, placeholders, missing };
+  return out;
 }
 
 // Time-to-base grids and return pointers from the routing engine (grid spec in shared/).
@@ -62,6 +84,9 @@ async function loadGrid(missing, placeholders) {
       ttbAllowed: await bin(f.ttb_allowed || 'ttb_allowed.f32', Float32Array),
       ptrPenalized: await bin(f.ptr_penalized || 'ptr_penalized.i32', Int32Array),
       ptrAllowed: await bin(f.ptr_allowed || 'ptr_allowed.i32', Int32Array),
+      // elevation and slope per cell (pipeline); optional, for the values at the crew and the profile
+      elev: f.elev ? await bin(f.elev, Float32Array).catch(() => null) : null,
+      slope: f.slope ? await bin(f.slope, Float32Array).catch(() => null) : null,
     };
   } catch (err) {
     console.warn('grid files incomplete:', err);

@@ -1,231 +1,117 @@
 import './styles/console.css';
 import './styles/app.css';
 import { loadData } from './data.js';
-import { buildModel } from './model.js';
+import { buildModel, ttbAt, slopeAt, layerValueAt } from './model.js';
 import { createMap } from './map.js';
-import { st, route, crewState, resetRun, scenarioStation, isScripted, limits, walkFactor, abortTrack, script, rerouteTrack, detourMin } from './sim.js';
-import { renderCrew, crewFrame, cuffKey } from './crew.js';
-import { BEATS, SKIN_FOR_BEAT, CUFF_MODE_FOR_BEAT } from './beats.js';
+import { R, esc } from './format.js';
 import * as ui from './ui.js';
+import { PLAN, planOf } from './ui.js';
+import { navStart, navWire, limitsAt, NAV } from './nav.js';
+import { simStart, simWire, simJump, SIM } from './rehearsal.js';
+import { initDataTools } from './datatools.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
+const st = { side: true, bar: true };   // map only: side panel and time bar folded away or not
 
 let model;
 let mapApi;
 
-function renderMap() {
-  const r = route(model);
-  const c = crewState(model);
-  // return area, rule B: home in time from here, now (abort: zones allowed, injured: half speed)
-  mapApi.setArea({ L: limits(model).L, f: st.phase === 'plan' ? 1 : walkFactor(), which: st.abortAt != null ? 'allowed' : 'penalized' });
-  if (st.phase === 'plan') {
-    mapApi.showRoutes(r, { preview: true, ret: false });
-    mapApi.setCrew(null);
-  } else {
-    // beat 4: the drift drawn as far as the crew has walked it, the reroute and the finding ring at its end
-    const sp = st.drift ? script(model) : null;
-    const det = detourMin(model);
-    mapApi.showRoutes(r, {
-      ret: st.retStart != null,
-      abort: abortTrack(model),
-      drift: sp ? walked(sp.drift, st.t - sp.tQa) : null,
-      reroute: rerouteTrack(model),
-      rerouteLabel: det != null ? `Reroute · +${Math.max(0, Math.round(det))} min` : null,
-      ring: sp && st.driftAt != null && st.t >= st.driftAt ? sp.D : null,
-    });
-    // once home, the crew is inside: the habitat marker stands for it
-    if (st.done) mapApi.setCrew(null);
-    else mapApi.setCrew(c.pos, { red: st.injuredAt != null, label: st.injuredAt != null ? 'Crew · injured' : 'Crew' });
-  }
-  crewFrame(model); // moving parts of the crew view (navigation map, HUD)
-  model.stations.forEach((s) => {
-    const arrived = st.phase !== 'plan' && s.n === st.target && st.t >= (r?.out.minutes ?? Infinity);
-    mapApi.setStation(s.n, arrived ? 'done' : s.n === st.target ? 'target' : '');
-  });
+// ---------- planning: the base map and the panels ----------
+function renderPlanMap() {
+  mapApi.setArea({ L: limitsAt(model, PLAN.t0).L, f: 1, which: 'penalized' });
+  const P = PLAN.n == null ? null : planOf(model, PLAN.n);
+  const has = P && !P.noRoute;
+  mapApi.showRoutes(has ? P.route : null, { preview: true, label: has ? `Route to ${P.station.name} · ${R(P.walk)} min out, ${R(P.back)} back` : null });
+  mapApi.setCrew(null);
+  model.stations.forEach((s) => mapApi.setStation(s.n, s.n === PLAN.n ? 'target' : ''));
 }
-
-// The part of a timed track walked after tt track minutes
-function walked(track, tt) {
-  if (tt >= track.minutes) return track;
-  const v = track.vertices.filter((x) => x.t_min <= tt);
-  return { vertices: v.length > 1 ? v : track.vertices.slice(0, 2), minutes: tt, length_m: 0 };
-}
-
-function renderAll() {
-  ui.renderHeader(model);
-  ui.renderPicker(model);
+function renderPlan() {
+  ui.renderHeader(model, PLAN.t0);
   ui.renderVerdict(model);
+  ui.renderPicker(model);
   ui.renderRules(model);
-  ui.renderInfo(model);
-  ui.renderLog(model);
-  ui.renderBudget(model);
-  ui.renderSubs(model);
-  ui.renderBanner(model);
-  ui.renderLegendNote(model);
-  renderCrew(model);
-  renderMap();
+  ui.renderTarget(model, () => ui.renderTarget(model));
+  ui.renderPlanBar(model);
+  renderPlanMap();
+}
+function pick(n) { if (SIM.on || NAV.on) return; PLAN.n = n; renderPlan(); }
+
+// ---------- map only: fold the side panel and the time bar away ----------
+function applyPanel(which, open) {
+  st[which] = open;
+  if (which === 'side') $('.console').classList.toggle('no-side', !open);
+  else $('.mapcol').classList.toggle('no-bar', !open);
+  const b = $(`#tg-${which}`), txt = `${open ? 'Hide' : 'Show'} the ${which === 'side' ? 'side panel' : 'time bar'}`;
+  b.setAttribute('aria-expanded', String(open)); b.setAttribute('aria-label', txt); b.title = txt;
+}
+function relayout() {
+  mapApi.invalidate();
+  if (!SIM.on && !NAV.on) ui.renderPlanBar(model);
 }
 
-// ---------- demo runner: every action is a click of habitat control ----------
-let token = 0;
-let raf = 0;
-const sleep = (ms, tok) => new Promise((res, rej) => setTimeout(() => (tok === token ? res() : rej(new Error('stopped'))), ms));
-function runClock(t1, tok, speed) {
-  return new Promise((res, rej) => {
-    let last = performance.now();
-    let lastMinute = Math.floor(st.t);
-    const tick = (now) => {
-      if (tok !== token) return rej(new Error('stopped'));
-      const dt = Math.min(0.1, (now - last) / 1000);
-      last = now;
-      st.t = Math.min(t1, st.t + dt * (speed ?? st.speedX) / 60);
-      if (Math.floor(st.t) !== lastMinute) { lastMinute = Math.floor(st.t); renderAll(); } else renderMap();
-      if (st.t >= t1) { renderAll(); return res(); }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
+// info boxes: a button opens the key; a second press, Escape or a click elsewhere closes it
+function infoBox(btnSel, boxSel) {
+  const btn = $(btnSel), box = $(boxSel);
+  const set = (open) => { box.hidden = !open; btn.setAttribute('aria-expanded', String(open)); };
+  btn.addEventListener('click', (e) => { e.stopPropagation(); set(box.hidden); });
+  document.addEventListener('click', (e) => { if (!box.hidden && !box.contains(e.target)) set(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+}
+
+function startRoute() {
+  const P = PLAN.n == null ? null : planOf(model, PLAN.n);
+  if (!P || !P.ok) return;
+  navStart(model, P, () => { requestAnimationFrame(() => { relayout(); renderPlan(); }); });
+}
+function startSim() {
+  if (NAV.on || SIM.on) return;
+  closeMenus();
+  $('#btn-sim').disabled = true;
+  st.savedBar = st.bar;
+  requestAnimationFrame(() => {
+    try {
+      simStart(model, mapApi, () => { applyPanel('side', st.sideBeforeSim ?? true); applyPanel('bar', st.savedBar); relayout(); renderPlan(); requestAnimationFrame(() => { mapApi.invalidate(); mapApi.fitPlan(); }); });
+      st.sideBeforeSim = st.side;
+      applyPanel('side', true);                        // the crew view lives in the side panel
+      // the story strip takes room under the map; on a short window fold the time bar away
+      if (st.bar && $('#mapwrap').getBoundingClientRect().height < 430) applyPanel('bar', false);
+      relayout();
+      requestAnimationFrame(() => { mapApi.invalidate(); mapApi.fitPlan(); });
+    } finally { $('#btn-sim').disabled = false; }
   });
 }
-function press(sel) { const b = $(sel); if (b) b.classList.add('is-pressed'); }
-function beat(n) { st.beat = n; st.skin = SKIN_FOR_BEAT[n]; st.cuffMode = CUFF_MODE_FOR_BEAT[n] ?? 'values'; renderAll(); }
-
-async function playDemo() {
-  const tok = ++token;
-  const r = route(model);
-  st.playing = true;
-  try {
-    st.phase = 'run'; st.t = 0;
-    beat(1);
-    await runClock(r.out.minutes, tok, 240);
-    await sleep(1500, tok);
-    beat(2);
-    st.t = Math.max(st.t, 285); renderAll();
-    await sleep(5000, tok);
-    beat(3);
-    await runClock(300, tok);
-    press('#act-return'); await sleep(400, tok);
-    st.retStart = st.t; renderAll();
-    const sp = script(model); // drift toward the protected zone nearest the way home (needs the grid)
-    await runClock(sp ? sp.tQa : 312, tok);
-    await sleep(1000, tok);
-    beat(4);
-    if (sp) {
-      st.drift = true; renderAll();
-      await runClock(sp.tD, tok);                 // the crew drifts until warn metres from the zone
-      st.driftAt = sp.tD; renderAll();            // the console warns
-      await sleep(2500, tok);
-      press('#act-reroute'); await sleep(400, tok);
-      st.rerouted = true; st.rerouteAt = st.t; renderAll();
-      await runClock(st.t + 1.5, tok);            // on the engine's way around the zone
-    } else {
-      st.driftAt = st.t;
-      await runClock(st.t + 2, tok);
-    }
-    await sleep(1000, tok);
-    st.injuredAt = st.t;
-    beat(5);
-    await sleep(5000, tok);
-    beat(6);
-    await sleep(1500, tok);
-    press('#act-abort'); await sleep(400, tok);
-    st.abort = true; st.abortAt = st.t; renderAll();
-    await runClock(st.t + crewState(model).backMin, tok, 240);
-    st.done = true; st.phase = 'done'; renderAll();
-  } catch { /* stopped by the user */ }
-  st.playing = false;
-}
-
-// Any other station: out and back along the engine's tracks, no scripted events
-async function playNav() {
-  const tok = ++token;
-  const r = route(model);
-  st.playing = true;
-  try {
-    st.phase = 'run'; st.t = 0; st.skin = 'cuff'; st.cuffMode = 'map'; renderAll(); // navigation run: the cuff's map
-    await runClock(r.out.minutes, tok, 240);
-    await sleep(1500, tok);
-    press('#act-return'); await sleep(400, tok);
-    st.retStart = st.t; renderAll();
-    await runClock(st.t + r.ret.minutes, tok, 240);
-    st.done = true; st.phase = 'done'; renderAll();
-  } catch { /* stopped by the user */ }
-  st.playing = false;
-}
-
-function stop() { token++; cancelAnimationFrame(raf); st.playing = false; }
-
-// Jump to the end state of a beat (for checking the screens; the demo itself starts with Start).
-// The beats belong to the scenario station, so a jump always selects it.
-function goBeat(n) {
-  stop();
-  resetRun(scenarioStation(model));
-  const r = route(model);
-  st.phase = 'run';
-  if (n >= 1) st.t = r.out.minutes;
-  if (n >= 2) st.t = Math.max(st.t, 285);
-  const sp = n >= 3 ? (st.retStart = 300, script(model)) : null;
-  if (n >= 3) st.t = sp ? sp.tQa : 312;
-  if (n >= 4) {
-    if (sp) { st.drift = true; st.driftAt = sp.tD; st.rerouted = true; st.rerouteAt = sp.tD + 0.5; st.t = st.rerouteAt; }
-    else { st.driftAt = st.t + 1; st.t += 2; }
-  }
-  if (n >= 5) { st.t += 1.5; st.injuredAt = st.t; }
-  if (n >= 6) { st.abort = true; st.abortAt = st.t; st.t += crewState(model).backMin; st.done = true; st.phase = 'done'; }
-  st.beat = n;
-  st.skin = SKIN_FOR_BEAT[n];
-  st.cuffMode = CUFF_MODE_FOR_BEAT[n] ?? 'values';
-  renderAll();
+function closeMenus() {
+  $('#layers').hidden = true; $('#btn-layers').setAttribute('aria-expanded', 'false');
+  $('#assume').hidden = true; $('#btn-assume').setAttribute('aria-expanded', 'false');
+  $('#legend').hidden = true; $('#btn-key').setAttribute('aria-expanded', 'false');
 }
 
 function wire() {
-  $('#pick-list').addEventListener('click', (e) => {
-    const b = e.target.closest('.pick-row');
-    if (!b) return;
-    resetRun(+b.dataset.n);
-    renderAll();
-  });
-  $('#btn-start').addEventListener('click', () => { if (st.target != null && !st.playing) (isScripted(model) ? playDemo : playNav)(); });
-  $('#verdict').addEventListener('click', (e) => {
-    const b = e.target.closest('button');
-    if (!b || st.playing) return;
-    if (b.id === 'act-return') st.retStart = st.t;
-    if (b.id === 'act-reroute') { st.rerouted = true; st.rerouteAt = st.t; if (st.driftAt == null) st.driftAt = st.t; }
-    if (b.id === 'act-abort') { st.abort = true; st.abortAt = st.t; }
-    renderAll();
-  });
-  $('#tp-dots').innerHTML = BEATS.map((b) => `<button type="button" data-b="${b.n}" aria-label="Beat ${b.n}: ${b.title}">${b.n}</button>`).join('');
-  $('#tp-dots').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) goBeat(+b.dataset.b); });
-  $('#tp-prev').addEventListener('click', () => (st.beat > 1 ? goBeat(st.beat - 1) : (stop(), resetRun(st.target ?? scenarioStation(model)), renderAll())));
-  $('#tp-next').addEventListener('click', () => goBeat(Math.min(6, st.beat + 1)));
-  $$('.clock .seg button').forEach((b) => b.addEventListener('click', () => { st.speedX = +b.dataset.x; ui.renderBudget(model); }));
-  $$('.crew-head .seg button').forEach((b) => b.addEventListener('click', () => { st.skin = b.dataset.skin; renderCrew(model); }));
-  // cuff hardware keys: they change only the crew's own view
-  $('#crew-body').addEventListener('click', (e) => {
-    const k = e.target.closest('[data-key]');
-    if (!k) return;
-    const id = k.dataset.key;
-    cuffKey(model, id);
-    const again = document.querySelector(`#crew-body [data-key="${id}"]`);
-    if (again) { again.classList.add('is-pressed'); again.focus(); setTimeout(() => again.classList.remove('is-pressed'), 140); }
-  });
+  $('#navpick-list').addEventListener('click', (e) => { const b = e.target.closest('.np-row'); if (b) pick(+b.dataset.n); });
+  $('#np-stay').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; PLAN.stay = +b.dataset.stay; renderPlan(); });
+  $('#np-t0').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; PLAN.t0 = +b.dataset.t0; renderPlan(); });
+  $('#btn-start').addEventListener('click', startRoute);
+  $('#btn-sim').addEventListener('click', startSim);
+  $('#tg-side').addEventListener('click', () => { applyPanel('side', !st.side); relayout(); });
+  $('#tg-bar').addEventListener('click', () => { applyPanel('bar', !st.bar); relayout(); });
+  infoBox('#btn-key', '#legend');
+  infoBox('#nv-key', '#nv-legend');
   const lb = $('#btn-layers'), lp = $('#layers');
   lb.addEventListener('click', (e) => { e.stopPropagation(); lp.hidden = !lp.hidden; lb.setAttribute('aria-expanded', String(!lp.hidden)); });
   document.addEventListener('click', (e) => { if (!lp.hidden && !lp.contains(e.target)) { lp.hidden = true; lb.setAttribute('aria-expanded', 'false'); } });
   $('#ly-area').addEventListener('change', (e) => mapApi.setLayer('area', e.target.checked));
   $('#ly-zones').addEventListener('change', (e) => mapApi.setLayer('zones', e.target.checked));
   $('#ly-trav').addEventListener('change', (e) => mapApi.setLayer('traverse', e.target.checked));
-  // slope layer from the pipeline: only offered when its file is there
-  $('#ly-slope-row').hidden = !model.hasSlopeLayer;
-  $('#ly-slope').addEventListener('change', (e) => { mapApi.setLayer('slope', e.target.checked); $('#ly-slope-key').hidden = !e.target.checked; });
-  // collapsible map key; the choice is a per-viewer convenience, so browser storage is fine
-  const lgd = $('#legend'), lgt = $('#legend-toggle');
-  const setLegend = (open) => { lgd.classList.toggle('is-collapsed', !open); lgt.setAttribute('aria-expanded', String(open)); };
-  try { if (localStorage.getItem('rl.legend') === 'collapsed') setLegend(false); } catch { /* storage blocked */ }
-  lgt.addEventListener('click', () => {
-    const open = lgd.classList.contains('is-collapsed');
-    setLegend(open);
-    try { localStorage.setItem('rl.legend', open ? 'open' : 'collapsed'); } catch { /* storage blocked */ }
+  // map layers: one switch per layer in layers/index.json, with its legend while it is shown
+  const lm = $('#ly-maps');
+  lm.innerHTML = model.layers.length ? model.layers.map((ly) => `<label><input type="checkbox" data-layer="${esc(ly.id)}"${ly.meta.layer?.visible ? ' checked' : ''}> ${esc(ly.name)}${ly.meta.units ? `, ${esc(ly.meta.units)}` : ''}</label>` +
+    `<div class="ly-key" data-key="${esc(ly.id)}"${ly.meta.layer?.visible ? '' : ' hidden'}>${(ly.meta.legend || []).map((k) => `<span><i class="sw" style="background:rgba(${k.rgba.join(',')})"></i>${esc(k.label)}</span>`).join('')}</div>`).join('')
+    : '<span class="cap">No map layers yet. Run pipeline/map_layers.py.</span>';
+  lm.addEventListener('change', (e) => {
+    const id = e.target.dataset.layer; if (!id) return;
+    mapApi.setLayer(`layer:${id}`, e.target.checked);
+    lm.querySelector(`[data-key="${CSS.escape(id)}"]`).hidden = !e.target.checked;
   });
   // 100 m survey grid: off by default, on with ?grid=1 or the remembered choice of this viewer
   const tg = $('#tgl-grid');
@@ -241,9 +127,9 @@ function wire() {
   $('#btn-assume').addEventListener('click', () => { ap.hidden = !ap.hidden; $('#btn-assume').setAttribute('aria-expanded', String(!ap.hidden)); });
   $('#assume-close').addEventListener('click', () => { ap.hidden = true; $('#btn-assume').setAttribute('aria-expanded', 'false'); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { lp.hidden = true; ap.hidden = true; } });
+  // source cards: the chip label in orange, then why the value was chosen
   const tip = $('#tip');
   const show = (b) => {
-    // source cards as in the sketch: the chip label in yellow, then why the value was chosen
     tip.replaceChildren();
     if (b.dataset.tipLabel) { const k = document.createElement('b'); k.textContent = b.dataset.tipLabel; tip.append(k, ' · '); }
     tip.append(b.dataset.tip);
@@ -256,20 +142,47 @@ function wire() {
   document.addEventListener('mouseout', (e) => { if (e.target.closest('[data-tip]')) tip.hidden = true; });
   document.addEventListener('focusin', (e) => { const b = e.target.closest('[data-tip]'); if (b) show(b); });
   document.addEventListener('focusout', (e) => { if (e.target.closest('[data-tip]')) tip.hidden = true; });
+  // readout under the pointer: position, slope and the engine's time to the habitat
+  const ro = $('#readout');
+  mapApi.map.on('mousemove', (e) => {
+    const p = { lon: e.latlng.lng, lat: e.latlng.lat }, T = ttbAt(model, p, 'penalized'), sl = slopeAt(model, p);
+    // values of the switched-on map layers, read from their value grids
+    const shown = model.layers.filter((ly) => ly.id !== 'slope' && $(`#ly-maps input[data-layer="${CSS.escape(ly.id)}"]`)?.checked);
+    const extra = shown.map((ly) => { const v = layerValueAt(model, ly, p); return v == null ? '' : ` · ${ly.name.toLowerCase()} ${+v.toPrecision(3)}${ly.units ? ` ${ly.units}` : ''}`; }).join('');
+    ro.textContent = `${p.lon.toFixed(4)}°E  ${Math.abs(p.lat).toFixed(4)}°${p.lat < 0 ? 'S' : 'N'}` + (sl != null ? ` · slope ${sl.toFixed(1)}°` : '') +
+      (T == null ? '' : Number.isFinite(T) ? ` · ${R(T)} min to habitat` : ' · no way home') + extra;
+  });
+  mapApi.map.on('mouseout', () => { ro.textContent = ''; });
+  // the map box changes size with the panels, the story strip and the window
   let rt = 0;
-  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => ui.renderBudget(model), 150); });
+  const soon = () => { clearTimeout(rt); rt = setTimeout(relayout, 120); };
+  addEventListener('resize', soon);
+  if (window.ResizeObserver) new ResizeObserver(soon).observe($('#mapwrap'));
 }
 
 async function boot() {
   try {
     const data = await loadData();
     model = buildModel(data);
-    mapApi = createMap($('#map'), data, model);
+    mapApi = createMap($('#map'), data, model, { onStation: pick });
     ui.renderAssume(model);
     wire();
-    mapApi.fitPlan(); // after wire(): the padding depends on whether the map key is collapsed
-    const q = new URLSearchParams(location.search);
-    if (q.get('beat')) goBeat(+q.get('beat')); else renderAll();
+    navWire();
+    simWire();
+    const note = $('#legend-note');
+    note.hidden = !!model.grid && !model.grid.placeholder;
+    note.textContent = model.grid ? 'Placeholder grid: flat ground, no slope, no ridges. The routing engine replaces it.' : 'Return area and 60-minute line appear with the time-to-base grid from the routing engine.';
+    mapApi.fitPlan();
+    renderPlan();
+    // Add data: new targets and maps (datatools.js); a saved change reloads the page with the new files
+    initDataTools(model, mapApi, {
+      onStationsChanged: (n) => { if (n != null) PLAN.n = n; else if (!model.routes.has(PLAN.n)) PLAN.n = null; renderPlan(); },
+      reloadData: () => location.reload(),
+    });
+    $('#btn-sim').disabled = !model.routes.size;
+    // ?beat=1..6 opens the emergency rehearsal at the end of that step (for checking the screens)
+    const q = new URLSearchParams(location.search), b = +(q.get('beat') || 0);
+    if (b >= 1 && b <= 6) { startSim(); requestAnimationFrame(() => requestAnimationFrame(() => simJump(b))); }
   } catch (err) {
     console.error(err);
     $('#map').innerHTML = `<div class="map-message">Data could not be loaded: ${err.message}</div>`;

@@ -27,6 +27,8 @@ export function buildModel(d) {
     radio: d.radio,
     ortho: d.ortho,
     hasSlopeLayer: !!d.slopeLayer,
+    slopeLayer: d.slopeLayer || null,
+    layers: d.layers || [],
     comparison: d.comparison,
   };
 }
@@ -161,6 +163,17 @@ export function ttbAt(model, p, which = 'penalized') {
   if (i < 0) return Infinity;
   return (which === 'allowed' ? g.ttbAllowed : g.ttbPenalized)[i];
 }
+// Elevation (m) and 10 m slope (°) at p from the pipeline's grids; null when they are not loaded
+function gridValue(g, arr, p) {
+  if (!g || !arr || !p) return null;
+  const i = cellIndex(g, p);
+  const v = i < 0 ? NaN : arr[i];
+  return Number.isFinite(v) ? v : null;
+}
+export const elevAt = (model, p) => gridValue(model.grid, model.grid?.elev, p);
+export const slopeAt = (model, p) => gridValue(model.grid, model.grid?.slope, p);
+// Value of a map layer at p (pipeline/map_layers.py value grid); the slope layer reads the slope grid
+export const layerValueAt = (model, layer, p) => gridValue(model.grid, layer.values ?? (layer.id === 'slope' ? model.grid?.slope : null), p);
 // The engine's way home from p: follow the return pointers to the habitat. Times are differences of
 // the stored walking times, so slope and detours come from the engine, not from this code.
 export function pointerTrack(model, p, which = 'allowed') {

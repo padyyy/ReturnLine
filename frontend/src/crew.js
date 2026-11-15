@@ -1,199 +1,165 @@
-// Crew view: what the two crew members on the surface see, read-only, in three tabs:
-// - Values: the five values as the console shows them.
-// - Cuff: the forearm display in its hardware frame, with two modes: the values (default) and the
-//   navigation map, heading up. Its keys only change the crew's view (DATA, MAP, ZOOM +/-).
-// - HUD: the helmet HUD, a compass ring with a minimap, the return stage and up to three warnings.
-// Cuff map and HUD follow Alex's navigation sketch (docs/design/navigation-hud-sketch.html).
-import { hm, R, icon, numCell, esc } from './format.js';
-import { lmst, doseAt, maxStay, zoneDistance, zoneAt } from './model.js';
-import { st, crewState, limits, stage, station, route, proximity, detourMin, activeLeg, walkFactor, homeTime } from './sim.js';
-import { drawNavMap, hudSvg, heading, ZOOMS, STAGE } from './crewviz.js';
+// Crew views, read-only, as in Alex's navigation sketch (docs/design/navigation-hud-sketch.html):
+// the helmet HUD (compass ring, two info chips, up to three warnings), the forearm tablet's map overlays
+// (turn card, compass, return stage, key, scale) and the data sheet that fits its box without scrolling.
+// Navigation (nav.js) and the emergency rehearsal (rehearsal.js) build a view object v and call
+// renderViews(); the DOM elements are moved between the two places, so the ids are unique.
+import { hm, R, icon, esc, setHTML } from './format.js';
+import { lmst, elevAt } from './model.js';
+import { src } from './sources.js';
+import { drawNavMap, hudSvg, STAGE, bearing } from './crewviz.js';
 
-const cdNum = (v) => {
-  const m = String(v).match(/^(\S+) (min|m)$/);
-  return m ? numCell(m[1], m[2]) : numCell(v);
-};
+const $ = (s) => document.querySelector(s);
 
-function data(model) {
-  const c = crewState(model);
-  const s = station(model);
-  const t = st.t;
-  const lim = limits(model, t);
-  const d = { ls: hm(model.ls - t), sun: hm(model.sunsetEva - t), sunCap: `${model.sc.sunset_lmst} LMST`, state: 'ON PLAN', stateNum: '±0 min', cls: 'ok', fill: null };
-  if (c.where === 'habitat' || !s) {
-    Object.assign(d, { next: s ? s.name : 'No target', nextCap: s ? 'picked' : 'pick a target', nextV: '–', ttb: '0 min', ttbCap: 'at the habitat', res: '–', resCap: 'after Start' });
-    return d;
+// Up to three warnings for the HUD, most urgent first; a view may bring its own (v.warn)
+export function warnings(model, v) {
+  const w = v.warn ? v.warn.slice() : [];
+  const caution = v.caution;
+  if (v.home) return [['ok', 'check', `Crew home · ${lmst(model, v.t)} LMST`]];
+  if (v.at && v.stayLeft != null && v.stayLeft <= 10) w.push(['amber', 'warn', `Return starts in ${hm(Math.max(0, v.stayLeft))}`]);
+  if (v.stage === 'red' && !v.abortVerdict) w.push(['red', 'warn', 'Cannot get home in time · return to shelter now']);
+  else if (v.stage === 'yellow' && !v.abortVerdict) w.push(['amber', 'warn', `Under ${caution} min to spare · head home soon`]);
+  if (v.zone) {
+    if (v.zone.d <= 0) w.push(['blue', 'warn', `Inside ${v.zone.name}${v.abortRoute ? ' · override' : ''}`]);
+    else if (v.zone.d < 60) w.push(['blue', 'warn', `Protected zone ${R(v.zone.d)} m · ${v.zone.name}`]);
   }
-  if (c.where === 'out') {
-    Object.assign(d, { next: s.name, nextCap: `${R(c.pos.leftM)} m`, nextV: `${R(c.pos.leftMin)} min` });
-  } else if (c.where === 'station') {
-    Object.assign(d, { next: 'Habitat', nextCap: 'after the return starts', nextV: `${R(c.backMin)} min` });
-  } else {
-    Object.assign(d, { next: 'Habitat', nextCap: `${R(c.leftM ?? 0)} m`, nextV: `${R(c.backMin)} min` });
-  }
-  d.ttb = `${R(c.backMin)} min`;
-  d.ttbCap = c.where === 'ret' || c.where === 'home' ? 'along the way home' : 'back along the route';
-  d.res = `${R(lim.B - c.backMin)} min`;
-  d.resCap = 'at arrival';
-  if (st.done || c.where === 'home') Object.assign(d, { state: 'HOME', stateNum: '', cls: 'home', ttb: '0 min', ttbCap: 'inside' });
-  else if (st.injuredAt != null) d.fill = { instr: 'ABORT: return to shelter now', route: st.abort ? 'Route from habitat control · override logged' : 'Stand by: route from habitat control' };
-  else if (st.retStart == null && c.where === 'station' && t >= 290) Object.assign(d, { state: 'TURNAROUND DUE', stateNum: 'EVA 5:00', cls: 'due' });
-  else if (proximity(model) && !st.rerouted) Object.assign(d, { state: 'ZONE CLOSE', stateNum: `${R(proximity(model).d)} m`, cls: 'due' });
-  else if (st.rerouted && detourMin(model) != null) d.stateNum = `−${Math.max(0, R(detourMin(model)))} min`;
-  d.stage = stage(model, c.backMin, c.pos);
-  return d;
-}
-
-// What the drawn views need: position, heading, the leg being walked, target, stage, warnings
-function navState(model) {
-  const c = crewState(model);
-  const s = station(model);
-  const r = route(model);
-  const leg = activeLeg(model);
-  const homeward = leg && leg.kind !== 'out';
-  const t = st.t, lim = limits(model, t), f = st.phase === 'plan' ? 1 : walkFactor();
-  const stg = stage(model, c.backMin, c.pos);
-  const home = st.done || c.where === 'home';
-  const at = c.where === 'station';
-  const target = homeward || home || !s ? { kind: 'base', n: 'H', name: 'Habitat', ...model.habitat } : { kind: 'stn', n: s.n, name: s.name, lon: s.lon, lat: s.lat };
-  const remM = c.where === 'out' ? c.pos.leftM : c.leftM ?? 0;
-  const remMin = c.where === 'out' ? c.pos.leftMin : c.backMin ?? 0;
-  const stay = at && r ? maxStay(model, r.ret.minutes, t) : null;
-  return {
-    pos: c.pos, hd: heading(leg?.track, leg?.tt ?? 0), active: leg?.track, tt: leg?.tt ?? 0, abort: leg?.kind === 'abort',
-    outFaded: homeward && r ? r.out : null, target, home, at, stay, where: c.where,
-    stations: model.stations, habitat: model.habitat, zones: model.zones,
-    L: lim.L, f, which: st.abortAt != null ? 'allowed' : 'penalized', stage: home ? 'green' : stg?.name ?? 'green', spare: stg?.spare,
-    zoomI: st.navZoom, base: st.navBase, red: st.injuredAt != null && !home,
-    remM, remMin, ttb: c.backMin ?? 0, homeAt: homeTime(model),
-    tEva: hm(t), lmst: lmst(model, t), sun: hm(model.sunsetEva - t), ls: hm(model.ls - t), dose: doseAt(model, t).toFixed(2),
-    lsMin: model.ls - t, sunMin: model.sunsetEva - t,
-  };
-}
-
-// Up to three warnings for the HUD, most urgent first (after Alex's sketch)
-function warnings(model, n) {
-  const w = [];
-  const caution = model.sc.caution_margin_min;
-  if (st.phase === 'plan') return [['ok', 'check', 'Waiting for Start']];
-  if (n.home) return [['ok', 'check', `Crew home · ${n.lmst} LMST`]];
-  if (n.at && n.stay != null && n.stay <= 0) w.push(['red', 'warn', 'Max stay reached · start the return now']);
-  else if (n.at && n.stay != null && n.stay < caution) w.push(['amber', 'warn', `Start the return within ${hm(n.stay)}`]);
-  else if (n.stage === 'red') w.push(['red', 'warn', 'Cannot get home in time · return to shelter now']);
-  else if (n.stage === 'amber') w.push(['amber', 'warn', `Under ${caution} min to spare · head home soon`]);
-  if (st.injuredAt != null) w.push(['red', 'warn', `Crew member injured · speed ×${model.sc.injury_factor}`]);
-  const inside = zoneAt(model, n.pos), zd = zoneDistance(model, n.pos);
-  if (inside) w.push(['blue', 'warn', `Inside ${inside.name}${st.abortAt != null ? ' · override' : ''}`]);
-  else if (zd && zd.d < 60) w.push([zd.d <= (model.sc.zone_warn_m ?? 10) ? 'red' : 'blue', 'warn', `Protected zone ${R(zd.d)} m · ${zd.zone.name}`]);
-  if (n.sunMin < 90) w.push(['red', 'warn', `Sunset in ${hm(n.sunMin)}`]);
-  if (n.lsMin < 75) w.push(['red', 'warn', `Life support ${hm(n.lsMin)} left`]);
+  if (v.slope != null && v.slope > 15) w.push(['red', 'warn', `Steep ground ${R(v.slope)}° · limit 20°`]);
+  if (v.sun < 90) w.push(['red', 'warn', `Sunset in ${hm(v.sun)}`]);
+  if (v.ls < 75) w.push(['red', 'warn', `Life support ${hm(v.ls)} left`]);
   if (!w.length) w.push(['ok', 'check', 'No warnings']);
   return w.slice(0, 3);
 }
 
-function valuesSkin(d) {
-  if (d.fill) {
-    return `<div class="cd-fill"><div class="instr">${d.fill.instr}</div><div class="route">${d.fill.route}</div></div>` +
-      `<div class="cd-compact"><div>Next target<b>${d.nextV}</b>${d.next}</div><div>Time to base<b>${d.ttb}</b>${d.ttbCap}</div>` +
-      `<div>Reserve<b>${d.res}</b>${d.resCap}</div><div>Life support<b>${d.ls}</b>assumption</div><div>Time to sunset<b>${d.sun}</b>sunset</div></div>`;
-  }
-  return `<div class="cd-state ${d.cls}">${d.cls === 'ok' ? icon('check') : ''}${d.state}<span class="num">${d.stateNum}</span></div>` +
-    '<dl class="cd-vals">' +
-    `<div><dt>Next target<span class="cap">${d.next} · ${d.nextCap}</span></dt><dd>${cdNum(d.nextV)}</dd></div>` +
-    `<div><dt>Time to base<span class="cap">${d.ttbCap}</span></dt><dd>${cdNum(d.ttb)}</dd></div>` +
-    `<div><dt>Reserve<span class="cap">${d.resCap}</span></dt><dd>${cdNum(d.res)}</dd></div>` +
-    `<div><dt>Life support<span class="cap">assumption: 6:00 EVA</span></dt><dd>${cdNum(d.ls)}</dd></div>` +
-    `<div><dt>Time to sunset<span class="cap">sunset ${d.sunCap}</span></dt><dd>${cdNum(d.sun)}</dd></div></dl>`;
+function words(model, v) {
+  return { lmst: lmst(model, v.t), eva: hm(v.t), sun: hm(v.sun), ls: hm(Math.max(0, v.ls)), dose: v.dose.toFixed(2) };
+}
+const spareText = (v) => v.spareTxt || (v.spare == null ? 'needs grid' : v.spare >= 0 ? `${R(v.spare)} min spare` : 'no way home');
+
+export function tile(l, val, u, s, sk) {
+  return `<div class="dt"><div class="dt-l"><span>${l}</span>${sk ? src(sk) : ''}</div>` +
+    `<div class="dt-v">${val}${u ? `<span class="u">${u}</span>` : ''}</div>${s ? `<div class="dt-s">${s}</div>` : ''}</div>`;
 }
 
-// Forearm display: the same hardware frame for both modes; the keys are real buttons that only change this view
-function key(id, label, pressed) {
-  return `<button type="button" class="cuff-key" data-key="${id}" aria-pressed="${pressed}" aria-label="Cuff key ${label}"><span>${label}</span></button>`;
+// ---------- helmet HUD ----------
+function renderHud(model, v) {
+  $('#hud').innerHTML = hudSvg(model, v, words(model, v));
+  const t = v.target;
+  setHTML($('#hud-line'), v.hudLine ? v.hudLine
+    : v.home ? '<span>Habitat</span><span>arrived</span>'
+    : v.at ? `<span>Stn ${t.n} · return in ${hm(Math.max(0, v.stayLeft ?? 0))}</span><span>Home ${lmst(model, v.homeAt)}</span>`
+    : `<span>${t.kind === 'base' ? 'Base' : `Stn ${t.n}`} ${R(v.rem.m)} m · ${R(v.rem.min)} min</span><span>Home ${lmst(model, v.homeAt)}</span>`);
+  setHTML($('#hud-warn'), warnings(model, v).map(([cls, ic, txt]) => `<li class="${cls}">${icon(ic)}${esc(txt)}</li>`).join(''));
 }
-function cuffSkin(d) {
-  const mapMode = st.cuffMode === 'map';
-  let screen;
-  if (mapMode) {
-    screen = '<div class="cuff-screen map"><canvas class="nav-cv" aria-label="Navigation map, heading up" role="img"></canvas>' +
-      '<div class="nv-top"></div><svg class="nv-north" viewBox="0 0 34 34" aria-hidden="true"></svg>' +
-      '<div class="nv-stage"></div><div class="nv-scale"><div class="bar"></div><span></span></div></div>';
+
+// ---------- elevation profile of the way being walked ----------
+function profileSVG(model, v, W, H) {
+  const out = { svg: '', up: 0, dn: 0, ok: false };
+  const tr = v.track;
+  if (!tr || tr.vertices.length < 2) return out;
+  const vs = tr.vertices, n = vs.length, dist = vs.map((q) => q.d_m), zs = vs.map((q) => (q.elev_m != null ? q.elev_m : elevAt(model, q)));
+  if (zs.some((z) => z == null || !Number.isFinite(z))) return out;
+  out.ok = true;
+  for (let i = 1; i < n; i++) { const dz = zs[i] - zs[i - 1]; if (dz > 0) out.up += dz; else out.dn -= dz; }
+  if (W < 60 || H < 18) return out;
+  const small = H < 64;
+  const tot = Math.max(1, dist[n - 1]), zmin = Math.min(...zs), zmax = Math.max(...zs);
+  const span = Math.max(10, zmax - zmin), l = small ? 2 : 58, r = small ? 8 : 6, t = small ? 7 : 8, bt = small ? 3 : 18;
+  const PX = (m) => l + (W - l - r) * m / tot, PY = (z) => t + (H - t - bt) * (1 - (z - zmin) / span);
+  let k = 0; while (k < n - 1 && vs[k + 1].t_min <= v.tt) k++;
+  const f = k < n - 1 ? Math.max(0, Math.min(1, (v.tt - vs[k].t_min) / Math.max(1e-6, vs[k + 1].t_min - vs[k].t_min))) : 0;
+  const cur = v.home ? tot : dist[k] + (k < n - 1 ? (dist[k + 1] - dist[k]) * f : 0);
+  const zc = v.home ? zs[n - 1] : zs[k] + (k < n - 1 ? (zs[k + 1] - zs[k]) * f : 0);
+  const line = zs.map((z, j) => `${j ? 'L' : 'M'}${PX(dist[j]).toFixed(1)} ${PY(z).toFixed(1)}`).join('');
+  const cx = PX(cur).toFixed(1), base = H - bt;
+  const area = `${line}L${PX(tot).toFixed(1)} ${base}L${l} ${base}Z`;
+  out.svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Elevation profile of the way being walked">` +
+    `<defs><clipPath id="dv-walked"><rect x="0" y="0" width="${cx}" height="${H}"/></clipPath></defs>` +
+    `<path d="${area}" fill="rgba(43,45,47,.10)"/><path d="${area}" fill="rgba(43,45,47,.14)" clip-path="url(#dv-walked)"/>` +
+    `<path d="${line}" fill="none" stroke="#2B2D2F" stroke-width="2.2" stroke-linejoin="round"/>` +
+    `<path d="M${l} ${base}H${W - r}" stroke="rgba(43,45,47,.4)" stroke-width="1"/>` +
+    (small ? '' : `<text x="${l - 8}" y="${(PY(zmax) + 4).toFixed(1)}" text-anchor="end">${R(zmax)} m</text>` +
+      `<text x="${l - 8}" y="${(PY(zmin) + 4).toFixed(1)}" text-anchor="end">${R(zmin)} m</text>` +
+      `<text x="${l}" y="${H - 3}">0 m</text><text x="${W - r}" y="${H - 3}" text-anchor="end">${R(tot)} m</text>`) +
+    `<path d="M${cx} ${t}V${base}" stroke="#2B2D2F" stroke-width="1.2" stroke-dasharray="3 3"/>` +
+    `<circle cx="${cx}" cy="${PY(zc).toFixed(1)}" r="${small ? 4.5 : 6}" fill="#2B2D2F" stroke="#EDF0E6" stroke-width="2.5"/></svg>`;
+  return out;
+}
+let lastProf = null;
+function renderProf(model, v) {
+  lastProf = [model, v];
+  const box = $('#dv-prof-box'), pr = profileSVG(model, v, R(box.clientWidth), R(box.clientHeight));
+  box.innerHTML = pr.ok ? pr.svg : '<p class="cap dv-none">No elevation data for this way</p>';
+  $('#dv-prof-h').innerHTML = `<span>Elevation, ${v.homeward ? 'way home' : 'way out'}</span>${pr.ok ? `<span class="num">+${R(pr.up)} m · −${R(pr.dn)} m</span>` : ''}`;
+}
+if (window.ResizeObserver) new ResizeObserver(() => { if (lastProf && document.querySelector('#dv-prof-box').clientWidth) renderProf(...lastProf); }).observe(document.querySelector('#dv-prof-box'));
+
+// ---------- tablet map chrome and the data sheet ----------
+function renderUi(model, v, o) {
+  const stg = STAGE[v.stage] || STAGE.green, t = v.target, sp = spareText(v);
+  let turn;
+  if (v.turn) turn = v.turn;
+  else if (v.home) turn = `${icon('check')}<div><div class="to">Crew home</div><div class="big">${lmst(model, v.t)}<small>LMST</small></div></div>`;
+  else if (v.at) turn = `${icon('check')}<div><div class="to">At Stn ${t.n} · ${esc(t.name)}</div><div class="big">Return in ${hm(Math.max(0, v.stayLeft ?? 0))}<small>leave ${lmst(model, v.tLeave)}</small></div></div>`;
+  else {
+    const ah = v.ahead, ra = ah ? bearing(v.pos, ah) - v.hd : 0;
+    turn = `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="#3A3D40"/><g transform="translate(20 20) rotate(${(ra * 180 / Math.PI).toFixed(0)})"><path d="M0 -12L8 7L0 2L-8 7Z" fill="#E8622C"/></g></svg>` +
+      `<div><div class="to">To ${t.kind === 'base' ? 'Habitat' : `Stn ${t.n} · ${esc(t.name)}`}</div><div class="big">${R(v.rem.m)} m<small>${R(v.rem.min)} min · ETA ${lmst(model, v.t + v.rem.min)}</small></div></div>`;
+  }
+  $('#nv-turn').innerHTML = turn;
+  const se = $('#nv-stage');
+  se.style.background = stg.bg; se.style.color = stg.fg;
+  se.innerHTML = `${icon(v.stage === 'green' || v.home ? 'check' : 'warn')}${v.home ? 'Crew home' : stg.word}<span class="num">${sp}</span>`;
+  $('#nv-mapname').textContent = `Map: ${{ ortho: 'Orthophoto', plain: 'Plain: return stages only' }[o.base] ?? model.layers.find((l) => l.id === o.base)?.name ?? o.base}`;
+  $('#nv-legend').innerHTML = '<b>Home in time from there, now?</b>' +
+    `<div><i style="background:${STAGE.green.tint};border-color:${STAGE.green.c}"></i>Yes, ${v.caution}+ min to spare</div>` +
+    `<div><i style="background:${STAGE.yellow.tint};border-color:${STAGE.yellow.c}"></i>Yes, under ${v.caution} min to spare</div>` +
+    `<div><i style="background:${STAGE.red.tint};border-color:${STAGE.red.c}"></i>No: ABORT if the crew is here</div>` +
+    '<div><i style="border:0;border-top:2px dashed #2B2D2F;height:0;border-radius:0"></i>60 min from base, fixed</div>' +
+    `<span class="cap">Return limit now ${R(v.lim.L)} min, set by the ${v.lim.by}${v.f > 1 ? ' · injured: times doubled' : ''} · time-to-base grid (rule B)</span>`;
+  // data sheet: stage, two key tiles, elevation, nine values
+  const ds = $('#dv-stage');
+  ds.style.background = stg.bg; ds.style.color = stg.fg;
+  ds.innerHTML = `${icon(v.stage === 'green' || v.home ? 'check' : 'warn')}<span>${v.home ? 'Crew home' : stg.word}</span><span class="num">${sp}</span>`;
+  let A, B;
+  if (v.home) {
+    A = tile('Crew home', lmst(model, v.t), '', `arrived at the habitat · EVA ${hm(v.t)}`, '');
+    B = tile('Reserve', hm(v.reserve), '', 'life support left at arrival', 'ASSUME');
+  } else if (v.at) {
+    A = tile('Return starts in', hm(Math.max(0, v.stayLeft ?? 0)), '', `at Stn ${t.n} · ${hm(v.onStation ?? 0)} of ${hm(v.stay ?? 0)} on station`, 'ASSUME');
+    B = tile('Leave station', lmst(model, v.tLeave), '', `then ${R(v.back ?? 0)} min home · home ${lmst(model, v.homeAt)}`, 'ROUTE');
+  } else if (!v.homeward) {
+    A = tile(`To Stn ${t.n} · ${esc(t.name)}`, R(v.rem.m), 'm', `${R(v.rem.min)} min · ETA ${lmst(model, v.t + v.rem.min)} LMST`, 'ROUTE');
+    B = tile('Planned stay', hm(v.stay ?? 0), '', `max ${hm(v.max ?? 0)} · leave ${lmst(model, v.tLeave)}`, 'ASSUME');
   } else {
-    const head = d.fill
-      ? '<div class="cuff-state abort"><span>ABORT</span><span class="sub">RETURN TO SHELTER NOW</span></div>'
-      : `<div class="cuff-state"><span>${d.state}</span><span>${d.stateNum}</span></div>`;
-    screen = `<div class="cuff-screen">${head}` +
-      `<div class="cuff-row"><span>NEXT ${esc(d.next.toUpperCase())}</span><b>${d.nextV}</b></div>` +
-      `<div class="cuff-row"><span>TO BASE</span><b>${d.ttb}</b></div>` +
-      `<div class="cuff-row"><span>RESERVE</span><b>${d.res}</b></div>` +
-      `<div class="cuff-row"><span>LIFE SUPP*</span><b>${d.ls}</b></div>` +
-      `<div class="cuff-row"><span>SUNSET IN</span><b>${d.sun}</b></div></div>`;
+    A = tile('To Habitat', R(v.rem.m), 'm', `${R(v.rem.min)} min · ETA ${lmst(model, v.t + v.rem.min)} LMST`, 'ROUTE');
+    B = tile('Home at', lmst(model, v.homeAt), '', `planned · EVA ${hm(v.homeAt)}`, 'ROUTE');
   }
-  return '<div class="cuff"><div class="cuff-strap top"></div><div class="cuff-body">' +
-    `<div class="cuff-keys l">${key('data', 'DATA', !mapMode)}${key('zoomin', 'ZOOM+', false)}</div>` +
-    screen +
-    `<div class="cuff-keys r">${key('zoomout', 'ZOOM−', false)}${key('map', 'MAP', mapMode)}</div>` +
-    '</div><div class="cuff-strap bottom"></div>' +
-    `<div class="cuff-note">Forearm display, read-only. ${mapMode ? `Navigation map, heading up · ${st.navBase === 'ortho' ? 'orthophoto' : 'plain'} · MAP again switches the base, ZOOM changes the scale.` : 'DATA shows these values, MAP the navigation map.'} *assumption</div></div>`;
+  if (v.tileA) A = v.tileA;
+  if (v.tileB) B = v.tileB;
+  $('#dv-hero').innerHTML = A + B;
+  renderProf(model, v);
+  const fx = (x, d = 0) => (x == null || !Number.isFinite(x) ? '–' : d ? x.toFixed(d) : R(x));
+  $('#dv-grid').innerHTML =
+    tile('Life support', hm(Math.max(0, v.ls)), '', `assumption: ${hm(model.ls)} EVA`, 'ASSUME') +
+    tile('Sunset in', hm(v.sun), '', `sunset ${model.sc.sunset_lmst} LMST`, 'REMS') +
+    tile('Reserve', hm(v.reserve), '', 'at the planned arrival', 'ASSUME') +
+    tile('Return limit', R(v.lim.L), 'min', `set by the ${v.lim.by}`, 'xEVA') +
+    tile('Time to base', fx(v.ttb), v.ttb == null ? '' : 'min', v.ttb == null ? 'needs the grid' : 'from here, engine grid', 'GRID') +
+    tile('Radiation', v.dose.toFixed(2), 'mSv', 'information only', 'RAD') +
+    tile('Slope here', fx(v.slope, 1), v.slope == null ? '' : '°', 'limit 20°', 'DEM') +
+    tile('Protected zone', v.zone ? Math.max(0, R(v.zone.d)) : '–', v.zone ? 'm' : '', v.zone ? esc(v.zone.name) : 'no zones', 'PP') +
+    tile('Elevation', fx(v.z), v.z == null ? '' : 'm', 'from the DEM', 'DEM');
 }
 
-function hudSkin() {
-  return '<div class="hud"><div class="hud-face"></div><div class="hud-line"></div><ul class="hud-warn" aria-live="polite"></ul>' +
-    '<div class="cuff-note">Helmet HUD, read-only. Heading = walking direction; ring colour = return stage (rule B). *assumption</div></div>';
-}
-
-export function renderCrew(model) {
-  const el = document.getElementById('crew');
-  el.setAttribute('data-skin', st.skin);
-  el.querySelectorAll('.crew-head .seg button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.skin === st.skin)));
-  const d = data(model);
-  document.getElementById('crew-body').innerHTML = st.skin === 'cuff' ? cuffSkin(d) : st.skin === 'hud' ? hudSkin() : valuesSkin(d);
-  crewFrame(model, true);
-}
-
-// Redraw the moving parts (map canvas, HUD) on every animation frame, at most ~30 times a second
-let lastFrame = 0;
-export function crewFrame(model, force = false) {
-  const now = performance.now();
-  if (!force && now - lastFrame < 33) return;
-  lastFrame = now;
-  if (st.skin === 'cuff' && st.cuffMode === 'map') {
-    const cv = document.querySelector('#crew-body .nav-cv');
-    if (!cv) return;
-    const n = navState(model);
-    const out = drawNavMap(cv, model, n, () => crewFrame(model, true));
-    const box = cv.parentElement;
-    box.querySelector('.nv-north').innerHTML = `<g transform="translate(17 17) rotate(${out.northDeg.toFixed(1)})"><path d="M0 -7L4.5 3.5H-4.5z" fill="#2B2D2F"/><text y="-8" text-anchor="middle" font-size="9.5" font-weight="800" fill="#2B2D2F">N</text></g>`;
-    box.querySelector('.nv-scale .bar').style.width = `${out.scalePx.toFixed(1)}px`;
-    box.querySelector('.nv-scale span').textContent = `${out.scaleM} m`;
-    const top = box.querySelector('.nv-top');
-    top.innerHTML = st.phase === 'plan' ? 'Waiting for Start'
-      : n.home ? `Crew home · ${n.lmst}`
-      : n.at ? `Stn ${n.target.n}${n.stay != null ? ` · stay <b>${hm(Math.max(0, n.stay))}</b>` : ''}`
-      : `To ${n.target.kind === 'base' ? 'Habitat' : `Stn ${n.target.n}`} <b>${R(n.remM)} m</b> · ${R(n.remMin)} min`;
-    const sg = STAGE[n.stage];
-    const stEl = box.querySelector('.nv-stage');
-    stEl.textContent = n.home ? 'HOME' : sg.hud;
-    stEl.className = `nv-stage ${n.home ? 'green' : n.stage}`;
-  } else if (st.skin === 'hud') {
-    const face = document.querySelector('#crew-body .hud-face');
-    if (!face) return;
-    const n = navState(model);
-    face.innerHTML = hudSvg(n);
-    const left = st.phase === 'plan' ? 'At the habitat'
-      : n.home ? 'Habitat · arrived'
-      : n.at ? `Stn ${n.target.n} · max stay ${hm(Math.max(0, n.stay ?? 0))}`
-      : `${n.target.kind === 'base' ? 'Base' : `Stn ${n.target.n}`} ${R(n.remM)} m · ${R(n.remMin)} min`;
-    const right = st.phase === 'plan' || n.home ? '' : `Home ${lmst(model, n.homeAt)}`;
-    face.parentElement.querySelector('.hud-line').innerHTML = `<span>${left}</span>${right ? `<span>${right}</span>` : ''}`;
-    face.parentElement.querySelector('.hud-warn').innerHTML = warnings(model, n).map(([cls, ic, txt]) => `<li class="${cls}">${icon(ic)}${esc(txt)}</li>`).join('');
+// o: { map, hud, ui, zoomI, base, small, onReady }
+export function renderViews(model, v, o) {
+  if (o.map) {
+    const out = drawNavMap($('#nav-cv'), model, v, o, o.onReady);
+    $('#nv-scale .bar').style.width = `${out.scalePx.toFixed(1)}px`;
+    $('#nv-scale span').textContent = `${out.scaleM} m`;
+    // compass: upright N in the middle, an orange pointer on the rim shows where north is
+    $('#nv-north').innerHTML = '<text x="22" y="26.5" text-anchor="middle" font-size="13" font-weight="800" fill="#2B2D2F" font-family="Atkinson Hyperlegible Next, sans-serif">N</text>' +
+      `<g transform="rotate(${(out.north * 180 / Math.PI).toFixed(1)} 22 22)"><path d="M22 2.5L26.5 9.5H17.5Z" fill="#E8622C"/></g>`;
   }
-}
-
-// Cuff keys: view changes only (team decision of 2026-11-14)
-export function cuffKey(model, id) {
-  if (id === 'data') st.cuffMode = 'values';
-  else if (id === 'map') { if (st.cuffMode === 'map') st.navBase = st.navBase === 'ortho' ? 'plain' : 'ortho'; else st.cuffMode = 'map'; }
-  else if (id === 'zoomin') { st.cuffMode = 'map'; st.navZoom = Math.min(ZOOMS.length - 1, st.navZoom + 1); }
-  else if (id === 'zoomout') { st.cuffMode = 'map'; st.navZoom = Math.max(0, st.navZoom - 1); }
-  renderCrew(model);
+  if (o.hud) renderHud(model, v);
+  if (o.ui) renderUi(model, v, o);
 }

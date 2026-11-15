@@ -31,3 +31,14 @@ export function srcChip(label, text, assumption = false) {
 }
 
 export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// Write an element only when its content really changes. Live regions (verdict, subtitles, HUD
+// warnings) are re-rendered on every clock tick; rewriting identical content makes screen readers
+// announce it again and again, and recreates buttons under the user's focus.
+const lastHTML = new WeakMap();
+export function setHTML(el, html) {
+  if (!el || lastHTML.get(el) === html) return false;
+  el.innerHTML = html;
+  lastHTML.set(el, html);
+  return true;
+}
