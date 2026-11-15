@@ -224,6 +224,39 @@ export function homeTime(model) {
   return st.t + (c.backMin ?? 0);
 }
 
+// ---------- the four safety rules (PRODUCT.md: the verdict must be able to say no) ----------
+// Radio: our own planning threshold from scenario.json; xEVA 9.5 gives the procedure, not a number.
+export const radioLimit = (model) => model.sc.radio_gap_max_min ?? 5;
+
+// Longest radio gap for station n: its own out and back legs when radio_check.json lists them,
+// otherwise the overall maximum over all routes
+function radioGap(model, n) {
+  const rc = model.radio;
+  if (!rc) return null;
+  const s = rc.stations?.find((x) => x.station === n);
+  if (s && (s.out || s.ret)) return { min: Math.max(s.out?.longest_gap_min ?? 0, s.ret?.longest_gap_min ?? 0), scope: 'route' };
+  return Number.isFinite(rc.longest_gap_min) ? { min: rc.longest_gap_min, scope: 'all' } : null;
+}
+
+// Each rule for station n against its limit, over the way out and the way back.
+// ok: true = passes, false = fires, null = no data yet.
+export function ruleChecks(model, n = st.target ?? model.stations[0]?.n) {
+  const r = model.routes.get(n);
+  const legs = r ? [r.out, r.ret].filter(Boolean) : [];
+  const most = (k) => (legs.length && legs.every((l) => Number.isFinite(l[k])) ? Math.max(...legs.map((l) => l[k])) : null);
+  const check = (v, lim) => (v == null || !Number.isFinite(lim) ? null : v <= lim);
+  const ttb = most('max_ttb_min'), slope = most('max_slope_deg'), radio = radioGap(model, n);
+  const slopeMax = model.sc.slope_block_deg ?? 20, radioMax = radioLimit(model);
+  const home = !r ? null : n === st.target ? homeTime(model) : Math.max(300, r.out.minutes) + r.ret.minutes;
+  return [
+    { id: 'shelter', l: 'Time to shelter', v: ttb, lim: 60, ok: check(ttb, 60) },
+    { id: 'slope', l: 'Slope, 10 m baseline', v: slope, lim: slopeMax, ok: check(slope, slopeMax) },
+    { id: 'radio', l: 'Radio gap', v: radio?.min ?? null, scope: radio?.scope ?? null, lim: radioMax, ok: check(radio?.min ?? null, radioMax) },
+    { id: 'daylight', l: 'Daylight', v: home, lim: model.sunsetEva, ok: check(home, model.sunsetEva) },
+  ];
+}
+export const firstViolated = (model, n) => ruleChecks(model, n).find((x) => x.ok === false) || null;
+
 // Zone entries on the way actually walked, up to EVA time t: [{ t, zone, m, override }]
 export function zoneEvents(model, t = st.t) {
   if (!route(model) || st.phase === 'plan') return [];
