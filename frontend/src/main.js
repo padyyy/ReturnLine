@@ -252,6 +252,14 @@ function wire() {
   $('#verdict').addEventListener('click', (e) => {
     const b = e.target.closest('button');
     if (!b || st.playing) return;
+    if (b.id === 'act-reset') { // after HOME: back to the target picker, nothing picked, the map on the whole plan
+      stop();
+      resetRun(null);
+      renderAll();
+      mapApi.fitPlan();
+      requestAnimationFrame(() => document.querySelector('.pick-row')?.focus());
+      return;
+    }
     if (b.id === 'act-return') st.retStart = st.t;
     if (b.id === 'act-reroute') { st.rerouted = true; st.rerouteAt = st.t; if (st.driftAt == null) st.driftAt = st.t; }
     if (b.id === 'act-abort') { st.abort = true; st.abortAt = st.t; }
