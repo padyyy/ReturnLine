@@ -408,8 +408,11 @@ export function simStart(model, mapApi, onEnd) {
   $$('#sim-controls .seg button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.sx === SIM.speedX)));
   setView(SIM.steps[0].view, true);
   playStep(1);
+  refit();
 }
-export function simJump(n) { if (SIM.on) goStep(n); }
+// frame habitat and scenario station once the story strip and the crew view have taken their room
+function refit() { requestAnimationFrame(() => requestAnimationFrame(() => { if (SIM.on) { SIM.mapApi.invalidate(); SIM.mapApi.fitPlan(); } })); }
+export function simJump(n) { if (SIM.on) { goStep(n); refit(); } }
 export function simEnd() {
   if (!SIM.on) return;
   stop();
