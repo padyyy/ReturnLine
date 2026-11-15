@@ -1,6 +1,6 @@
 // Console renderers: header, target picker, verdict, rules, info rows, station log, time budget,
 // subtitles, banner, summary and the assumptions panel. They read the model and the sim state only.
-import { hm, R, icon, numCell, srcChip, esc } from './format.js';
+import { hm, R, icon, numCell, srcChip, esc, setHTML } from './format.js';
 import { lmst, pickerRows, doseAt, zoneAt, zoneHits, ttbAt } from './model.js';
 import { st, route, station, crewState, limits, homeTime, scenarioStation, isScripted, zoneEvents, zoneNow, proximity, script, detourMin, rerouteTrack, warnM } from './sim.js';
 import { BEATS } from './beats.js';
@@ -117,7 +117,7 @@ export function renderVerdict(model) {
       o += `<div class="v-status ok">${icon('check')}GO confirmed at Start · ${model.sc.eva_start_lmst} LMST</div>`;
     }
   }
-  el.innerHTML = o + zoneLine;
+  setHTML(el, o + zoneLine);
 }
 
 export function renderRules(model) {
@@ -125,7 +125,8 @@ export function renderRules(model) {
   const home = homeTime(model);
   const rows = [
     { l: 'Time to shelter', c: 'max on the route · limit 60 min', v: r?.out.max_ttb_min, u: 'min', s: 'xEVA' },
-    { l: 'Slope, 10 m baseline', c: 'limit 20° · ridge crossings: 0', v: r?.out.max_slope_deg, u: '°', s: 'xEVA' },
+    // "ridge crossings: 0" is only true once the routing blocks ridges (ridge mask from the 1 m DEM)
+    { l: 'Slope, 10 m baseline', c: model.grid?.header?.files?.ridge ? 'limit 20° · ridge crossings: 0' : 'limit 20° · ridge mask pending', v: r?.out.max_slope_deg, u: '°', s: 'xEVA' },
     { l: 'Radio gap', c: 'longest on the route · limit 5 min', v: model.radio?.longest_gap_min, u: 'min', s: 'xEVA' },
     { l: 'Daylight', c: `home before sunset ${model.sc.sunset_lmst}`, v: home == null ? null : lmst(model, home), u: '', s: 'REMS', ok: home == null ? null : home <= model.sunsetEva },
   ];
@@ -220,10 +221,11 @@ export function renderBudget(model) {
 export function renderSubs(model) {
   const b = BEATS[st.beat - 1];
   const nav = !b && st.phase !== 'plan' && !isScripted(model);
-  $('#subs-beat').innerHTML = b ? `<span>Beat ${b.n}/6</span> · ${b.title}` : nav ? `<span>Navigation</span> · ${esc(station(model)?.name ?? '')}` : '<span>Planning</span>';
-  $('#subs-text').textContent = b ? b.sub
+  setHTML($('#subs-beat'), b ? `<span>Beat ${b.n}/6</span> · ${b.title}` : nav ? `<span>Navigation</span> · ${esc(station(model)?.name ?? '')}` : '<span>Planning</span>');
+  const subText = b ? b.sub
     : nav ? 'The crew walks out and back along the planned route. The scripted beats belong to the scenario station.'
     : 'Habitat control picks a target. Start begins the rehearsed Marswalk.';
+  if ($('#subs-text').textContent !== subText) $('#subs-text').textContent = subText;
   document.querySelectorAll('#tp-dots button').forEach((x, i) => (i + 1 === st.beat ? x.setAttribute('aria-current', 'step') : x.removeAttribute('aria-current')));
 }
 

@@ -20,6 +20,7 @@ function creditsControl(data) {
       const box = L.DomUtil.create('div', 'credits');
       const lines = [
         data.ortho ? 'Orthophoto: USGS Astrogeology, MSL Gale Merged Orthophoto Mosaic 25 cm v3' : null,
+        data.grid ? 'Elevation and slope: USGS Astrogeology, MSL Gale Merged DEM 1 m v3' : null,
         data.traverse ? 'Curiosity traverse: NASA/JPL-Caltech, MMGIS waypoints' : null,
         'Map: <a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>',
       ].filter(Boolean);
