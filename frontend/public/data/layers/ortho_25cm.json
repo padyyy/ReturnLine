@@ -142,7 +142,7 @@
   },
   "layer": {
     "id": "ortho_25cm",
-    "name": "Orthophoto 25 cm (1 km around the base)",
+    "name": "Surface imagery",
     "priority": 15,
     "opacity": 1,
     "visible": false,

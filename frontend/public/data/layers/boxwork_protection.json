@@ -133,7 +133,7 @@
   },
   "layer": {
     "id": "boxwork_protection",
-    "name": "Boxwork protection mask, 50 m",
+    "name": "Protected science areas",
     "priority": 30,
     "opacity": 0.55,
     "visible": true,

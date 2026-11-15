@@ -1,6 +1,6 @@
 # Übergabe Mapper → Frontend
 
-Stand: 14.11.2026. Implementiert sind ein Offline-JSON-Wrapper, der Adapter auf das **vorhandene** echte Grid und der Hang-Layer-Export. Keine neue Rasterdefinition, kein Server und kein Routing. Grundlage und Grenzen: `docs/auftraege/datenteam.md`, „Für alle Aufgaben“. Die Anzeige ist seit dem 14.11. abends in der Konsole eingebaut: Layers → Terrain → „Slope, 10 m baseline“.
+Stand: 14.11.2026, Layer-Benennung ergänzt am 15.11. Implementiert sind ein Offline-JSON-Wrapper, der Adapter auf das **vorhandene** echte Grid und der Hang-Layer-Export. Keine neue Rasterdefinition, kein Server und kein Routing. Grundlage und Grenzen: `docs/auftraege/datenteam.md`, „Für alle Aufgaben“. Die Anzeige ist seit dem 14.11. abends im Layers-Menü der Konsole eingebaut; ihr Name kommt aus `data/layers/layers.json`.
 
 ## Voraussetzung für diesen Feature-Branch
 
@@ -54,13 +54,16 @@ Beispiel aus `slope_10m.json` (gekürzt):
   "height_px": 476,
   "pixels_per_cell": 4,
   "bounds": [[-4.8501483297557,137.33994154226008],[-4.769844250631072,137.42007691533613]],
-  "layer": {"id":"slope","name":"Slope","priority":10,"opacity":0.6,"visible":false}
+  "units": "°",
+  "layer": {"id":"slope","name":"Terrain slope","priority":10,"opacity":0.6,"visible":false}
 }
 ```
 
 `image_path` ist relativ zur App-Basis, `image` relativ zum JSON-Ordner. `grid_file` ist relativ zum JSON-Ordner und bezeichnet die kanonische Geometrie, nicht eine zweite Rasterdefinition. Die weiteren Felder enthalten `grid`, `source`, `generator`, `created_utc`, `numeric_file`, `legend`, `placeholder_inputs` und die Zahl gültiger/fehlender Zellen. `terrain_sha256` enthält zusätzlich Prüfsummen der verwendeten Höhen- und Hangraster, damit sich die Datengrundlage des Bildexports nachvollziehen lässt. Wird mit `--out-dir` in ein anderes Verzeichnis exportiert, ist das ein Staging-Verzeichnis: PNG und JSON zusammen in `public/data/` ausliefern, wo der bestehende Header liegt.
 
 ## Python-Wrapper: JSON hinein, JSON heraus
+
+Name, Einheit, Priorität, Deckkraft und Startsichtbarkeit des Hang-Layers kommen aus dem Eintrag `id: "slope"` ohne `source` in `data/layers/layers.json`. `export_slope` übernimmt diese Einstellungen beim Export. `pipeline/map_layers.py` aktualisiert damit auch die vorhandene `slope_10m.json`, ohne das Hangbild oder Zahlenraster neu zu schreiben.
 
 Aus dem Repository-Wurzelordner. Installation einmal pro Rechner: `.venv/Scripts/python -m pip install -r pipeline/requirements.txt`. Die Datei enthält seit dem 14.11. auch pyproj und SciPy für `sample_raster`. Auf macOS oder Linux statt `.venv/Scripts/python` den Pfad `.venv/bin/python` verwenden. Der Wrapper ist ein Offline-Werkzeug für Node.js oder die Shell, kein Browser-Endpunkt.
 

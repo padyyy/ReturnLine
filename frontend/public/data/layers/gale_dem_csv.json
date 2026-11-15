@@ -142,7 +142,7 @@
   },
   "layer": {
     "id": "gale_dem_csv",
-    "name": "Elevation, Gale DEM 1 m (CSV)",
+    "name": "Terrain elevation",
     "priority": 12,
     "opacity": 0.7,
     "visible": false,

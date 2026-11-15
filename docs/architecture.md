@@ -35,9 +35,30 @@ total dose. An optional nonnegative radiation weight adds movement dose costs
 to A* and blocks unknown radiation; its default zero preserves terrain routing.
 Scientific relevance remains metadata. See `backend/MAPPER_ROUTING.md` for
 units, CLI options and the distinction between scenario pixels and measurements.
-There is no frontend export integration or return-pointer/time field yet.
+The console consumes static exports from `pipeline/astar_import.py`,
+`pipeline/time_grid.py`, `pipeline/map_layers.py` and `pipeline/ortho_overlay.py`;
+GeoMapper supplies the shared spatial mapping, while the routing and time-grid
+modules calculate paths, return times and pointers.
 Tests live in `backend/tests/`; former demo scripts were removed.
 The C# sections below describe the earlier planned architecture.
+
+### GeoMapper and reference-centred preparation
+
+The [GeoMapper algorithm documentation](../backend/geoMapper/README.md) describes
+how a fixed target grid is mapped through Mars longitude/latitude into each
+source layer, how GeoTIFF pixels and nearby CSV measurements are selected, and
+how aligned numeric matrices are exported. GeoMapper itself does not perform
+route search or calculate terrain-derived slope.
+
+The team used the [desktop preparation tool](../data/mars_mapper_preperation/README.md)
+to crop and export map layers around the project's reference point. It shares
+the grid and sampling foundation with GeoMapper and adds a Tkinter viewer plus
+`mars_mapper/analysis_export.py` and `export_cli.py` for exports. All exported
+GeoTIFFs use the same target CRS, affine transform, dimensions and orientation;
+CSV inputs also retain their original in-region points in a separate export. Its
+saved configuration centres a 1 km × 1 km area of 1 m cells at 137.3807° E,
+4.8106° S. That preparation grid is independent of the production console grid;
+its definition must not be substituted for `frontend/public/data/grid.json`.
 
 ### 1. Offline data pipeline (Python)
 

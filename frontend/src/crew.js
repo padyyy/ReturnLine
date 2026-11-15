@@ -33,7 +33,7 @@ export function warnings(model, v) {
 function words(model, v) {
   return { lmst: lmst(model, v.t), eva: hm(v.t), sun: hm(v.sun), ls: hm(Math.max(0, v.ls)), dose: v.dose.toFixed(2) };
 }
-const spareText = (v) => v.spareTxt || (v.spare == null ? 'needs grid' : v.spare >= 0 ? `${R(v.spare)} min spare` : 'no way home');
+const spareText = (v) => v.spareTxt || (v.spare == null ? 'Return time unavailable' : v.spare >= 0 ? `${R(v.spare)} min spare` : 'no way home');
 
 export function tile(l, val, u, s, sk) {
   return `<div class="dt"><div class="dt-l"><span>${l}</span>${sk ? src(sk) : ''}</div>` +

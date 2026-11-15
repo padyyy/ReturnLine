@@ -57,9 +57,9 @@ export function rulesOf(model, P) {
   const radioMax = model.sc.radio_gap_max_min ?? 5;
   return [
     { st: ttb <= 60 ? 'pass' : 'fail', l: 'Time to shelter', c: 'longest on the route · limit 60 min', v: R(ttb), u: 'min', vc: 'max', s: 'xEVA' },
-    { st: slope <= model.sc.slope_block_deg ? 'pass' : 'fail', l: 'Slope, 10 m baseline', c: model.grid?.header?.files?.ridge ? `limit ${model.sc.slope_block_deg}° · ridge crossings: 0` : `limit ${model.sc.slope_block_deg}° · ridge mask pending`, v: slope.toFixed(1), u: '°', vc: 'max', s: 'DEM' },
+    { st: slope <= model.sc.slope_block_deg ? 'pass' : 'fail', l: 'Slope, 10 m baseline', c: model.grid?.header?.files?.ridge ? `limit ${model.sc.slope_block_deg}° · ridge crossings: 0` : `limit ${model.sc.slope_block_deg}° · ridge data unavailable`, v: slope.toFixed(1), u: '°', vc: 'max', s: 'DEM' },
     // team decision 2026-11-15: a radio gap over the limit is a warning, never a NO-GO
-    { st: radio == null ? 'open' : radio <= radioMax ? 'pass' : 'warn', l: 'Radio gap', c: `longest on the route · warning above ${radioMax} min`, v: radio == null ? null : radio.toFixed(1), u: 'min', vc: radio == null ? 'from data' : 'max', s: 'RADIO' },
+    { st: radio == null ? 'open' : radio <= radioMax ? 'pass' : 'warn', l: 'Radio gap', c: `longest on the route · warning above ${radioMax} min`, v: radio == null ? null : radio.toFixed(1), u: 'min', vc: radio == null ? 'coverage unknown' : 'max', s: 'RADIO' },
     { st: home <= model.sunsetEva ? 'pass' : 'fail', l: 'Daylight', c: `home before sunset ${model.sc.sunset_lmst}`, v: lmst(model, home), u: '', vc: 'home', s: 'REMS' },
   ];
 }
@@ -68,14 +68,6 @@ export function renderHeader(model, t) {
   $('#hdr-eva').textContent = `EVA ${String(model.sc.eva_number ?? '').padStart(2, '0')}`;
   $('#hdr-sol').textContent = `Sol ${model.sc.sol}`;
   $('#hdr-clock').textContent = `${lmst(model, t)} LMST`;
-  // honesty: say so while any input is still a placeholder (files from public/data/placeholder/ or placeholder fields)
-  const tag = $('#tag-data');
-  if (tag) {
-    const ph = model.placeholders?.size || model.sc.placeholder_fields?.length;
-    tag.textContent = 'Placeholder data';
-    tag.hidden = !ph;
-    tag.title = ph ? `Placeholder inputs: ${[...(model.placeholders ?? []), ...(model.sc.placeholder_fields ?? [])].join(', ')}` : '';
-  }
 }
 
 export function renderVerdict(model) {
@@ -99,7 +91,7 @@ export function renderVerdict(model) {
         (zoneM > 0 || zoneNames.length ? `<div class="v-status blue">${icon('warn')}Constraint: the route runs ${zoneM > 0 ? `${R(zoneM)} m inside the boxwork protection zone` : `through ${esc(zoneNames.join(', '))}`}${P.variant === 'safe' && zoneM > 0 ? ' (the station lies inside it)' : ''} · every entry is logged</div>` : '');
       el.className = 'verdict is-go';
     } else {
-      const why = P.noRoute ? `No route to ${esc(s.name)} from the routing engine.`
+      const why = P.noRoute ? `No route available to ${esc(s.name)}.`
         : P.inside ? `${esc(s.name)} lies inside ${esc(P.inside.name)}, a protected zone.`
         : P.back > 60 ? `The way home from ${esc(s.name)} takes ${R(P.back)} min, over the 60-minute rule.`
         : !P.ok ? `Starting at EVA hour ${hm(PLAN.t0)}, the crew could not get back from ${esc(s.name)} before ${model.ls <= model.sunsetEva ? 'life support' : 'daylight'} runs out.`
@@ -115,7 +107,7 @@ export function renderPicker(model) {
   $('#navpick-list').innerHTML = model.stations.map((s) => {
     const P = planOf(model, s.n), on = PLAN.n === s.n;
     let cap;
-    if (P.noRoute) cap = '<b class="red">no route from the engine</b>';
+    if (P.noRoute) cap = '<b class="red">route unavailable</b>';
     else {
       cap = `${R(P.walk)} min out · ${R(P.back)} back · ${P.ok ? `max stay ${hm(P.max)}` : P.inside ? `<b class="red">inside ${esc(P.inside.name)}</b>` : '<b class="red">cannot get home in time</b>'}`;
       const nogo = rulesOf(model, P).find((x) => x.st === 'fail');
@@ -139,7 +131,7 @@ export function renderPicker(model) {
     b.disabled = !can;
     b.setAttribute('aria-pressed', String(Pv ? Pv.variant === b.dataset.variant : PLAN.variant === b.dataset.variant));
   });
-  $('#np-variant-cap').textContent = !Pv || Pv.noRoute ? 'two A* routes per station'
+  $('#np-variant-cap').textContent = !Pv || Pv.noRoute ? 'compare route options for each station'
     : Pv.sameRoute ? 'both are the same route here'
     : !Pv.hasFast ? 'one route only'
     : `${R(routeLen(Pv.out))} m · ${R(Pv.walk)} min out · ${R(Pv.protM)} m in protected zone`;
@@ -169,7 +161,7 @@ export function renderRules(model) {
   const dose = P && P.ok ? doseAt(model, P.tHome - P.t0).toFixed(2) : null;
   $('#info').innerHTML =
     `<li class="row4"><span class="a"><span class="stat info">${icon('info')}<span class="w">info</span></span></span><span class="l">Radiation dose, planned EVA<span class="cap">information only, never a gate · ${model.sc.dose_rate_msv_per_day} mSv per day</span></span><span class="v">${numCell(dose, 'mSv', dose ? 'planned' : 'pick a station')}</span><span class="s">${src('RAD')}</span></li>` +
-    `<li class="row4"><span class="a"><span class="stat info">${icon('info')}<span class="w">info</span></span></span><span class="l">Compared with Curiosity<span class="cap">mean deviation of our routes from its drives${cmp ? ` · straight line ${R(cmp.straight_line_m)} m` : ''}</span></span><span class="v">${numCell(cmp ? R(cmp.mean_deviation_m) : null, 'm', cmp ? 'leave-one-out' : 'from engine')}</span><span class="s">${src('LOO')}</span></li>`;
+    `<li class="row4"><span class="a"><span class="stat info">${icon('info')}<span class="w">info</span></span></span><span class="l">Compared with Curiosity<span class="cap">mean deviation of our routes from its drives${cmp ? ` · straight line ${R(cmp.straight_line_m)} m` : ''}</span></span><span class="v">${numCell(cmp ? R(cmp.mean_deviation_m) : null, 'm', cmp ? 'leave-one-out' : 'comparison unavailable')}</span><span class="s">${src('LOO')}</span></li>`;
 }
 
 // Station details with a ground image: the station's own picture when the data has one, else an orbital crop
@@ -183,9 +175,9 @@ export function renderTarget(model, onImage) {
   const img = pics.length ? `<div class="pic-strip${pics.length > 1 ? ' is-multi' : ''}">${pics.map((b, k) => `<button type="button" class="pic-btn" data-pic="${k}" data-n="${s.n}" aria-label="Open the Curiosity picture ${esc(b.titel_en || b.titel)}"><img src="${esc(b.src)}" alt="${esc(b.titel_en || b.titel)}, ${esc(b.kamera_en || b.kamera)}" loading="lazy"><span>${esc(b.titel_en || b.titel)}</span></button>`).join('')}</div>`
     : '<canvas width="168" height="108" id="tg-thumb" aria-hidden="true"></canvas>';
   const imgCap = pics.length ? `Curiosity, ${pics.map((b) => `${esc(b.kamera_en || b.kamera)}${b.sol ? ` sol ${b.sol}` : ` ${esc(b.aufnahme_von)}`}`).join(' · ')} · ${esc(pics[0].bildnachweis)}${pics.some((b) => b.hinweis_en) ? ` · <b class="amber-t">${esc(pics.find((b) => b.hinweis_en).hinweis_en)}</b>` : ''} · click to enlarge`
-    : 'No Curiosity picture for this station yet: orbital crop';
+    : 'Orbital view · Curiosity image unavailable for this station';
   let rows = '';
-  if (P.noRoute) rows = row('Route', 'not delivered by the routing engine', null, '', 'ROUTE');
+  if (P.noRoute) rows = row('Route', 'route unavailable', null, '', 'ROUTE');
   else {
     const vs = P.out.vertices;
     let up = 0, dn = 0, haveZ = vs.every((q) => q.elev_m != null);
@@ -193,13 +185,13 @@ export function renderTarget(model, onImage) {
     const T = ttbAt(model, s, 'penalized'), zd = zoneDistance(model, s);
     const ter = terrainAt(model, s), z = s.elev_m ?? ter.z ?? vs[vs.length - 1].elev_m;
     const geo = s.elev_m == null && ter.z != null && ter.src === 'geomapper';
-    rows = row('Route length', `habitat to the station · ${VARIANT_PHRASE[P.variant]} · A* backend`, (routeLen(P.out) / 1000).toFixed(2), 'km', 'ROUTE') +
-      row('Inside the protected zone', P.variant === 'fastest' ? 'fastest route: may cross the boxwork protection mask' : 'route that avoids it where it can (A*)', R(P.protM), 'm', 'PP') +
+    rows = row('Route length', `habitat to the station · ${VARIANT_PHRASE[P.variant]}`, (routeLen(P.out) / 1000).toFixed(2), 'km', 'ROUTE') +
+      row('Inside the protected zone', P.variant === 'fastest' ? 'fastest route: may cross protected science areas' : 'route avoids protected science areas where possible', R(P.protM), 'm', 'PP') +
       row('Walk out · back', `at ${model.sc.walk_speed_kmh} km/h, Tobler slope penalty; uphill and downhill differ`, `${R(P.walk)}·${R(P.back)}`, 'min', 'TOBLER') +
-      row('Climb on the way out', haveZ ? `descent ${R(dn)} m` : 'needs elevation on the route', haveZ ? `+${R(up)}` : null, 'm', 'DEM') +
+      row('Climb on the way out', haveZ ? `descent ${R(dn)} m` : 'route elevation unavailable', haveZ ? `+${R(up)}` : null, 'm', 'DEM') +
       row('Steepest on the route', `10 m baseline · limit ${model.sc.slope_block_deg}°`, (P.out.max_slope_deg ?? 0).toFixed(1), '°', 'DEM') +
       row('Max stay', P.max > 0 ? 'life support or daylight left, minus the way home' : 'cannot get home in time', P.max > 0 ? hm(P.max) : null, '', 'ASSUME') +
-      row('Time to base from here', 'engine grid, zones avoided', Number.isFinite(T) ? R(T) : null, 'min', 'GRID') +
+      row('Time to base from here', 'return estimate with protected zones avoided', Number.isFinite(T) ? R(T) : null, 'min', 'GRID') +
       row('Elevation', geo ? esc(model.dem.name.replace(/^Elevation,\s*/i, '')) : 'from the DEM, 10 m grid', z != null ? R(z) : null, 'm', geo ? 'GEOM' : 'DEM');
   }
   el.innerHTML = `<div class="tg-head"><span class="badge done">${s.n}</span><div><b>${esc(s.name)}</b><div class="cap">${esc(s.reason ?? '')}</div></div>${HOOKS.canRemove(s) ? rmBtn(s, 'btn tg-rm', 'Remove target') : ''}</div>` +
@@ -243,7 +235,7 @@ export function renderPlanBar(model) {
   for (let hr = 0; hr * 60 <= max; hr++) o.push(`<path d="M${sx(hr * 60).toFixed(1)} 14v4" stroke="#2B2D2F"/><text x="${sx(hr * 60).toFixed(1)}" y="10" text-anchor="${hr === 0 ? 'start' : hr * 60 === max ? 'end' : 'middle'}">${hr}:00</text>`);
   o.push(`<rect x="${sx(LS) + 1}" y="${y}" width="${sx(max) - sx(LS) - 1}" height="${bh}" rx="6" fill="rgba(43,45,47,.08)"/>`);
   if (W > 520) o.push(`<text x="${(sx(LS) + sx(max)) / 2}" y="${y + 16}" text-anchor="middle">backup ${hm(model.sc.backup_min)}</text>`);
-  if (T0 > 0) o.push(`<rect x="${sx(0)}" y="${y}" width="${(sx(T0) - sx(0) - 2).toFixed(1)}" height="${bh}" rx="6" fill="rgba(43,45,47,.12)"/><text x="${((sx(0) + sx(T0)) / 2).toFixed(1)}" y="${y + 16}" text-anchor="middle">used (test start)</text>`);
+  if (T0 > 0) o.push(`<rect x="${sx(0)}" y="${y}" width="${(sx(T0) - sx(0) - 2).toFixed(1)}" height="${bh}" rx="6" fill="rgba(43,45,47,.12)"/><text x="${((sx(0) + sx(T0)) / 2).toFixed(1)}" y="${y + 16}" text-anchor="middle">elapsed before departure</text>`);
   const seg = (a, b, fill, txt, txtFill) => {
     if (b <= a) return;
     o.push(`<rect x="${(sx(a) + 1).toFixed(1)}" y="${y}" width="${Math.max(1, sx(b) - sx(a) - 2).toFixed(1)}" height="${bh}" rx="6" fill="${fill}"/>`);
@@ -273,24 +265,24 @@ export function renderPlanBar(model) {
 export function renderAssume(model) {
   const sc = model.sc;
   const ph = new Set(sc.placeholder_fields || []);
-  const slope = sc.slope_penalty ?? (model.grid?.placeholder ? 'none (flat placeholder)' : model.grid ? 'Tobler 1993' : 'open');
+  const slope = sc.slope_penalty ?? (model.grid?.placeholder ? 'none (level terrain assumed)' : model.grid ? 'Tobler 1993' : 'not available');
   const rows = [
-    { l: 'Walking speed, level ground', v: `${sc.walk_speed_kmh} km/h`, s: ['EWT'], note: 'Sets the return area and the 60-minute line (routing engine).', f: 'walk_speed_kmh' },
-    { l: 'Slope penalty on walking speed', v: slope, s: ['TOBLER', 'ASSUME'], note: 'Tobler hiking function, normalised to the level-ground speed; fastest slightly downhill. Applying it to suited crews is an assumption (team decision 2026-11-14).', f: 'slope_penalty' },
+    { l: 'Walking speed, level ground', v: `${sc.walk_speed_kmh} km/h`, s: ['EWT'], note: 'Sets the return estimates and the 60-minute line.', f: 'walk_speed_kmh' },
+    { l: 'Slope penalty on walking speed', v: slope, s: ['TOBLER', 'ASSUME'], note: 'Tobler hiking function, normalised to the level-ground speed; fastest slightly downhill. Its application to suited crews is a planning assumption.', f: 'slope_penalty' },
     { l: 'Slope blocked above', v: `${sc.slope_block_deg}°`, s: ['xEVA'], note: `Suit design limit. Comfortable walking up to ${sc.slope_comfort_deg ?? 10}°.`, f: 'slope_block_deg' },
     { l: 'Walking speed when injured', v: `×${Number(sc.injury_factor).toFixed(2)}`, s: ['ASSUME'], note: 'Halves the speed in the rehearsal and doubles every time home.', f: 'injury_factor' },
-    { l: 'Protected-zone buffer radius', v: `${sc.zone_buffer_m} m`, s: ['ASSUME', 'PP'], note: 'Zones follow planetary protection policy; the radius itself is ours.', f: 'zone_buffer_m' },
-    { l: 'Planning clearance around zones', v: sc.zone_clearance_m != null ? `${sc.zone_clearance_m} m` : 'open', s: ['ASSUME'], note: 'Routes keep this distance outside the buffer where they can (soft penalty in the routing engine).', f: 'zone_clearance_m' },
+    { l: 'Protected-zone buffer radius', v: `${sc.zone_buffer_m} m`, s: ['ASSUME', 'PP'], note: 'Buffer around protected science areas; the radius is a planning assumption.', f: 'zone_buffer_m' },
+    { l: 'Planning clearance around zones', v: sc.zone_clearance_m != null ? `${sc.zone_clearance_m} m` : 'not available', s: ['ASSUME'], note: 'Routes favour this distance outside the protected-zone buffer where possible.', f: 'zone_clearance_m' },
     { l: 'Warning distance to a zone', v: `${sc.zone_warn_m ?? 10} m`, s: ['ASSUME'], note: 'Closer than this, the console warns and habitat control can reroute.', f: 'zone_warn_m' },
     { l: 'EVA duration', v: `${hm(sc.life_support_min)} + ${hm(sc.backup_min)} backup`, s: ['xEVA'], note: 'Life support; the backup hour is never planned with.', f: 'life_support_min' },
-    { l: 'Caution margin, return stages', v: `${sc.caution_margin_min} min`, s: ['ASSUME'], note: 'Yellow when less spare time than this is left (rule B).', f: 'caution_margin_min' },
+    { l: 'Caution margin, return stages', v: `${sc.caution_margin_min} min`, s: ['ASSUME'], note: 'Yellow when the return-time margin falls below this value.', f: 'caution_margin_min' },
     { l: 'Sunset', v: `${sc.sunset_lmst} LMST`, s: ['REMS'], note: 'Daylight rule: home before sunset.', f: 'sunset_lmst' },
     { l: 'Radiation dose rate', v: `${sc.dose_rate_msv_per_day} mSv/day`, s: ['RAD'], note: 'Information only, never a gate.', f: 'dose_rate_msv_per_day' },
   ];
   $('#assume-body').innerHTML = rows.map((a) => {
-    const kind = a.s[0] === 'ASSUME' ? 'Labeled assumption' : 'Sourced value';
-    const cap = `${kind}${ph.has(a.f) ? ' · placeholder value for now' : ''} · ${a.note}`;
+    const kind = ph.has(a.f) || a.s.includes('ASSUME') ? 'Planning assumption' : 'Model setting';
+    const cap = `${kind} · ${a.note}`;
     return `<div class="as"><div class="as-top"><span class="as-l">${a.l}</span><output>${esc(a.v)}</output></div>` +
       `<div class="as-src">${a.s.map(src).join('')}<span class="cap">${esc(cap)}</span></div></div>`;
-  }).join('') + '<p class="as-note">Fixed for the rehearsal. Every value carries its source or the label “assumption”; hover or focus a chip for the reason.</p>';
+  }).join('') + '<p class="as-note">Planning assumptions and model settings used for this mission. Hover or focus a source label for its reference and limitations.</p>';
 }

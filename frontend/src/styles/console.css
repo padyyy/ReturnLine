@@ -114,7 +114,6 @@ svg.i { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none;
 .meta-item { white-space: nowrap; font-size: 14px; }
 .meta-item b { font-weight: 700; color: var(--graphite); }
 .meta .num { font-size: 15px; font-weight: 600; color: var(--graphite); }
-.tag-sketch { font: 700 12px/1 var(--f-text); border: 1px solid var(--rule-2); color: var(--graphite-2); border-radius: 999px; padding: 6px 10px; white-space: nowrap; }
 .controls { margin-left: auto; display: flex; align-items: center; gap: 10px; }
 
 .menu { position: relative; }
@@ -519,7 +518,6 @@ svg.ov .co { font-size: 12.5px; font-weight: 700; fill: #EDF0E6; }
   .legend { width: 214px; }
 }
 @media (max-width: 1180px) {
-  .tag-sketch { display: none; }
   .controls .btn .t { display: none; }
 }
 @media (max-width: 1100px) {
@@ -533,7 +531,6 @@ svg.ov .co { font-size: 12.5px; font-weight: 700; fill: #EDF0E6; }
   .mapcol.no-bar .budget { display: grid; }
   .band { flex-wrap: wrap; gap: 8px 14px; padding: 10px 16px; }
   .meta { border-left: 0; padding-left: 0; height: auto; flex-wrap: wrap; gap: 4px 12px; order: 3; width: 100%; }
-  .tag-sketch { display: inline-block; }
   .controls { margin-left: auto; }
   .console { grid-template-columns: 1fr; }
   .mapcol { border-right: 0; }

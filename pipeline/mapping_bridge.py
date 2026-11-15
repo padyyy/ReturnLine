@@ -19,6 +19,7 @@ from mapping_grid import MappingGrid
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'frontend/public/data'
+CATALOG = ROOT / 'data/layers/layers.json'
 GENERATOR = 'pipeline/mapping_bridge.py'
 # Field Book colours (DESIGN.md): survey paper, graphite, red pencil. Not green/amber, because those
 # are the return stages in the console; red is kept for ground the routing blocks (over 20 degrees).
@@ -75,6 +76,19 @@ def bilinear_upsample(values, k):
     return (1 - fy) * ((1 - fx) * a + fx * b) + fy * ((1 - fx) * c + fx * d)
 
 
+def configure_slope(metadata, catalog=None):
+    """Apply the built-in slope layer's catalog settings without changing its terrain or image."""
+    catalog = CATALOG if catalog is None else catalog
+    entries = json.loads(catalog.read_text(encoding='utf-8')).get('layers', []) if catalog.exists() else []
+    entry = next((e for e in entries if e.get('id') == 'slope' and not e.get('source')), {})
+    layer = dict(id='slope', name='slope', priority=10, opacity=0.6, visible=False)
+    layer.update(metadata.get('layer', {}))
+    layer.update({key: entry[key] for key in ('name', 'priority', 'opacity', 'visible') if key in entry})
+    metadata['layer'] = layer
+    metadata['units'] = entry.get('units', metadata.get('units', '°'))
+    return metadata
+
+
 def export_slope(grid, output, upsample=4):
     """Export a display image only, leaving grid and all numeric/routing files intact.
     The 10 m slope values are interpolated between cell centres (upsample pixels per cell edge)
@@ -110,10 +124,10 @@ def export_slope(grid, output, upsample=4):
         thresholds_deg=[10, 20], thresholds_role='assumption: display classes from shared/data-contract.md',
         legend=[dict(label=label, rgba=color) for label, color in zip(
             ['up to 10 degrees, comfortable', 'over 10 to 20 degrees, slow', 'over 20 degrees, blocked'], COLORS)],
-        layer=dict(id='slope', name='Slope', priority=10, opacity=0.6, visible=False),
         use='display only; read numeric slope from the binary grid, never from this image',
         valid_cells=int(valid.sum()), missing_cells=int((~valid).sum()),
     )
+    configure_slope(metadata)
     (output / 'slope_10m.json').write_text(json.dumps(metadata, indent=2, allow_nan=False) + '\n', encoding='utf-8')
     return dict(grid_id=grid.grid_id, image=str(image), metadata=str(output / 'slope_10m.json'),
                 valid_cells=metadata['valid_cells'], missing_cells=metadata['missing_cells'])

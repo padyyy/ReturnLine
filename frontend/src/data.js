@@ -72,7 +72,7 @@ async function loadLayers(grid) {
         if (buf && buf.byteLength === dm.cols * dm.rows * 4) detail = { ...dm, values: new Float32Array(buf) };
       } catch { /* value grid only */ }
     }
-    out.push({ id: meta.layer?.id ?? path, name: meta.layer?.id === 'slope' ? 'Slope, 10 m baseline' : meta.layer?.name ?? path, units: meta.units ?? (meta.layer?.id === 'slope' ? '°' : null), role: meta.layer?.role ?? null, meta, values, detail });
+    out.push({ id: meta.layer?.id ?? path, name: meta.layer?.name ?? path, units: meta.units ?? null, role: meta.layer?.role ?? null, meta, values, detail });
   }
   return out;
 }

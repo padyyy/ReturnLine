@@ -1,5 +1,5 @@
 /* App additions to the console styles (console.css is ported from the navigation sketch):
-   the Leaflet stage, markers and labels, credits, the readout, the rehearsal log and the data tag. */
+   the Leaflet stage, markers and labels, credits, the readout and the rehearsal log. */
 
 /* Leaflet stage. Leaflet's panes and controls use z-index 400 to 1000; isolating the map box keeps them
    inside it, so the header's menus (Layers, map credits aside) always open above the map. */
@@ -62,9 +62,6 @@
 .ly-key span { display: flex; align-items: center; gap: 7px; }
 .ly-key .sw { width: 14px; height: 10px; border: 1px solid var(--graphite); border-radius: 3px; flex: none; }
 .legend-note { margin: 6px 0 0; }
-
-/* data tag in the header: orange while any input is a placeholder */
-.tag-sketch.is-ph { border-color: var(--cover); color: #9E3613; background: var(--cover-tint); }
 
 /* values that need data that has not arrived */
 .na { font: 600 12.5px/1.2 var(--f-text); color: var(--graphite-2); }

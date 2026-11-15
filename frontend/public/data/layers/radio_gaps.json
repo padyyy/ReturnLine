@@ -133,7 +133,7 @@
   },
   "layer": {
     "id": "radio_gaps",
-    "name": "Radio gaps",
+    "name": "Radio dead zones",
     "priority": 20,
     "opacity": 0.6,
     "visible": false,

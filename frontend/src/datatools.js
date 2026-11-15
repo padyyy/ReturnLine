@@ -29,9 +29,9 @@ const session = [];          // targets added in this session (no tools)
 // Where a point lands on the console grid and what the grids say about it
 export function pointPreview(model, p) {
   const g = model.grid;
-  if (!g) return { ok: false, why: 'needs the time-to-base grid' };
+  if (!g) return { ok: false, why: 'return-time data unavailable' };
   const i = cellIndex(g, p);
-  if (i < 0) return { ok: false, why: 'outside the console grid' };
+  if (i < 0) return { ok: false, why: 'outside the mapped area' };
   const col = i % g.header.nx, row = Math.floor(i / g.header.nx);
   // the 10 m grid decides (the same grid the routes are made on); the GeoMapper elevation map is shown beside it
   const slope = slopeAt(model, p), z = elevAt(model, p), T = ttbAt(model, p, 'penalized'), zone = zoneAt(model, p), ter = terrainAt(model, p);
@@ -64,7 +64,7 @@ export function sessionTarget(model, p, name) {
   const pts = home.vertices.map((v) => ({ lon: v.lon, lat: v.lat, elev_m: elevAt(model, v), slope_deg: slopeAt(model, v) }));
   if (pts.some((v) => v.elev_m == null)) throw new Error('no elevation along the way');
   const n = Math.max(0, ...model.stations.map((s) => s.n)) + 1;
-  const station = { n, name, lon: p.lon, lat: p.lat, reason: 'Added in this session (not saved): pointer route, route-duration times', sol: null, image: null, elev_m: pv.z, session: true };
+  const station = { n, name, lon: p.lon, lat: p.lat, reason: 'Added for this session; route and walking times estimated from terrain.', sol: null, image: null, elev_m: pv.z, session: true };
   return { station, route: { station: n, ret: timed(model, pts), out: timed(model, pts.slice().reverse()) } };
 }
 
@@ -75,9 +75,9 @@ function renderPreview(model) {
   const lon = parseFloat($('#ad-lon').value), lat = parseFloat($('#ad-lat').value);
   if (!Number.isFinite(lon) || !Number.isFinite(lat)) { box.innerHTML = '<p class="cap">Enter a position or pick it on the map.</p>'; $('#ad-add').disabled = true; return null; }
   const p = { lon, lat }, pv = pointPreview(model, p);
-  box.innerHTML = (pv.col != null ? row('Grid cell (GeoMapper)', `col ${pv.col} · row ${pv.row}`) + row('Elevation', pv.z != null ? `${R(pv.z)} m` : '–') +
+  box.innerHTML = (pv.col != null ? row('Terrain cell', `col ${pv.col} · row ${pv.row}`) + row('Elevation', pv.z != null ? `${R(pv.z)} m` : '–') +
     row('Slope, 10 m', pv.slope != null ? `${pv.slope.toFixed(1)}°` : '–') +
-    (pv.dem ? row('GeoMapper DEM 1 m', `${R(pv.dem.z)} m · ${pv.dem.slope != null ? `${pv.dem.slope.toFixed(1)}°` : '–'}`) : '') +
+    (pv.dem ? row('Terrain detail, 1 m', `${R(pv.dem.z)} m · ${pv.dem.slope != null ? `${pv.dem.slope.toFixed(1)}°` : '–'}`) : '') +
     row('Time to base', pv.reach ? `${R(pv.T)} min` : '–') : '') +
     `<p class="ad-verdict ${pv.ok ? 'ok' : 'bad'}">${pv.ok ? 'Can become a target' : esc(pv.why)}</p>`;
   $('#ad-add').disabled = !pv.ok || !$('#ad-name').value.trim();
@@ -87,15 +87,15 @@ function renderLists() {
   const pts = tools ? tools.points : session.map((t) => ({ id: String(t.station.n), name: t.station.name, lon: t.station.lon, lat: t.station.lat }));
   if ($('#ad-points')) $('#ad-points').innerHTML = pts.length ? pts.map((q) => `<li><span><b>${esc(q.name)}</b><small>${(+q.lon).toFixed(5)}°E ${Math.abs(+q.lat).toFixed(5)}°S</small></span><button type="button" class="btn" data-rm-point="${esc(q.id)}">Remove</button></li>`).join('')
     : '<li class="cap">No added targets yet.</li>';
-  $('#ad-layers').innerHTML = tools ? (tools.layers.length ? tools.layers.map((l) => `<li><span><b>${esc(l.name)}</b><small>${esc(l.file)}${l.units ? ` · ${esc(l.units)}` : ''}</small></span>${l.removable ? `<button type="button" class="btn" data-rm-layer="${esc(l.id)}">Remove</button>` : '<small>layers.json</small>'}</li>`).join('') : '<li class="cap">No maps in data/layers/ yet.</li>')
+  $('#ad-layers').innerHTML = tools ? (tools.layers.length ? tools.layers.map((l) => `<li><span><b>${esc(l.name)}</b><small>${esc(l.file.split(/[\\/]/).pop())}${l.units ? ` · ${esc(l.units)}` : ''}</small></span>${l.removable ? `<button type="button" class="btn" data-rm-layer="${esc(l.id)}">Remove</button>` : '<small>Included map</small>'}</li>`).join('') : '<li class="cap">No maps available.</li>')
     : '';
 }
 function setMode() {
   const note = $('#ad-mode');
   note.className = `ad-mode ${tools ? 'on' : ''}`;
   note.innerHTML = tools
-    ? '<b>Local data tools on.</b> Maps are saved in <code>data/layers/</code> and placed on the grid by GeoMapper.'
-    : '<b>Preview mode.</b> To add maps, run the console locally with <code>npm run dev</code>.';
+    ? '<b>Map import ready.</b> Imported maps are saved and aligned with the terrain.'
+    : '<b>Map import unavailable.</b> To import a GeoTIFF or CSV, start the console locally with <code>npm run dev</code>.';
   $('#ad-map-form').hidden = !tools;
   $('#ad-map-off').hidden = !!tools;
 }
@@ -125,7 +125,7 @@ export function initDataTools(model, mapApi, { onStationsChanged, reloadData, on
     if (tools) {
       busy(true, 'Removing and rebuilding the plan…');
       const out = await (await fetch(`/__tools/points?id=${encodeURIComponent(id)}`, { method: 'DELETE', headers: HDR })).json().catch(() => ({ ok: false }));
-      busy(false, out.ok ? 'Removed. Loading the plan…' : `Not removed: ${out.error ?? 'pipeline failed'}`);
+      busy(false, out.ok ? 'Removed. Loading the plan…' : `Not removed: ${out.error ?? 'could not update the plan'}`);
       if (out.ok) reloadData();
       return out;
     }
@@ -157,11 +157,11 @@ export function initDataTools(model, mapApi, { onStationsChanged, reloadData, on
       const p = renderPreview(model), name = $('#ad-name').value.trim(), reason = $('#ad-reason').value.trim();
       if (!p || !name) return;
       if (tools) {
-        busy(true, 'GeoMapper and A* are working…');
+        busy(true, 'Calculating the route and walking times…');
         try {
           const r = await fetch('/__tools/points', { method: 'POST', headers: { ...HDR, 'Content-Type': 'application/json' }, body: JSON.stringify({ name, reason, lon: p.lon, lat: p.lat }) });
           const out = await r.json();
-          if (!out.ok) throw new Error(out.error || out.log?.split('\n').filter(Boolean).pop() || 'pipeline failed');
+          if (!out.ok) throw new Error(out.error || out.log?.split('\n').filter(Boolean).pop() || 'could not calculate the route');
           const line = (out.log || '').split('\n').find((l) => l.includes('(added)') && l.includes(name)) || '';
           busy(false, line.includes('NO ROUTE') ? line.trim() : 'Saved. Loading the new plan…');
           if (!line.includes('NO ROUTE')) reloadData();
@@ -188,20 +188,20 @@ export function initDataTools(model, mapApi, { onStationsChanged, reloadData, on
   $('#ad-map-add').addEventListener('click', async () => {
     const f = $('#ad-file').files[0];
     if (!f) { busy(false, 'Choose a GeoTIFF or a CSV first.'); return; }
-    busy(true, `Uploading ${f.name} and anchoring it with GeoMapper…`);
+    busy(true, `Importing ${f.name} and aligning it with the terrain…`);
     try {
       const q = new URLSearchParams({ file: f.name, name: $('#ad-map-name').value.trim() || f.name.replace(/\.(tiff?|csv)$/i, ''), units: $('#ad-map-units').value.trim(), radius: $('#ad-radius').value.trim(), ramp: $('#ad-map-ramp').value });
       const r = await fetch(`/__tools/layers?${q}`, { method: 'POST', headers: { ...HDR, 'Content-Type': 'application/octet-stream' }, body: f });
       const out = await r.json();
-      if (!out.ok) throw new Error(out.error || 'pipeline failed');
-      busy(false, 'Map placed on the grid. Loading…'); reloadData();
+      if (!out.ok) throw new Error(out.error || 'could not import the map');
+      busy(false, 'Map imported. Loading…'); reloadData();
     } catch (err) { busy(false, `Not added: ${err.message}`); }
   });
   $('#ad-layers').addEventListener('click', async (e) => {
     const b = e.target.closest('[data-rm-layer]'); if (!b) return;
     busy(true, 'Removing the map…');
     const out = await (await fetch(`/__tools/layers?id=${encodeURIComponent(b.dataset.rmLayer)}`, { method: 'DELETE', headers: HDR })).json().catch(() => ({ ok: false }));
-    busy(false, out.ok ? 'Removed. Loading…' : `Not removed: ${out.error ?? 'pipeline failed'}`);
+    busy(false, out.ok ? 'Removed. Loading…' : `Not removed: ${out.error ?? 'could not remove the map'}`);
     if (out.ok) reloadData();
   });
   renderPreview(model);

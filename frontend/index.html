@@ -6,8 +6,43 @@
 <title>ReturnLine</title>
 <meta name="description" content="ReturnLine habitat console: plan a Marswalk at the Gale crater boxwork, follow it on the forearm tablet and the helmet HUD, and rehearse an emergency.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 48'%3E%3Ccircle cx='22' cy='27' r='15' fill='%233fa9f5'/%3E%3Cpath d='M-1 27A23 7 0 0 0 45 27' transform='rotate(-18 22 27)' fill='none' stroke='%232B2D2F' stroke-width='3.4' stroke-linecap='round'/%3E%3Cpath d='M43.9 19.9s-5.3-5.6-5.3-9.4a5.3 5.3 0 0 1 10.6 0c0 3.8-5.3 9.4-5.3 9.4z' fill='%233fa9f5'/%3E%3C/svg%3E">
+<style>
+  /* The start screen is styled before the application bundle arrives. */
+  body.is-loading > [data-app-shell] { visibility: hidden; }
+  .loading-screen {
+    position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center;
+    padding: 28px; background: radial-gradient(ellipse at 50% 44%, #14183d 0%, var(--bg, #0d001e) 65%);
+    color: var(--ink, #EAF4FF); font-family: var(--f-text, "Segoe UI", system-ui, sans-serif);
+  }
+  .loading-screen[hidden], .loading-screen [hidden] { display: none !important; }
+  .loading-content { display: grid; justify-items: center; gap: 24px; text-align: center; max-width: 360px; }
+  .loading-orbit { position: relative; display: grid; place-items: center; width: 148px; height: 148px; }
+  .loading-spinner {
+    position: absolute; inset: 0; border: 2px solid var(--line, #22487a); border-radius: 50%;
+    border-top-color: var(--acc, #3fa9f5); animation: loading-spin 1s linear infinite;
+  }
+  .loading-mark { width: 92px; height: 88px; }
+  .loading-title {
+    margin: 0; font-family: var(--f-head, "Arial Narrow", system-ui, sans-serif);
+    font-size: clamp(30px, 6vw, 40px); font-weight: 700; line-height: 1.1; letter-spacing: .16em;
+  }
+  .loading-title span { color: var(--acc, #3fa9f5); }
+  .loading-message { margin: 0; color: var(--graphite-2, #9DBCDC); font-size: 14px; line-height: 1.5; }
+  .loading-screen.has-error .loading-spinner { animation: none; border-color: var(--warn, #F28C38); }
+  #loading-retry { min-height: 42px; padding: 0 22px; cursor: pointer; }
+  #rl-grad stop:nth-child(1) { stop-color: #9FD6FF; }
+  #rl-grad stop:nth-child(2) { stop-color: var(--acc, #3fa9f5); }
+  #rl-grad stop:nth-child(3) { stop-color: #22487a; }
+  #rl-mark path[fill="#E8622C"] { fill: var(--acc, #3fa9f5); }
+  #rl-mark path[stroke="#E8622C"] { stroke: var(--acc, #3fa9f5); }
+  #rl-mark path[stroke="#FBD9BE"] { stroke: #D6EEFF; }
+  #rl-mark path[stroke="#7A2A0E"] { stroke: #14183d; }
+  #rl-mark path[stroke="#2B2D2F"] { stroke: var(--ink, #EAF4FF); }
+  @keyframes loading-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .loading-spinner { animation: none; } }
+</style>
 </head>
-<body>
+<body class="is-loading">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <symbol id="i-play" viewBox="0 0 16 16"><path d="M5 3.2v9.6L12.6 8z" fill="currentColor" stroke="none"/></symbol>
@@ -37,7 +72,20 @@
   </defs>
 </svg>
 
-<header class="band">
+<section class="loading-screen" id="loading-screen" aria-labelledby="loading-title">
+  <div class="loading-content">
+    <div class="loading-orbit" aria-hidden="true">
+      <span class="loading-spinner"></span>
+      <svg class="loading-mark" viewBox="0 0 50 48"><use href="#rl-mark"/></svg>
+    </div>
+    <h1 class="loading-title" id="loading-title">RETURN<span>LINE</span></h1>
+    <p class="loading-message" id="loading-message" role="status" aria-live="polite">Loading mission data…</p>
+    <button type="button" class="btn btn-dark" id="loading-retry" hidden>Try again</button>
+    <noscript><p class="loading-message">Enable JavaScript to open ReturnLine.</p></noscript>
+  </div>
+</section>
+
+<header class="band" data-app-shell inert aria-busy="true">
   <div class="brand" role="img" aria-label="ReturnLine">
     <svg class="mark" viewBox="0 0 50 48" aria-hidden="true"><use href="#rl-mark"/></svg>
     <span class="wordmark" aria-hidden="true">RETURN<span class="wm-b">LINE</span></span>
@@ -47,7 +95,6 @@
     <span class="meta-item site">Gale crater · boxwork, Mount Sharp</span>
     <span class="meta-item" id="hdr-sol">Sol –</span>
     <span class="meta-item num" id="hdr-clock">–:– LMST</span>
-    <span class="tag-sketch is-ph" id="tag-data" hidden>Placeholder data</span>
   </div>
   <div class="controls" id="nav-controls" hidden>
     <div class="seg" role="group" aria-label="Navigation time compression">
@@ -71,14 +118,14 @@
     <div class="menu">
       <button class="btn" id="btn-layers" aria-expanded="false" aria-controls="layers"><svg class="i"><use href="#i-layers"/></svg><span class="t">Layers</span></button>
       <div class="popover" id="layers" hidden>
-        <h3>Always available</h3>
+        <h3>Map overlays</h3>
         <label><input type="checkbox" id="ly-area"> Return stages along the route, 60-minute line</label>
         <label><input type="checkbox" id="ly-zones"> Protected zones</label>
         <label><input type="checkbox" id="ly-trav"> Curiosity traverse</label>
         <label><input type="checkbox" id="ly-names"> Place names (Curiosity mission, not IAU)</label>
         <h3>Map layers <small>top of the list lies on top</small></h3>
         <ol class="ly-list" id="ly-maps"></ol>
-        <span class="cap">Every layer is anchored on the console grid by GeoMapper (pipeline/map_layers.py).</span>
+        <span class="cap">Layer order and opacity apply to the map and tablet views.</span>
         <h3>Tablet map <small>key 4 switches through the ticked maps</small></h3>
         <ol class="ly-nav" id="ly-nav"></ol>
         <span class="cap">“Like the base map” stacks the switched-on layers in the order above. Kept in this browser.</span>
@@ -90,7 +137,7 @@
   </div>
 </header>
 
-<main class="console">
+<main class="console" data-app-shell inert aria-busy="true">
   <section class="mapcol" aria-label="Map and EVA plan">
     <div class="mapwrap" id="mapwrap">
       <div class="stage" id="map" aria-label="Map of the EVA site with the return stages along the route, protected zones, stations and the planned route"></div>
@@ -150,9 +197,9 @@
       <section class="navpick" id="navpick" aria-label="Route planning">
         <h2 class="sect-h">Plan the route <span class="cap">pick a station, plan the stay, then start</span></h2>
         <ul class="np-list" id="navpick-list"></ul>
-        <div class="np-opt"><span class="np-k">Route</span><div class="seg" id="np-variant" role="group" aria-label="Which A* route"><button type="button" data-variant="safe" aria-pressed="true">Protected zones avoided</button><button type="button" data-variant="fastest" aria-pressed="false">Fastest</button></div><span class="cap" id="np-variant-cap"></span></div>
+        <div class="np-opt"><span class="np-k">Route</span><div class="seg" id="np-variant" role="group" aria-label="Route preference"><button type="button" data-variant="safe" aria-pressed="true">Protected zones avoided</button><button type="button" data-variant="fastest" aria-pressed="false">Fastest</button></div><span class="cap" id="np-variant-cap"></span></div>
         <div class="np-opt"><span class="np-k">Stay at the station</span><div class="seg" id="np-stay" role="group" aria-label="Planned stay at the station"><button type="button" data-stay="15" aria-pressed="false">0:15</button><button type="button" data-stay="30" aria-pressed="true">0:30</button><button type="button" data-stay="60" aria-pressed="false">1:00</button><button type="button" data-stay="90" aria-pressed="false">1:30</button><button type="button" data-stay="-1" aria-pressed="false">Max</button></div></div>
-        <div class="np-opt"><span class="np-k">Test: start at EVA hour</span><div class="seg" id="np-t0" role="group" aria-label="EVA hour at the start"><button type="button" data-t0="0" aria-pressed="true">0:00</button><button type="button" data-t0="180" aria-pressed="false">3:00</button><button type="button" data-t0="270" aria-pressed="false">4:30</button></div><span class="cap">less life support left</span></div>
+        <div class="np-opt"><span class="np-k">Departure time, EVA elapsed</span><div class="seg" id="np-t0" role="group" aria-label="EVA hour at departure"><button type="button" data-t0="0" aria-pressed="true">0:00</button><button type="button" data-t0="180" aria-pressed="false">3:00</button><button type="button" data-t0="270" aria-pressed="false">4:30</button></div><span class="cap">time already spent outside</span></div>
         <div class="np-act"><button class="btn btn-go" id="btn-start" disabled><svg class="i"><use href="#i-arrow"/></svg>Start route</button><span class="cap" id="np-note">Choose a station first</span></div>
       </section>
       <h2 class="sect-h">Safety rules <span class="cap" id="rules-count"></span></h2>
@@ -199,7 +246,7 @@
         <!-- New target: switched off for now (2026-11-15). To bring it back, remove this comment; datatools.js wires it again.
         <section class="ad-sec" aria-label="New target">
           <h3>New target</h3>
-          <p class="cap">A position becomes a station with a route home. GeoMapper places it on the console grid.</p>
+          <p class="cap">Add a science station and calculate its route back to the habitat.</p>
           <label class="ad-f"><span>Name</span><input id="ad-name" maxlength="80" placeholder="e.g. Ridge contact, north"></label>
           <div class="ad-two">
             <label class="ad-f"><span>Longitude °E</span><input id="ad-lon" inputmode="decimal" placeholder="137.3830"></label>
@@ -215,7 +262,7 @@
         -->
         <section class="ad-sec" aria-label="New map">
           <h3>New map</h3>
-          <p class="cap">A GeoTIFF in any Mars CRS, or a CSV with latitude and longitude columns (also JMARS exports); each further number column of a CSV becomes its own layer. GeoMapper places it on the console grid; it then appears under Map layers, on the tablet (key 4) and in the readout.</p>
+          <p class="cap">Import a GeoTIFF or a CSV with latitude and longitude columns, including JMARS exports. Each numeric CSV column becomes a map layer, available on the map, tablet and cursor readout.</p>
           <div id="ad-map-form">
             <label class="ad-f"><span>GeoTIFF or CSV</span><input type="file" id="ad-file" accept=".tif,.tiff,.csv,image/tiff,text/csv"></label>
             <label class="ad-f" id="ad-radius-row" hidden><span>CSV search radius, m (empty: twice the point spacing)</span><input id="ad-radius" inputmode="decimal" placeholder="auto"></label>
@@ -233,8 +280,8 @@
             <div class="ad-ramp" id="ad-ramp-prev" aria-hidden="true"></div>
             <button type="button" class="btn btn-go" id="ad-map-add">Add map</button>
           </div>
-          <p class="cap" id="ad-map-off">Maps need GeoMapper (Python): run the console with <code>npm run dev</code>, or put the GeoTIFF or CSV into <code>data/layers/</code> and run <code>pipeline/map_layers.py</code>.</p>
-          <h4>Maps in data/layers</h4>
+          <p class="cap" id="ad-map-off">Map import is available in the local application.</p>
+          <h4>Available maps</h4>
           <ul class="ad-list" id="ad-layers"></ul>
         </section>
         <p class="ad-status" id="ad-status" role="status"></p>
@@ -256,7 +303,7 @@
     </aside>
   </section>
 </main>
-<main class="navmode" id="navmode" hidden>
+<main class="navmode" id="navmode" data-app-shell inert aria-busy="true" hidden>
   <section class="nav-left" aria-label="Forearm tablet">
     <div class="tablet">
       <button type="button" class="key k1" id="k-data" aria-pressed="false"><span class="kn">1</span>Data</button>

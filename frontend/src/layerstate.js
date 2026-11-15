@@ -40,7 +40,7 @@ export function navChoices(model) {
   const out = [];
   if (model.ortho) out.push({ id: 'ortho', label: 'Orthophoto', detail: 'grey, 1 m', parts: ['ortho'] });
   const on = stackedOn(model);
-  out.push({ id: 'stack', label: 'Like the base map', detail: on.length ? `${model.ortho ? 'Orthophoto + ' : ''}${on.map(shortName).join(' + ')}` : 'no layer switched on yet',
+  out.push({ id: 'stack', label: 'Like the base map', detail: on.length ? `${model.ortho ? 'Orthophoto + ' : ''}${on.map(shortName).join(' + ')}` : 'Select a map layer above',
     parts: [...(model.ortho ? ['ortho'] : []), ...on], empty: !on.length });
   for (const id of LS.order) { const ly = layerById(model, id); if (ly) out.push({ id: `layer:${id}`, label: shortName(ly), detail: 'on paper', parts: [ly] }); }
   out.push({ id: 'plain', label: 'Plain', detail: 'return stages only', parts: [] });

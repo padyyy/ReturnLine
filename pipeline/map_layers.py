@@ -25,6 +25,8 @@ Catalog entry (data/layers/layers.json, "layers": [...]):
    "band": 1, "units": "mSv/day", "style": {"kind": "ramp", "colors": ["#EDF0E6", "#2B2D2F"], "range": [lo, hi]}
    | {"kind": "classes", "thresholds": [10, 20], "colors": [...], "labels": [...]},
    "opacity": 0.55, "priority": 20, "visible": false, "source_note": "..."}
+The built-in slope layer has no source: {"id": "slope", "name": "Terrain slope", "units": "°"}.
+Its catalog settings update the existing slope_10m.json; its image and numeric grid are reused.
 Paths are relative to the catalog file. Sampling is GeoMapper's nearest neighbour at cell centres;
 the display picture is smoothed between cell centres (upsample) before it is coloured.
 """
@@ -44,7 +46,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "pipeline"))
 sys.path.insert(0, str(ROOT / "backend" / "geoMapper"))
 from mapping_grid import MappingGrid  # noqa: E402  the console grid as a GeoMapper grid
-from mapping_bridge import bilinear_upsample  # noqa: E402
+from mapping_bridge import bilinear_upsample, configure_slope  # noqa: E402
 
 DATA = ROOT / "frontend" / "public" / "data"
 CATALOG = ROOT / "data" / "layers" / "layers.json"
@@ -173,6 +175,8 @@ def catalog() -> list[dict]:
     raw = []
     if CATALOG.exists():
         for e in json.loads(CATALOG.read_text(encoding="utf-8")).get("layers", []):
+            if e.get("id") == "slope" and not e.get("source"):
+                continue  # display settings for the existing terrain layer, not a new map source
             raw.append(dict(e, source=str((folder / e["source"]).resolve())))
     listed = {Path(e["source"]).resolve() for e in raw}
     for f in sorted([*folder.glob("*.tif"), *folder.glob("*.tiff"), *folder.glob("*.csv")]):
@@ -289,6 +293,8 @@ def main(argv: list[str] | None = None) -> int:
     if slope.exists():
         sm = json.loads(slope.read_text(encoding="utf-8"))
         if sm.get("grid_id") == grid.grid_id:
+            configure_slope(sm, CATALOG)
+            slope.write_text(json.dumps(sm, indent=2, allow_nan=False) + "\n", encoding="utf-8")
             index.append("data/slope_10m.json")
         else:
             print("slope_10m.json belongs to another grid; re-export it with mapping_bridge.py export_slope", file=sys.stderr)

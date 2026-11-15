@@ -57,7 +57,7 @@ function layerList() {
     const extra = existsSync(side) ? JSON.parse(readFileSync(side, 'utf8')) : {};
     return { id: f.replace(MAP_EXT, ''), name: extra.name ?? f, units: extra.units ?? null, file: f, removable: true };
   }) : [];
-  return [...listed.map((l) => ({ id: l.id, name: l.name, units: l.units ?? null, file: l.source, removable: false })), ...dropped];
+  return [...listed.map((l) => ({ id: l.id, name: l.name, units: l.units ?? null, file: l.source ?? 'Calculated from terrain', removable: false })), ...dropped];
 }
 
 function send(res, status, obj) { res.statusCode = status; res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(obj)); }

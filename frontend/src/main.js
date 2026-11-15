@@ -113,7 +113,7 @@ function renderLayerMenu() {
       `<button type="button" class="ly-b" data-mv="1" data-id="${esc(id)}" aria-label="Move ${nm} down" title="Down: drawn under the layers above"${k === n - 1 ? ' disabled' : ''}>${icon('chev', 'down')}</button></span></div>` +
       `<div class="ly-sub"${on ? '' : ' hidden'}><label class="ly-op"><span>Opacity</span><input type="range" min="10" max="100" step="5" value="${op}" data-op="${esc(id)}" aria-label="Opacity of ${nm}"><output>${op} %</output></label>` +
       `${key ? `<div class="ly-key">${key}</div>` : ''}</div></li>`;
-  }).join('') : '<li class="cap">No map layers yet. Run pipeline/map_layers.py.</li>';
+  }).join('') : '<li class="cap">Add a map to view additional layers.</li>';
   renderNavMenu();
 }
 function renderNavMenu() {
@@ -167,7 +167,7 @@ function wireRemove(dt) {
     clearTimeout(timer); armed = null;
     b.disabled = true; label(b, s.session ? 'Removing…' : 'Rebuilding the plan…');
     const out = await dt.removeStation(s);
-    if (!out.ok) { b.disabled = false; b.classList.remove('is-armed'); label(b, `Not removed: ${out.error ?? 'pipeline failed'}`); }
+    if (!out.ok) { b.disabled = false; b.classList.remove('is-armed'); label(b, `Not removed: ${out.error ?? 'please try again'}`); }
   };
   $('#navpick-list').addEventListener('click', onClick, true);
   $('#target').addEventListener('click', onClick);
@@ -208,7 +208,7 @@ function wire() {
   if (!model.names.length) { const z = $('#ly-names').parentElement; z.classList.add('is-off'); $('#ly-names').disabled = true; }
   // map layers: one row per layer in layers/index.json (order, opacity, legend) and the tablet maps
   initLayers(model); applyLayers(); renderLayerMenu(); wireLayerMenu();
-  if (!model.zones.length) { const z = $('#ly-zones').parentElement; z.classList.add('is-off'); z.lastChild.textContent = ' Protected zones · none yet'; }
+  if (!model.zones.length) { $('#ly-zones').disabled = true; $('#ly-zones').parentElement.hidden = true; }
   // 100 m survey grid: off by default, on with ?grid=1 or the remembered choice of this viewer
   const tg = $('#tgl-grid');
   let gridOn = new URLSearchParams(location.search).get('grid') === '1';
@@ -256,6 +256,16 @@ function wire() {
   if (window.ResizeObserver) new ResizeObserver(soon).observe($('#mapwrap'));
 }
 
+async function finishLoading() {
+  await Promise.allSettled(Array.from($('#map').querySelectorAll('img.leaflet-image-layer'), (image) => image.decode()));
+  await document.fonts.ready;
+  await new Promise(requestAnimationFrame);
+  $$('[data-app-shell]').forEach((el) => { el.inert = false; el.setAttribute('aria-busy', 'false'); });
+  document.body.classList.remove('is-loading');
+  $('#loading-screen').hidden = true;
+  mapApi.invalidate();
+}
+
 async function boot() {
   try {
     const data = await loadData();
@@ -273,7 +283,7 @@ async function boot() {
     simWire();
     const note = $('#legend-note');
     note.hidden = !!model.grid && !model.grid.placeholder;
-    note.textContent = model.grid ? 'Placeholder grid: flat ground, no slope, no ridges. The routing engine replaces it.' : 'Return area and 60-minute line appear with the time-to-base grid from the routing engine.';
+    note.textContent = model.grid ? 'Return-time estimates use a flat-ground terrain model.' : 'Return-time estimates are unavailable for this area.';
     mapApi.fitPlan();
     renderPlan();
     // Add data: new targets and maps (datatools.js); a saved change reloads the page with the new files
@@ -288,10 +298,15 @@ async function boot() {
     // ?beat=1..6 opens the emergency rehearsal at the end of that step (for checking the screens)
     const q = new URLSearchParams(location.search), b = +(q.get('beat') || 0);
     if (b >= 1 && b <= 6) { startSim(); requestAnimationFrame(() => requestAnimationFrame(() => simJump(b))); }
+    await finishLoading();
   } catch (err) {
     console.error(err);
-    $('#map').innerHTML = `<div class="map-message">Data could not be loaded: ${err.message}</div>`;
+    $('#loading-screen').classList.add('has-error');
+    $('#loading-message').textContent = 'Mission data could not be loaded. Check your connection and try again.';
+    $('#loading-retry').hidden = false;
+    $('#loading-retry').focus();
   }
 }
 
+$('#loading-retry').addEventListener('click', () => location.reload());
 boot();

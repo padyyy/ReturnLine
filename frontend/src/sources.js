@@ -4,17 +4,17 @@ import { srcChip } from './format.js';
 
 export const SRC = {
   xEVA: ['NASA EVA', 'NASA, Exploration EVA System Concept of Operations, Rev B, 2020: 60-minute safe-haven rule, suit slope requirement up to 20°, radio-loss procedure.'],
-  DEM: ['USGS', 'Elevation and 10 m slope from the USGS Gale DEM (pipeline).'],
-  GEOM: ['GeoMapper', 'Elevation map placed on the console grid by GeoMapper (pipeline/map_layers.py): elevation between its 1 m samples, slope from the elevations 5 m to each side (10 m baseline).'],
+  DEM: ['USGS', 'Elevation and slope over a 10 m baseline from the USGS Gale digital elevation model.'],
+  GEOM: ['GeoMapper', 'Elevation interpolated between 1 m terrain samples; slope calculated from elevations 5 m to each side, over a 10 m baseline.'],
   REMS: ['REMS', 'Curiosity REMS weather feed: sunrise and sunset per sol (last reading sol 4995).'],
   RAD: ['Hassler', 'Hassler et al. 2014, Science 343: 0.64 ± 0.12 mSv per day at Gale. Information only, never a gate.'],
-  LOO: ['LOO', 'Leave-one-out comparison with Curiosity\'s drives (routing engine).'],
-  ROUTE: ['routes', 'Precomputed routes from the routing engine (shared/data-contract.md).'],
-  GRID: ['grid', 'Time-to-base grid from the routing engine: minutes to the habitat from every 10 m cell (shared/data-contract.md).'],
-  ASSUME: ['assum.', 'Labeled assumption, set by the team and listed in the Assumptions panel.'],
+  LOO: ['LOO', 'Leave-one-out comparison of planned routes with Curiosity\'s recorded drives.'],
+  ROUTE: ['routes', 'Calculated routes between the habitat and each station.'],
+  GRID: ['return time', 'Estimated minutes to the habitat from each 10 m terrain cell.'],
+  ASSUME: ['assum.', 'Planning assumption listed in the Assumptions panel.'],
   TOBLER: ['Tobler', 'Tobler 1993, NCGIA Technical Report 93-1: hiking speed against slope, normalised so level ground gives the base speed; uphill and downhill differ. A terrestrial function, not validated for suited crews on Mars.'],
   EWT: ['EWT', 'About 2 km/h in NASA lunar planning (xEVA); 1.5 km/h on Mars is a labeled slowdown after Norcross et al., NASA TP-2009-214796.'],
-  RADIO: ['assum.', 'Our planning threshold, not a NASA number: after a radio loss NASA first walks back into line of sight of the habitat (xEVA 9.5). Line of sight checked along the route (pipeline/radio_check.py).'],
-  PP: ['COSPAR', 'COSPAR policy for human missions to Mars and NASA NID 8715.129 (2020): the reason for protected zones. Still to be checked against the primary texts.'],
+  RADIO: ['assum.', 'The radio-gap limit is a planning assumption, not a NASA threshold. NASA xEVA §9.5 describes returning to line of sight after communication loss. Route visibility is estimated from terrain.'],
+  PP: ['COSPAR', 'Policy references: COSPAR policy for human missions to Mars and NASA NID 8715.129 (2020). Their interpretation for this plan has not been verified; zone boundaries and buffers are planning inputs.'],
 };
 export const src = (k) => srcChip(SRC[k][0], SRC[k][1], k === 'ASSUME' || k === 'RADIO');

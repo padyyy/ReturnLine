@@ -102,8 +102,6 @@ body { background: var(--bg); color: var(--ink); }
 .meta-item { font-size: 14px; }
 .meta-item b, .meta .num { color: var(--ink); }
 .meta .num { font-family: var(--f-head); font-size: 16px; font-weight: 700; letter-spacing: .06em; }
-.tag-sketch { border-radius: 2px; border-color: var(--line-2); color: var(--graphite-2); font-family: var(--f-head); text-transform: uppercase; letter-spacing: .06em; }
-.tag-sketch.is-ph { border-color: var(--acc); color: var(--acc); background: var(--acc-tint); }
 
 /* ---------- menus and panels over the map ---------- */
 .popover, .legend, .credits-text { background: rgba(var(--panel-rgb), .97); border: 1px solid var(--line-2); border-radius: 2px; color: var(--ink); }
