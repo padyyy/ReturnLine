@@ -1,0 +1,4 @@
+{
+  "note": "Added targets for the console. Each point becomes a station with a route: pipeline/astar_import.py places it on the console grid with GeoMapper and routes it with backend/astar.py. Edit by hand or with the console's Add data panel (npm run dev).",
+  "points": []
+}

@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "generator": "pipeline/map_layers.py",
+  "created_utc": "2026-11-15T00:52:28.645199+00:00",
+  "image": "radiation.png",
+  "image_path": "data/layers/radiation.png",
+  "numeric_file": "layers/radiation.f32",
+  "grid_file": "../grid.json",
+  "grid_id": "mars-eqc-76ee605d6394f17a713f",
+  "grid": {
+    "grid_id": "mars-eqc-76ee605d6394f17a713f",
+    "projection": "mars_eqc",
+    "mars_radius_m": 3396190.0,
+    "lat_ts": 0,
+    "lon_0": 0,
+    "origin_m": {
+      "x": 8140783.492786024,
+      "y": -282731.075189438
+    },
+    "cell_m": 10.0,
+    "nx": 475,
+    "ny": 476,
+    "row_order": "north_to_south",
+    "bounds": [
+      [
+        -4.8501483297557,
+        137.33994154226008
+      ],
+      [
+        -4.769844250631072,
+        137.42007691533613
+      ]
+    ],
+    "coordinate_order": "lon,lat",
+    "bounds_order": "[[south,west],[north,east]]",
+    "index_formula": "row * nx + column",
+    "sample_position": "cell_center",
+    "binary_order": "row-major",
+    "byte_order": "little-endian",
+    "nodata_json": null,
+    "files": {
+      "ttb_penalized": "ttb_penalized.f32",
+      "ttb_allowed": "ttb_allowed.f32",
+      "ptr_penalized": "ptr_penalized.i32",
+      "ptr_allowed": "ptr_allowed.i32",
+      "elev": "elev_10m.f32",
+      "slope": "slope_10m.f32"
+    },
+    "source": {
+      "source": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/MSL_Gale_DEM_Mosaic_1m_v3.tif",
+      "level_m": 4.0,
+      "nodata": -32767.0,
+      "reused_from": "elev_10m.f32 of the previous full run"
+    },
+    "placeholder": false,
+    "placeholder_inputs": [
+      "zones"
+    ]
+  },
+  "bounds": [
+    [
+      -4.8501483297557,
+      137.33994154226008
+    ],
+    [
+      -4.769844250631072,
+      137.42007691533613
+    ]
+  ],
+  "width_px": 1900,
+  "height_px": 1904,
+  "pixels_per_cell": 4,
+  "pixel_origin": "northwest",
+  "sample_position": "cell_center",
+  "sampling": "GeoMapper raster_to_matrix: nearest neighbour at the centre of every console cell",
+  "smoothing": "bilinear between cell centres, then coloured",
+  "nodata": "transparent where the map has no data",
+  "units": "mSv/day",
+  "source": {
+    "path": "backend\\routes\\radiation\\radiation_background_msv_per_day.tif",
+    "band": 1,
+    "crs": "PROJCS[\"unknown\",GEOGCS[\"unknown\",DATUM[\"unknown\",SPHEROID[\"unknown\",3396190,0]],PRIMEM[\"Reference meridian\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Equirectangular\"],PARAMETER[\"latitude_of_origin\",-4.8106],PARAMETER[\"central_meridian\",137.3807],PARAMETER[\"standard_parallel_1\",-4.8106],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]",
+    "note": "A* backend (backend/radiation.py): spatially uniform GCR background after Hassler et al. 2014, on the A* run's 1 km local grid. Make it with: .venv/Scripts/python -m backend.radiation"
+  },
+  "legend": [
+    {
+      "label": "0.64 everywhere it is mapped",
+      "rgba": [
+        201,
+        214,
+        236,
+        255
+      ]
+    }
+  ],
+  "value_range": [
+    0.6399999856948853,
+    0.6399999856948853
+  ],
+  "covered_cells": 10100,
+  "missing_cells": 216000,
+  "covered_box_cells": {
+    "col": [
+      191,
+      291
+    ],
+    "row": [
+      192,
+      291
+    ]
+  },
+  "layer": {
+    "id": "radiation",
+    "name": "Radiation dose rate",
+    "priority": 20,
+    "opacity": 0.45,
+    "visible": false
+  },
+  "use": "display only; read values from the .f32 grid, never from the picture"
+}

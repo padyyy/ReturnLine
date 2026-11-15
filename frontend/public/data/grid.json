@@ -1,10 +1,8 @@
 {
- "note": "Time-to-base grid from the real Gale DEM (4 m level averaged to 10 m), Python fallback for the routing engine; placeholder inputs: habitat and constants (scenario.json), stations, zones",
+ "note": "Time-to-base grid from the real Gale DEM (4 m level averaged to 10 m), Python fallback for the routing engine; placeholder inputs: zones",
  "generator": "pipeline/time_grid.py",
  "placeholder": false,
  "placeholder_inputs": [
-  "habitat and constants (scenario.json)",
-  "stations",
   "zones"
  ],
  "crs": "+proj=eqc +lat_ts=0 +lon_0=0 +R=3396190 +units=m (Mars 2000 sphere, as the USGS Gale DEM)",
@@ -37,7 +35,7 @@
   "elev": "float32 little-endian, metres, NaN without data",
   "slope": "float32 little-endian, degrees"
  },
- "habitat_cell": 119016,
+ "habitat_cell": 114716,
  "walk_speed_kmh": 1.5,
  "slope_penalty": "Tobler 1993, normalised to the base speed on level ground: speed = base * exp(-3.5 * (|g + 0.05| - 0.05)), g = dz/d in walking direction; not validated for suited crews on Mars",
  "blocked": "no data or slope above 20 degrees; 1 m ridge mask not included (needs the 1 m DEM)",
@@ -48,7 +46,8 @@
  "source": {
   "source": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/MSL_Gale_DEM_Mosaic_1m_v3.tif",
   "level_m": 4.0,
-  "nodata": -32767.0
+  "nodata": -32767.0,
+  "reused_from": "elev_10m.f32 of the previous full run"
  },
- "date": "2026-11-14"
+ "date": "2026-11-15"
 }

@@ -1,0 +1,10 @@
+{
+  "generator": "pipeline/map_layers.py",
+  "created_utc": "2026-11-15T00:52:28.661503+00:00",
+  "grid_file": "data/grid.json",
+  "grid_id": "mars-eqc-76ee605d6394f17a713f",
+  "layers": [
+    "data/slope_10m.json",
+    "data/layers/radiation.json"
+  ]
+}

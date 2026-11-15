@@ -25,6 +25,8 @@ How it works
   frontend/public/data/placeholder/ (the marked placeholders), the same rule the console uses.
 
 Run (repo root, Windows Git Bash):  .venv/Scripts/python pipeline/time_grid.py
+With --reuse-grid the elevation comes from the grid.json and elev_10m.f32 already in the output folder
+(same cells, no DEM download, no rasterio), e.g. after the habitat moved (pipeline/astar_import.py).
 """
 from __future__ import annotations
 
@@ -38,9 +40,6 @@ from datetime import date
 from pathlib import Path
 
 import numpy as np
-import rasterio
-from rasterio.enums import Resampling
-from rasterio.windows import Window
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "frontend" / "public" / "data"
@@ -92,6 +91,9 @@ def in_ring(lon: float, lat: float, ring: list) -> bool:
 
 def read_elevation(src_url: str, x0: float, y0: float, nx: int, ny: int) -> tuple[np.ndarray, dict]:
     """Mean elevation per 10 m cell from the DEM's 4 m overview level (NaN where no data)."""
+    import rasterio  # only needed when the DEM is read
+    from rasterio.enums import Resampling
+    from rasterio.windows import Window
     path = "/vsicurl/" + src_url if src_url.startswith("http") else src_url
     with rasterio.Env(**GDAL_ENV):
         with rasterio.open(path) as base:
@@ -165,6 +167,8 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     p.add_argument("--source", default=DEM_URL, help="DEM GeoTIFF URL or local path")
     p.add_argument("--out", default=str(DATA), help="output folder (default frontend/public/data)")
+    p.add_argument("--reuse-grid", action="store_true",
+                   help="take the cells and the elevation from grid.json and elev_10m.f32 in --out instead of the DEM")
     a = p.parse_args(argv)
     t0 = time.time()
     sc, sc_ph = load("scenario.json")
@@ -176,20 +180,29 @@ def main(argv: list[str] | None = None) -> int:
     clearance = sc.get("zone_clearance_m", 30)
     buffer_m = sc.get("zone_buffer_m", 40)
 
-    # 10 m grid on the DEM's 1 m pixel grid, covering the map extent
-    with rasterio.Env(**GDAL_ENV):
-        with rasterio.open("/vsicurl/" + a.source if a.source.startswith("http") else a.source) as base:
-            bx0, by0 = base.transform.c, base.transform.f
-    e = DEFAULT_EXTENT
-    x0 = bx0 + CELL * math.floor((e["west"] * M_PER_DEG - bx0) / CELL)
-    y0 = by0 - CELL * math.floor((by0 - e["north"] * M_PER_DEG) / CELL)
-    nx = math.ceil((e["east"] * M_PER_DEG - x0) / CELL)
-    ny = math.ceil((y0 - e["south"] * M_PER_DEG) / CELL)
+    out = Path(a.out)
+    if a.reuse_grid:  # the same cells and elevation as the last full run
+        old = json.loads((out / "grid.json").read_text(encoding="utf-8"))
+        x0, y0, nx, ny = old["origin_m"]["x"], old["origin_m"]["y"], old["nx"], old["ny"]
+        z = np.fromfile(out / old["files"].get("elev", "elev_10m.f32"), dtype="<f4").astype(np.float64).reshape(ny, nx)
+        src_info = dict(old["source"], reused_from="elev_10m.f32 of the previous full run")
+    else:
+        # 10 m grid on the DEM's 1 m pixel grid, covering the map extent
+        import rasterio
+        with rasterio.Env(**GDAL_ENV):
+            with rasterio.open("/vsicurl/" + a.source if a.source.startswith("http") else a.source) as base:
+                bx0, by0 = base.transform.c, base.transform.f
+        e = DEFAULT_EXTENT
+        x0 = bx0 + CELL * math.floor((e["west"] * M_PER_DEG - bx0) / CELL)
+        y0 = by0 - CELL * math.floor((by0 - e["north"] * M_PER_DEG) / CELL)
+        nx = math.ceil((e["east"] * M_PER_DEG - x0) / CELL)
+        ny = math.ceil((y0 - e["south"] * M_PER_DEG) / CELL)
     lat_c = (y0 - ny * CELL / 2) / M_PER_DEG
     cos_lat = math.cos(math.radians(lat_c))
     print(f"grid {nx} x {ny} cells of {CELL:g} m, origin x {x0:.4f} y {y0:.4f}")
 
-    z, src_info = read_elevation(a.source, x0, y0, nx, ny)
+    if not a.reuse_grid:
+        z, src_info = read_elevation(a.source, x0, y0, nx, ny)
     print(f"elevation read from the {src_info['level_m']:g} m level in {time.time() - t0:.1f}s, "
           f"{np.isnan(z).sum()} cells without data, range {np.nanmin(z):.1f} .. {np.nanmax(z):.1f} m")
     gy, gx = np.gradient(z, CELL, CELL * cos_lat)
@@ -232,7 +245,6 @@ def main(argv: list[str] | None = None) -> int:
     ttb_all, ptr_all = search(z, blocked, np.ones_like(pen_mult), hc, cos_lat, speed)
     print(f"two searches in {time.time() - t1:.1f}s; reachable cells {np.isfinite(ttb_pen).sum()} of {nx * ny}")
 
-    out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     for name, arr in (("ttb_penalized.f32", ttb_pen), ("ttb_allowed.f32", ttb_all), ("ptr_penalized.i32", ptr_pen),
                       ("ptr_allowed.i32", ptr_all), ("elev_10m.f32", z.astype(np.float32)),

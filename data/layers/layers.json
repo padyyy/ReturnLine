@@ -1,0 +1,16 @@
+{
+  "note": "Map layers for the console. pipeline/map_layers.py anchors each one on the console grid with GeoMapper. Paths are relative to this file. GeoTIFFs dropped into this folder are picked up too.",
+  "layers": [
+    {
+      "id": "radiation",
+      "name": "Radiation dose rate",
+      "source": "../../backend/routes/radiation/radiation_background_msv_per_day.tif",
+      "band": 1,
+      "units": "mSv/day",
+      "style": { "kind": "ramp", "colors": ["#C9D6EC", "#2459A8"] },
+      "opacity": 0.45,
+      "priority": 20,
+      "source_note": "A* backend (backend/radiation.py): spatially uniform GCR background after Hassler et al. 2014, on the A* run's 1 km local grid. Make it with: .venv/Scripts/python -m backend.radiation"
+    }
+  ]
+}

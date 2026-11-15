@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "pipeline/mapping_bridge.py",
-  "created_utc": "2026-11-14T20:41:51.114882+00:00",
+  "created_utc": "2026-11-14T23:47:30.617139+00:00",
   "image": "slope_10m.png",
   "image_path": "data/slope_10m.png",
   "grid_file": "grid.json",
@@ -48,12 +48,11 @@
     "source": {
       "source": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/MSL_Gale_DEM_Mosaic_1m_v3.tif",
       "level_m": 4.0,
-      "nodata": -32767.0
+      "nodata": -32767.0,
+      "reused_from": "elev_10m.f32 of the previous full run"
     },
     "placeholder": false,
     "placeholder_inputs": [
-      "habitat and constants (scenario.json)",
-      "stations",
       "zones"
     ]
   },
@@ -77,7 +76,8 @@
   "source": {
     "source": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/MSL_Gale_DEM_Mosaic_1m_v3.tif",
     "level_m": 4.0,
-    "nodata": -32767.0
+    "nodata": -32767.0,
+    "reused_from": "elev_10m.f32 of the previous full run"
   },
   "numeric_file": "slope_10m.f32",
   "terrain_sha256": {
@@ -86,8 +86,6 @@
   },
   "placeholder": false,
   "placeholder_inputs": [
-    "habitat and constants (scenario.json)",
-    "stations",
     "zones"
   ],
   "thresholds_deg": [
