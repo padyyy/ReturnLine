@@ -1,0 +1,126 @@
+{
+ "generator": "pipeline/radio_check.py",
+ "method": "line of sight from the habitat antenna to the crew antenna over the 10 m DEM grid (bilinear) along each route, route points every 5 m or less, terrain sampled every 5 m along the sight line, Mars curvature included; a gap runs from the midpoint before its first blocked point to the midpoint after its last",
+ "habitat": [
+  137.384902,
+  -4.812105
+ ],
+ "habitat_antenna_m": 3.0,
+ "crew_antenna_m": 2.0,
+ "assumptions": [
+  "habitat_antenna_m",
+  "crew_antenna_m"
+ ],
+ "limits": "10 m terrain averaged from the 4 m DEM level smooths 1-2 m ridges away, so the check can be optimistic; only the planned routes are checked, not the scripted drift or the ABORT way; no relays",
+ "longest_gap_min": 2.94,
+ "stations": [
+  {
+   "station": 1,
+   "out": {
+    "longest_gap_min": 2.08,
+    "gaps": [
+     {
+      "from_t_min": 8.61,
+      "to_t_min": 10.69,
+      "from_d_m": 204.5,
+      "to_d_m": 256.9
+     },
+     {
+      "from_t_min": 22.3,
+      "to_t_min": 24.36,
+      "from_d_m": 578.4,
+      "to_d_m": 635.9
+     }
+    ],
+    "points": 137,
+    "share_with_sight": 0.818,
+    "points_without_terrain": 0
+   },
+   "ret": {
+    "longest_gap_min": 2.94,
+    "gaps": [
+     {
+      "from_t_min": 0.0,
+      "to_t_min": 2.77,
+      "from_d_m": 0.0,
+      "to_d_m": 57.5
+     },
+     {
+      "from_t_min": 18.45,
+      "to_t_min": 21.39,
+      "from_d_m": 379.0,
+      "to_d_m": 431.3
+     }
+    ],
+    "points": 137,
+    "share_with_sight": 0.818,
+    "points_without_terrain": 0
+   }
+  },
+  {
+   "station": 2,
+   "out": {
+    "longest_gap_min": 2.08,
+    "gaps": [
+     {
+      "from_t_min": 8.61,
+      "to_t_min": 10.69,
+      "from_d_m": 204.5,
+      "to_d_m": 256.9
+     }
+    ],
+    "points": 142,
+    "share_with_sight": 0.923,
+    "points_without_terrain": 0
+   },
+   "ret": {
+    "longest_gap_min": 2.94,
+    "gaps": [
+     {
+      "from_t_min": 18.43,
+      "to_t_min": 21.37,
+      "from_d_m": 405.2,
+      "to_d_m": 457.6
+     }
+    ],
+    "points": 142,
+    "share_with_sight": 0.923,
+    "points_without_terrain": 0
+   }
+  },
+  {
+   "station": 3,
+   "out": {
+    "longest_gap_min": 0.0,
+    "gaps": [],
+    "points": 81,
+    "share_with_sight": 1.0,
+    "points_without_terrain": 0
+   },
+   "ret": {
+    "longest_gap_min": 0.0,
+    "gaps": [],
+    "points": 81,
+    "share_with_sight": 1.0,
+    "points_without_terrain": 0
+   }
+  },
+  {
+   "station": 4,
+   "out": {
+    "longest_gap_min": 0.0,
+    "gaps": [],
+    "points": 50,
+    "share_with_sight": 1.0,
+    "points_without_terrain": 0
+   },
+   "ret": {
+    "longest_gap_min": 0.0,
+    "gaps": [],
+    "points": 50,
+    "share_with_sight": 1.0,
+    "points_without_terrain": 0
+   }
+  }
+ ]
+}

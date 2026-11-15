@@ -3,7 +3,7 @@
 uv run python -m backend.mapper_route 'dem.tif' --start LON LAT --goal LON LAT
 """
 import argparse
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 import json
 import math
 from pathlib import Path
@@ -139,6 +139,7 @@ class PreparedMaps:
     layer_specs: dict
     protected_penalty: float
     dose_config: DoseConfig = DoseConfig()
+    terrain_costs: list | None = None
 
 
 def prepare_maps(dem_path, *, grid=None, layer_specs=None, config=DEFAULT_CONFIG,
@@ -167,15 +168,32 @@ def prepare_maps(dem_path, *, grid=None, layer_specs=None, config=DEFAULT_CONFIG
     terrain = cell_grid(elevation, layers)
     costs = build_cost_grid(terrain, config, ignore_missing=True)
     del terrain
-    if protected_penalty and 'protected_zone' in layers:
-        for r, row in enumerate(costs):
-            for c, value in enumerate(row):
-                if value is not None and layers['protected_zone'][r, c] == 1:
-                    row[c] *= 1 + protected_penalty
     arrays = {'elevation_m': elevation, **{key: layers.get(key, np.full(elevation.shape, np.nan)) for key in FIELDS}}
-    costs = add_radiation_costs(costs, arrays['radiation_msv_per_day'], dose_config)
-    arrays['costs'] = np.array([[np.nan if v is None else v for v in row] for row in costs], dtype=np.float32)
-    return PreparedMaps(grid, costs, arrays, provenance, config, layer_specs or {}, protected_penalty, dose_config)
+    prepared = PreparedMaps(grid, costs, arrays, provenance, config, layer_specs or {},
+                            0.0, dose_config, costs)
+    return with_protected_penalty(prepared, protected_penalty)
+
+
+def with_protected_penalty(prepared, penalty):
+    """Create independent costs from shared mapped terrain, without remapping.
+
+    Protection multiplies terrain costs before additive radiation costs.
+    Existing hard blocks remain blocked even at penalty zero.
+    """
+    if not math.isfinite(penalty) or penalty < 0:
+        raise ValueError('protected_penalty must be finite and nonnegative')
+    if prepared.terrain_costs is None:
+        raise ValueError('Prepared maps must retain unweighted terrain costs')
+    zones = prepared.arrays['protected_zone']
+    costs = [[None if value is None else value * (1 + penalty if zones[r, c] == 1 else 1)
+              for c, value in enumerate(row)] for r, row in enumerate(prepared.terrain_costs)]
+    if any(value is not None and not math.isfinite(value) for row in costs for value in row):
+        raise ValueError('Protection costs overflowed; reduce penalty')
+    costs = add_radiation_costs(costs, prepared.arrays['radiation_msv_per_day'], prepared.dose_config)
+    arrays = {**prepared.arrays, 'costs': np.array(
+        [[np.nan if v is None else v for v in row] for row in costs], dtype=np.float32)}
+    return replace(prepared, costs=costs, arrays=arrays, protected_penalty=penalty)
+
 
 
 def route_prepared(prepared, start_lonlat, goal_lonlat):

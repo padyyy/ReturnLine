@@ -35,6 +35,7 @@
  "zone_warn_m": 10,
  "slope_comfort_deg": 10,
  "slope_block_deg": 20,
+ "radio_gap_max_min": 5,
  "sources": {
   "life_support_min": "assumption (6 h EVA, xEVA)",
   "walk_speed_kmh": "assumption (1.5 km/h, after NASA TP-2009-214796)",
@@ -45,6 +46,7 @@
   "slope_block_deg": "xEVA suit requirement",
   "zone_buffer_m": "assumption (placeholder value)",
   "zone_clearance_m": "assumption (placeholder value)",
-  "zone_warn_m": "assumption (design sketch value)"
+  "zone_warn_m": "assumption (design sketch value)",
+  "radio_gap_max_min": "assumption (our planning threshold; after a radio loss NASA first regains line of sight, xEVA 9.5)"
  }
 }

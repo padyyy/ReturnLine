@@ -1,0 +1,32 @@
+{
+  "avoid_protected": {
+    "length_m": 343.99999999998835,
+    "protected_distance_m": 0.9999999999999661,
+    "first_protected_xy": [
+      520,
+      286
+    ],
+    "protected_cells": 1
+  },
+  "allow_protected": {
+    "length_m": 233.99999999999207,
+    "protected_distance_m": 115.99999999999608,
+    "first_protected_xy": [
+      515,
+      396
+    ],
+    "protected_cells": 116
+  },
+  "goal": {
+    "xy": [
+      520,
+      286
+    ],
+    "lonlat": [
+      137.38104707000178,
+      -4.806998125862792
+    ],
+    "inside_protected": true,
+    "adjacent_to_unprotected": true
+  }
+}

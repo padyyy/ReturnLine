@@ -82,11 +82,13 @@ write('scenario.json', {
   zone_clearance_m: CLEARANCE,
   zone_warn_m: WARN,
   slope_comfort_deg: 10, slope_block_deg: 20,
+  radio_gap_max_min: 5,                    // our planning threshold, not a NASA number (xEVA 9.5 gives the procedure only)
   sources: {
     life_support_min: 'assumption (6 h EVA, xEVA)', walk_speed_kmh: 'assumption (1.5 km/h, after NASA TP-2009-214796)',
     injury_factor: 'assumption', caution_margin_min: 'assumption', dose_rate_msv_per_day: 'Hassler et al. 2014, Science 343',
     sunset_lmst: 'REMS (placeholder value)', slope_block_deg: 'xEVA suit requirement', zone_buffer_m: 'assumption (placeholder value)',
     zone_clearance_m: 'assumption (placeholder value)', zone_warn_m: 'assumption (design sketch value)',
+    radio_gap_max_min: 'assumption (our planning threshold; after a radio loss NASA first regains line of sight, xEVA 9.5)',
   },
 });
 

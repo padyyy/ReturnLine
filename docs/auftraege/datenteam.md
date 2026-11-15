@@ -1,11 +1,12 @@
 # Auftrag an das Datenteam
 
-Stand: Sonntag, 15.11.2026, 02:15. Diese Fassung ersetzt die vom Samstag, 20:15.
+Stand: Sonntag, 15.11.2026, 10:30. Fortschreibung der Fassung von 02:15.
 
 **Zeitplan:**
-- Der Feature Freeze ist verschoben (Teamentscheidung).
 - Fest stehen: Videoaufnahme So 13:00, Checkpoint 14:30, Abgabe 15:45.
-- Video und Projektseite brauchen die endgültigen Daten. **Vorschlag: alle Daten-PRs bis So 10:00 gemergt.** Die Zeiten legt Paul fest.
+- **Vorschlag: Was im Video zu sehen ist, muss bis 12:00 gemergt sein.** Das betrifft Namen und Positionen von Stationen und Zonen. Danach keine Änderungen an Namen oder Positionen mehr, damit Video und Live-Demo übereinstimmen.
+- Andere Werte, etwa der Curiosity-Vergleich, spätestens bis 13:30, damit die Projektseite bis 14:30 fertig wird.
+- Die Zeiten legt Paul fest.
 - Was bis dahin nicht fertig ist, bleibt Platzhalter. Das ist erlaubt, weil Konsole und Projektseite es offen sagen.
 
 **So benutzt ihr diese Datei:** Jedes Teammitglied gibt seinem Agenten den Abschnitt „Für alle Aufgaben“ und genau eine Aufgabe. Die Namen bei den Aufgaben sind Vorschläge; die Verteilung macht Paul.
@@ -13,9 +14,20 @@ Stand: Sonntag, 15.11.2026, 02:15. Diese Fassung ersetzt die vom Samstag, 20:15.
 ## Lage
 
 - Die Habitat-Konsole (`frontend/`) spielt alle sechs Beats ab, auf einem Zeit-Grid aus dem echten Gale-DEM (`pipeline/time_grid.py`). Live: https://padyyy.github.io/ReturnLine/
-- Bis auf Orthofoto, Curiosity-Spur und Grid sind alle Daten noch markierte Platzhalter in `frontend/public/data/placeholder/`. Die Konsole zeigt deshalb oben „Placeholder data“.
-- Echte Dateien in `frontend/public/data/` ersetzen die Platzhalter ohne Codeänderung.
-- Stand 15.11., 02:00: Auf GitHub liegt noch kein Daten-PR.
+- Echte Dateien in `frontend/public/data/` ersetzen die Platzhalter aus `frontend/public/data/placeholder/` ohne Codeänderung. Solange noch Platzhalter im Spiel sind, zeigt die Konsole oben „Placeholder data“.
+
+**Stand der Aufgaben, 15.11.2026, 10:30:**
+
+| Aufgabe | Stand |
+|---|---|
+| 1 Stationen | offen, keine Lieferung auf GitHub |
+| 2 Bohrstellen und Zonen | offen, keine Lieferung auf GitHub |
+| 3 Funkprüfung | **erledigt** (Patrick, PR #31): längste Lücke 2,9 min, die Regel besteht |
+| 4 Tageslicht aus REMS | **erledigt** (Patrick, PR #30): Sol 4596, Untergang 17:31 LMST |
+| 5 Curiosity-Vergleich | offen (Paul) |
+| 6 Grat-Maske | offen; Empfehlung: nicht mehr anfangen (siehe Aufgabe 6) |
+
+Seit 10:19 haben in der Konsole alle vier Sicherheitsregeln Daten und bestehen. Beat 1 zeigt GO und „all four safety rules pass“.
 
 ## Was sich seit Samstagabend geändert hat
 
@@ -34,18 +46,23 @@ Stand: Sonntag, 15.11.2026, 02:15. Diese Fassung ersetzt die vom Samstag, 20:15.
 5. **Grat-Regel:** Die Konsole zeigt „ridge mask pending“, bis `grid.json` unter `files` einen Eintrag `"ridge"` hat. Erst dann steht dort „ridge crossings: 0“. Das feste „0“ von Samstag gibt es nicht mehr.
 6. **Funkschwelle:** Die 5 min sind unsere eigene Planungsschwelle, keine NASA-Zahl. NASA beschreibt nur das Vorgehen nach einem Funkverlust: zuerst zurück in Sichtlinie zum Habitat (xEVA §9.5). Am Datenformat von Aufgabe 3 ändert das nichts.
 7. **Paul hat eine eigene Übergabe:** `docs/auftraege/paul-astar.md`. Aufgabe 5 (Curiosity-Vergleich) ist dort enthalten. Die Engine ist `pipeline/time_grid.py` in `main`; sie versorgt die Konsole.
-8. **Projektseite:** Der Entwurf liegt in `docs/project-page.md` (PR offen, nach dem Merge in `main`). Dort stehen Werte als `⟨…⟩`, die aus euren Lieferungen kommen: Stationen, Bohrstellen, REMS-Sol, Funkcheck, Curiosity-Vergleich. Jede Quelle, die ihr nutzt, muss dort unter „NASA Data“ oder „References“ stehen.
+8. **Projektseite:** Der Entwurf liegt in `docs/project-page.md` (in `main`; die Texte stehen schon im Formular). Dort stehen Werte als `⟨…⟩`, die aus euren Lieferungen kommen: Stationen, Bohrstellen, REMS-Sol, Funkcheck, Curiosity-Vergleich. Jede Quelle, die ihr nutzt, muss dort unter „NASA Data“ oder „References“ stehen.
 9. **Hilfen in `main`:** `pipeline/mapping_grid.py` (`MappingGrid` von Magnus) liest `grid.json`. Es bietet `read_float("elev")`, `read_float("slope")` und `xy(lon, lat)`.
+10. **Neu seit 09:30, die Regeln können NO-GO sagen** (PR #26). Jede Regel wird gegen ihre Grenze geprüft, über Hin- und Rückweg. Bricht eine, zeigen Urteil, Zielliste und Beat-1-Untertitel NO-GO. Wer Daten ändert, prüft also, dass Beat 1 bei der Szenario-Station weiter GO zeigt.
+11. **`frontend/public/data/scenario.json` gibt es jetzt** (seit Aufgabe 4). Wer weitere Felder setzt, ändert nur seine Felder in dieser Datei (Regel 10). Die Funkschwelle steht dort als `radio_gap_max_min`.
+12. **Zwei Skripte müssen nach Änderungen neu laufen:**
+    - `py -3.11 pipeline/radio_check.py` nach jeder Änderung an `routes.json`, also nach `time_grid.py`;
+    - `py -3.11 pipeline/rems_daylight.py`, wenn sich die Szenario-Station oder ihr Sol ändert.
+13. **Die Funkprüfung hängt an den angenommenen Antennenhöhen** (Habitat 3 m, Crew 2 m). Mit 2 m und 1,5 m läge Station 1 bei 5,4 min, also NO-GO in Beat 1. Die Höhen nicht ändern, ohne das Team zu fragen.
 
 ## Reihenfolge
 
 Die Aufgaben hängen voneinander ab. Vorschlag für die Merge-Reihenfolge:
 
-1. **Aufgabe 2 (Zonen) und Aufgabe 1 (Stationen):** legen die Positionen fest. Danach `time_grid.py` und `find-scenario.mjs`.
-2. **Aufgabe 6 (Grat-Maske):** ändert das Grid und damit alle Zeiten und Routen. Danach wieder `time_grid.py` und `find-scenario.mjs`.
-3. **Aufgabe 3 (Funk):** zuletzt, auf dem endgültigen `routes.json`. Ändert sich `routes.json` danach noch einmal, die Funkprüfung neu laufen lassen.
-4. **Aufgabe 4 (REMS):** jederzeit. Sie ändert `scenario.json` wie Aufgabe 2, also abstimmen (Regel 10).
-5. **Aufgabe 5 (Paul):** jederzeit. Kommt die Grat-Maske vorher, gesperrte Grat-Zellen übernehmen.
+1. **Aufgabe 2 (Zonen) und Aufgabe 1 (Stationen):** legen Positionen und Namen fest, bis 12:00 (Video). Danach `time_grid.py`, `radio_check.py` und `find-scenario.mjs`. Ändert sich der Sol der Szenario-Station, auch `rems_daylight.py`.
+2. **Aufgabe 5 (Paul):** unabhängig von den Positionen, bis 13:30.
+3. **Aufgabe 6 (Grat-Maske):** würde Grid, Zeiten und Routen ändern. Nach dem Video nicht mehr mergen (siehe dort).
+4. **Aufgaben 3 und 4:** erledigt. Sie müssen nur neu laufen, wenn sich ihre Eingaben ändern (Punkt 12 oben).
 
 ## Für alle Aufgaben (verbindlich)
 
@@ -76,19 +93,20 @@ Die Aufgaben hängen voneinander ab. Vorschlag für die Merge-Reihenfolge:
    - Quellen-URLs stehen in `docs/data-sources.md`.
 9. **Bilder:** herunterladen und ins Repo legen, nie verlinken; die Herkunft immer mit angeben.
 10. **`scenario.json` gemeinsam pflegen.**
-    - Wer `frontend/public/data/scenario.json` als Erster anlegt, kopiert die Platzhalter-Datei und ändert nur die eigenen Felder. Alle anderen Felder bleiben erhalten, auch `drift_zone`, `zone_clearance_m`, `zone_warn_m` und `injury_factor`.
+    - Die Datei `frontend/public/data/scenario.json` existiert seit Aufgabe 4. Jede Aufgabe ändert nur ihre eigenen Felder in dieser Datei. Alle anderen Felder bleiben erhalten, auch `drift_zone`, `zone_clearance_m`, `zone_warn_m`, `injury_factor`, `radio_gap_max_min` und die Tageslichtfelder.
     - Eigene Felder aus `placeholder_fields` entfernen und unter `sources` die Quelle eintragen.
-    - Wer später kommt, ändert nur seine Felder in der vorhandenen Datei.
 11. **Prüfen vor dem PR:**
     - **Konsole ansehen:** `cd frontend && npm install && npm run dev`, dann http://localhost:5173 öffnen. Fährt man über „Placeholder data“, zeigt die Konsole, welche Dateien noch Platzhalter sind.
     - **Nach jeder Änderung an Habitat, Stationen, Zonen oder Grid den Ablauf neu prüfen** (aus dem Repo-Wurzelordner):
       ```sh
       .venv/Scripts/python pipeline/time_grid.py
+      py -3.11 pipeline/radio_check.py
       cd frontend && BUFFER=80 node scripts/find-scenario.mjs
       node scripts/check-route-times.mjs
       ```
       Die Suche gibt die Kombinationen aus, bei denen alle sechs Beats tragen; heute sind es zwei (siehe oben). Trägt die gewählte nicht mehr, sag es im PR, statt Werte zurechtzubiegen.
     - **Demo-Lauf:** In der Konsole die Station mit dem Hinweis „Plays the six beats“ wählen und „Start“ drücken. Erwartet werden:
+      - in Beat 1 GO und im Regel-Panel „4 of 4 with data“ ohne „fails“;
       - in Beat 4 die Warnung;
       - in Beat 5 auf der Karte der geschützte Weg mit ✗ „too long“ und der Weg durch die Zone mit ✓ „fits“;
       - in Beat 6 der Eintrag „Override logged · N m inside …“;
@@ -99,13 +117,15 @@ Die Aufgaben hängen voneinander ab. Vorschlag für die Merge-Reihenfolge:
 
 ## Aufgabe 1: Echte Stationen mit Bodenfoto
 
-**Vorschlag:** Magnus · **Branch:** `feat/stations-data` · **Bis (Vorschlag):** So 09:00
+**Vorschlag:** Magnus · **Branch:** `feat/stations-data` · **Bis (Vorschlag):** So 12:00, weil die Namen im Video stehen
 
 **Ziel:** `frontend/public/data/stations.geojson` mit echten Namen, Begründungen, Höhen und einem Bodenfoto je Station.
 
+**Wenn die Zeit knapp ist:** zuerst Namen, Begründungen mit Quelle und Höhen. Die Fotos zeigt die Konsole ohnehin noch nicht; sie können als `image: null` nachkommen.
+
 **Vorgaben:**
 - **Positionen beibehalten,** weil der Ablauf darauf geprüft ist: Curiositys Wegpunkte der Sols **4596 (Station 1, Szenario-Station), 4609, 4667, 4839**. Koordinaten wie in `frontend/public/data/placeholder/stations.geojson`; die Quelle ist `MSL_waypoints.json`.
-  - Sol 4596 ist in beiden tragenden Kombinationen die Szenario-Station. Ihn nicht tauschen.
+  - Sol 4596 ist in beiden tragenden Kombinationen die Szenario-Station. Ihn nicht tauschen. Er ist auch der Quell-Sol der Sonnenzeiten (Aufgabe 4).
   - Die anderen drei nur, wenn ein Sol gar nicht zu beschreiben ist. Dann den Ablauf neu prüfen.
 - **Name:** kurz, höchstens 24 Zeichen, aus dem, was Curiosity dort untersucht hat (NASA-Blogposts zur Boxwork-Kampagne, siehe `docs/data-sources.md`).
 - **Begründung (`reason`):** ein bis zwei englische Sätze, warum die Crew dorthin geht, mit Quellen-URL.
@@ -140,9 +160,9 @@ Bilder zeigt die Konsole noch nicht an; das macht das Frontend-Team.
 
 ## Aufgabe 2: Schutzzonen auf echte Bohrstellen prüfen
 
-**Vorschlag:** Michael · **Branch:** `feat/zones-data` · **Bis (Vorschlag):** So 09:00
+**Vorschlag:** Michael · **Branch:** `feat/zones-data` · **Bis (Vorschlag):** So 12:00, weil die Zonennamen im Video stehen
 
-**Problem:** Die Platzhalter-Zonen „Drill site A“ (Sol 4633) und „Drill site B“ (Sol 4818) sind nur gewählt, weil der Demo-Ablauf dort trägt. Ob Curiosity dort gebohrt hat, ist **nicht geprüft**. Die Konsole nennt sie aber „Drill site“, seit Beat 5 sogar auf der Karte und auf dem ABORT-Knopf.
+**Problem:** Die Platzhalter-Zonen „Drill site A“ (Sol 4633) und „Drill site B“ (Sol 4818) sind nur gewählt, weil der Demo-Ablauf dort trägt. Ob Curiosity dort gebohrt hat, ist **nicht geprüft**. Die Konsole nennt sie aber „Drill site“, seit Beat 5 sogar auf der Karte und auf dem ABORT-Knopf. Auch die Projektseite und das Video sprechen von „drill sites“. Das Ergebnis dieser Aufgabe entscheidet über die Wortwahl dort.
 
 **Schritte:**
 1. In den NASA-Missionsberichten und Blogposts herausfinden, bei welchen Sols zwischen 4591 und 4839 Curiosity in der Boxwork-Region gebohrt hat. Gesucht sind Probenname, Sol und Quelle.
@@ -155,7 +175,7 @@ Bilder zeigt die Konsole noch nicht an; das macht das Frontend-Team.
    - `frontend/public/data/zones.geojson` schreiben, mit den echten Bohrstellen als Kreis-Polygon (32 Ecken, Radius `buffer_m`) um die Wegpunkt-Koordinate.
    - In `frontend/public/data/scenario.json` (Regel 10) `habitat`, `scenario_station` und `drift_zone` (die `id` der Drift-Zone, z. B. `"A"`) so setzen, wie die Suche sie ausgibt.
    - Weichen die Stationen ab, mit Aufgabe 1 abstimmen.
-   - Danach `pipeline/time_grid.py` laufen lassen und in der Konsole prüfen.
+   - Danach `pipeline/time_grid.py` und `pipeline/radio_check.py` laufen lassen und in der Konsole prüfen.
 4. **Trägt keine Kombination oder gibt es keine echten Bohrstellen:** nichts umbiegen.
    - Die Platzhalter-Zonen bleiben, aber sie dürfen nicht „Drill site“ heißen. Im PR einen ehrlichen, kurzen Namen vorschlagen, z. B. „Protected site B“, mit dem Hinweis „(assumed)“ in der Beschreibung.
    - Das Team entscheidet dann.
@@ -174,66 +194,44 @@ Bilder zeigt die Konsole noch nicht an; das macht das Frontend-Team.
 
 ---
 
-## Aufgabe 3: Funkprüfung entlang der Routen
+## Aufgabe 3: Funkprüfung entlang der Routen — erledigt
 
-**Vorschlag:** Paul oder Magnus · **Branch:** `feat/radio-check` · **Bis (Vorschlag):** So 10:00, nach den Aufgaben 1, 2 und 6
+**Erledigt:** Patrick, PR #31, gemergt am 15.11.2026 um 10:19. Skript `pipeline/radio_check.py`, Ergebnis `frontend/public/data/radio_check.json`, Doku am Ende von `pipeline/README.md`.
 
-**Ziel:** Die Regel „Längste Funklücke ≤ 5 min“ bekommt Daten. Sie zeigt in der Konsole bisher „not available“. Die 5 min sind unsere eigene Schwelle (siehe „Was sich geändert hat“, Punkt 6).
+- **Methode:**
+  - Sichtlinie von der Habitat-Antenne (3 m) zur Crew-Antenne (2 m) über dem 10-m-Gelände, alle 5 m abgetastet, mit Mars-Krümmung;
+  - Routenpunkte höchstens 5 m auseinander;
+  - eine Lücke reicht von Mittelpunkt zu Mittelpunkt, gemessen in Gehminuten.
+- **Ergebnis:**
+  - Station 1: Hinweg 2,1 min, Rückweg 2,9 min;
+  - Station 2: 2,1 bzw. 2,9 min;
+  - Stationen 3 und 4: durchgehend Sicht.
 
-**Methode:**
-- Neues Skript `pipeline/radio_check.py`. Für jeden Punkt der Routen in `frontend/public/data/routes.json` (`out` und `ret` je Station) prüft es die Sichtlinie von der Habitat-Antenne zur Crew-Antenne.
-- Gelände entlang der Linie alle 5 m aus `elev_10m.f32` abtasten (bilinear) und die Mars-Krümmung berücksichtigen: Absenkung d² / (2R).
-- Antennenhöhen sind Annahmen und so zu kennzeichnen. Vorschlag: Habitat 3 m, Crew 2 m.
-- Eine Lücke ist ein zusammenhängender Abschnitt ohne Sicht, gemessen in Minuten über `t_min` der Routenpunkte.
-- Die Prüfung gilt nur entlang der Routen, keine Sichtbarkeitsfläche (Council-Entscheidung).
-- **Zuletzt laufen lassen:** Ändert sich `routes.json` (neue Positionen, Grat-Maske), die Prüfung neu laufen lassen.
-
-**Format** (`frontend/public/data/radio_check.json`):
-```json
-{ "generator": "pipeline/radio_check.py",
-  "method": "line of sight from the habitat antenna to the crew antenna over the 10 m DEM grid along each route, sampled every 5 m, Mars curvature included",
-  "habitat_antenna_m": 3.0, "crew_antenna_m": 2.0, "assumptions": ["habitat_antenna_m", "crew_antenna_m"],
-  "longest_gap_min": 1.6,
-  "stations": [ { "station": 1,
-                  "out": { "longest_gap_min": 0.0, "gaps": [] },
-                  "ret": { "longest_gap_min": 1.6, "gaps": [ { "from_t_min": 12.0, "to_t_min": 13.6, "from_d_m": 230, "to_d_m": 262 } ] } } ] }
-```
-- Die Konsole liest bisher nur das oberste `longest_gap_min`. Das ist das Maximum über alle Strecken.
-- Die Werte je Station sind für das Frontend-Team (Anzeige je gewählter Station).
-
-**Fertig, wenn:**
-- die Regel „Radio gap“ in der Konsole einen Wert zeigt;
-- der PR nennt, ob eine Strecke über 5 min liegt. Vor allem die Strecken der Szenario-Station (Sol 4596) sind wichtig: Liegt dort eine über 5 min, wäre Beat 1 ein NO-GO, und das Team muss es sofort wissen.
+  Alle Strecken liegen unter 5 min, die Regel besteht. Die Konsole wertet die Lücke der gewählten Station.
+- **Empfindlich:** Mit 2 m und 1,5 m Antennenhöhe läge Station 1 bei 5,4 min (NO-GO). Die Höhen nur nach Absprache ändern.
+- **Für andere Aufgaben:** Nach jeder Änderung an `routes.json` neu laufen lassen: `py -3.11 pipeline/radio_check.py`, unter einer Sekunde.
 
 ---
 
-## Aufgabe 4: Tageslicht aus REMS
+## Aufgabe 4: Tageslicht aus REMS — erledigt
 
-**Vorschlag:** Michael · **Branch:** `feat/rems-daylight` · **Bis (Vorschlag):** So 09:00
+**Erledigt:** Patrick, PR #30, gemergt am 15.11.2026 um 10:13. Skript `pipeline/rems_daylight.py`, Ergebnis in `frontend/public/data/scenario.json`.
 
-**Ziel:** Sonnenauf- und -untergang kommen aus echten Messdaten von Curiosity, nicht aus Platzhaltern.
-
-**Wichtig, geändert gegenüber der ersten Fassung:** `sol` in `scenario.json` ist der Sol der Crew-EVA, und der muss in der Zukunft liegen (`docs/mission-scenario.md`, Abschnitt „Operating area“). **`sol` also nicht auf den REMS-Messtag setzen.** Der Messtag bekommt ein eigenes Feld.
-
-**Schritte:**
-1. REMS-Feed laden (URL in `docs/data-sources.md`). Der JSON-Schlüssel ist `soles`, der neueste Eintrag steht zuerst, je Sol gibt es `sunrise` und `sunset`.
-2. Einen Sol wählen, möglichst innerhalb der Boxwork-Kampagne (4591–4839). Wenn es dort keinen gibt, den nächstliegenden nehmen und das im PR sagen.
-3. `frontend/public/data/scenario.json` nach Regel 10 anlegen oder ergänzen:
-   - `sunrise_lmst` und `sunset_lmst` aus diesem Sol setzen;
-   - neues Feld `daylight_source_sol` mit der Nummer des REMS-Sols;
-   - `sunrise_lmst` und `sunset_lmst` aus `placeholder_fields` entfernen; `sol` bleibt dort;
-   - `sources.sunset_lmst` auf `"REMS, sol <N>, measured by Curiosity; used for the EVA sol (assumption)"` setzen.
-4. **Prüfen:** Die EVA beginnt 09:00 LMST, die Crew ist im Demo-Lauf um 14:58 LMST zu Hause. Liegt der Sonnenuntergang vor etwa 15:30, wird die Tageslicht-Regel knapp oder bindet statt der Lebenserhaltung. Das prüft `find-scenario.mjs` nicht mit, also im PR melden.
-
-**Hinweis:** Sonnenzeiten hängen von der Mars-Jahreszeit ab. Einen gemessenen Tag für die künftige EVA zu verwenden, ist eine Annahme; so steht es in `sources`. Das Feld `daylight_source_sol` zeigt die Konsole noch nicht an; das an das Frontend-Team melden.
-
-**Fertig, wenn:** Die Tageslicht-Regel und „Time to sunset“ echte Werte zeigen, und in `scenario.json` stehen unter `placeholder_fields` nur noch die übrigen Felder.
+- **Ergebnis:** Sol 4596 (11.07.2025), an dem Curiosity an der Szenario-Station stand: Sonnenaufgang 05:47, Sonnenuntergang 17:31 LMST.
+  - Die Felder `sunrise_lmst`, `sunset_lmst` und `daylight_source_sol` sind gesetzt.
+  - `sol` bleibt der künftige Sol der Crew-EVA.
+  - Die Übertragung auf die EVA ist in `sources` als Annahme gekennzeichnet.
+- **Tageslicht bindet nicht:** Die Crew ist um 14:58 LMST zu Hause.
+- **Für andere Aufgaben:** Ändert sich die Szenario-Station oder ihr Sol, `py -3.11 pipeline/rems_daylight.py` neu laufen lassen.
+- **Offen fürs Frontend-Team:** Das Feld `daylight_source_sol` zeigt die Konsole noch nicht an.
 
 ---
 
 ## Aufgabe 5: Vergleich mit Curiositys Fahrten
 
-**Zuständig:** Paul, siehe `docs/auftraege/paul-astar.md` · **Branch:** `feat/curiosity-comparison` · **Bis (Vorschlag):** So 10:00
+**Zuständig:** Paul, siehe `docs/auftraege/paul-astar.md` · **Branch:** `feat/curiosity-comparison` · **Bis (Vorschlag):** So 13:30
+
+Der A*-Code in `backend/` (PRs #24, #28, #29) ist in `main`, aber noch nicht an die Konsole angebunden. Von ihm braucht die Konsole genau diese eine Datei.
 
 Methode, Format und Prüfung stehen in Pauls Übergabe. Kurzfassung:
 - **Gehmodell:** dasselbe wie `pipeline/time_grid.py`, also Tobler gerichtet (siehe oben). Es muss alle Testvektoren aus `shared/walking-model-vectors.json` treffen. Die alte symmetrische Formel aus der ersten Fassung dieser Datei gilt nicht mehr.
@@ -244,7 +242,14 @@ Methode, Format und Prüfung stehen in Pauls Übergabe. Kurzfassung:
 
 ## Aufgabe 6: Grat-Maske aus dem 1-m-DEM
 
-**Vorschlag:** Michael oder Paul · **Branch:** `feat/ridge-mask` · **Bis (Vorschlag):** So 09:30
+**Vorschlag:** Michael oder Paul · **Branch:** `feat/ridge-mask` · **Bis (Vorschlag):** So 09:30, verstrichen
+
+**Empfehlung (Stand 10:30): nicht mehr anfangen.**
+- Die Maske braucht einige hundert MB DEM-Daten und eine Erweiterung der Engine.
+- Sie ändert alle Zeiten und Routen und kann die Geschichte mit 2 min Reserve brechen.
+- Nach der Videoaufnahme darf sich die Demo nicht mehr ändern.
+
+Die Konsole sagt ehrlich „ridge mask pending“, und die Projektseite nennt die Maske als offene Grenze. Die Anleitung unten bleibt für später.
 
 **Ziel:** Die Regel „keine Gratquerung“ gilt wirklich. Bisher sperrt das Grid nur Hänge über 20°, und die schmalen Boxwork-Rücken sind im 4-m-Raster unsichtbar. Die Konsole sagt das offen („ridge mask pending“).
 
@@ -275,7 +280,7 @@ Jeder PR nennt:
 - was geliefert wurde (Dateien);
 - welche Quellen, mit Titel und URL, damit sie in die Projektseite übernommen werden können;
 - welche Annahmen;
-- die Ausgabe der Prüfungen (`find-scenario.mjs` und `check-route-times.mjs`, falls Positionen oder Grid berührt wurden) und die neuen Zahlen des Demo-Laufs;
+- die Ausgabe der Prüfungen (`find-scenario.mjs`, `check-route-times.mjs` und `radio_check.py`, falls Positionen oder Grid berührt wurden) und die neuen Zahlen des Demo-Laufs;
 - was offen bleibt.
 
 Was die Konsole noch nicht anzeigt, ist ein Auftrag an das Frontend-Team, keine Änderung in `frontend/src/`.

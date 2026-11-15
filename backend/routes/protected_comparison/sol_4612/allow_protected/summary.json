@@ -1,0 +1,3127 @@
+{
+  "status": "found",
+  "start_lonlat": [
+    137.3807,
+    -4.8106
+  ],
+  "goal_lonlat": [
+    137.379296,
+    -4.804945
+  ],
+  "start_xy": [
+    500,
+    500
+  ],
+  "goal_xy": [
+    417,
+    164
+  ],
+  "node_count": 434,
+  "length_m": 432.99999999998533,
+  "total_cost": 1192.9712430880923,
+  "cost_units": "demo units, not seconds",
+  "grid": {
+    "mode": "local_metric",
+    "reference_latitude": -4.8106,
+    "reference_longitude": 137.3807,
+    "reference_position": "center",
+    "cell_size_m": 0.9999999999999661,
+    "columns": 1000,
+    "rows": 1000,
+    "mars_radius_m": 3396190.0,
+    "origin": "upper-left",
+    "index_order": "(x=column, y=row)",
+    "latitude_definition": "planetocentric",
+    "longitude_definition": "east-positive",
+    "projection": "local_equirectangular",
+    "reference_role": "Geografischer Projektionsanker, unabhängig von der Hintergrundkarte"
+  },
+  "config": {
+    "max_slope_deg": 20,
+    "max_roughness_m": 0.5,
+    "min_valid_fraction": 0.8,
+    "base_cost_per_m": 1,
+    "slope_weight": 2,
+    "roughness_weight": 2,
+    "uncertainty_weight": 1
+  },
+  "layer_specs": {
+    "protected_zone": {
+      "path": "/Users/michaelbauer/SpaceAppsNASA_docs/boxwork_protection_mask_50m.tif"
+    }
+  },
+  "provenance": {
+    "protected_zone": "mapped",
+    "slope_deg": "derived from mapped DEM: local 11x11 plane",
+    "roughness_m": "derived from mapped DEM: local 11x11 plane"
+  },
+  "missing_policy": "unknown -> None, no penalty or restriction; known constraints still apply",
+  "protected_penalty": 0,
+  "dose_config": {
+    "walking_speed_m_s": 1.0,
+    "goal_dwell_seconds": 0.0,
+    "radiation_weight": 0.0
+  },
+  "radiation": {
+    "status": "incomplete",
+    "quantity": "dose_equivalent",
+    "dose_unit": "mSv",
+    "rate_unit": "mSv/day",
+    "seconds_per_day": 86400.0,
+    "time_model": "constant walking speed assumption; no terrain calibration",
+    "walking_speed_m_s": 1.0,
+    "goal_dwell_seconds": 0.0,
+    "integration": "destination cell per movement interval; goal cell during dwell",
+    "duration_seconds": 432.99999999998226,
+    "moving_dose_msv": null,
+    "goal_dwell_dose_msv": 0.0,
+    "total_dose_msv": null,
+    "known_dose_msv": 0.0,
+    "unknown_duration_seconds": 432.99999999998226,
+    "profile": [
+      {
+        "x": 500,
+        "y": 500,
+        "elapsed_seconds": 0.0,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": 0.0
+      },
+      {
+        "x": 501,
+        "y": 500,
+        "elapsed_seconds": 0.9999999999999661,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 502,
+        "y": 500,
+        "elapsed_seconds": 1.9999999999999323,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 503,
+        "y": 500,
+        "elapsed_seconds": 2.9999999999998983,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 504,
+        "y": 500,
+        "elapsed_seconds": 3.9999999999998646,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 505,
+        "y": 500,
+        "elapsed_seconds": 4.99999999999983,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 505,
+        "y": 499,
+        "elapsed_seconds": 5.999999999999797,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 505,
+        "y": 498,
+        "elapsed_seconds": 6.999999999999763,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 505,
+        "y": 497,
+        "elapsed_seconds": 7.999999999999729,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 505,
+        "y": 496,
+        "elapsed_seconds": 8.999999999999694,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 505,
+        "y": 495,
+        "elapsed_seconds": 9.99999999999966,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 506,
+        "y": 495,
+        "elapsed_seconds": 10.999999999999627,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 506,
+        "y": 494,
+        "elapsed_seconds": 11.999999999999593,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 506,
+        "y": 493,
+        "elapsed_seconds": 12.99999999999956,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 506,
+        "y": 492,
+        "elapsed_seconds": 13.999999999999526,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 492,
+        "elapsed_seconds": 14.999999999999492,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 491,
+        "elapsed_seconds": 15.999999999999458,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 490,
+        "elapsed_seconds": 16.999999999999424,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 489,
+        "elapsed_seconds": 17.99999999999939,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 488,
+        "elapsed_seconds": 18.999999999999353,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 487,
+        "elapsed_seconds": 19.999999999999318,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 486,
+        "elapsed_seconds": 20.999999999999282,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 485,
+        "elapsed_seconds": 21.999999999999247,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 484,
+        "elapsed_seconds": 22.99999999999921,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 483,
+        "elapsed_seconds": 23.999999999999176,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 482,
+        "elapsed_seconds": 24.99999999999914,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 481,
+        "elapsed_seconds": 25.999999999999105,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 480,
+        "elapsed_seconds": 26.99999999999907,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 479,
+        "elapsed_seconds": 27.999999999999034,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 478,
+        "elapsed_seconds": 28.999999999998998,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 477,
+        "elapsed_seconds": 29.999999999998963,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 476,
+        "elapsed_seconds": 30.999999999998927,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 475,
+        "elapsed_seconds": 31.99999999999889,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 474,
+        "elapsed_seconds": 32.999999999998856,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 473,
+        "elapsed_seconds": 33.99999999999882,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 472,
+        "elapsed_seconds": 34.999999999998785,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 471,
+        "elapsed_seconds": 35.99999999999875,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 470,
+        "elapsed_seconds": 36.999999999998714,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 469,
+        "elapsed_seconds": 37.99999999999868,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 468,
+        "elapsed_seconds": 38.99999999999864,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 467,
+        "elapsed_seconds": 39.99999999999861,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 466,
+        "elapsed_seconds": 40.99999999999857,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 465,
+        "elapsed_seconds": 41.999999999998536,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 464,
+        "elapsed_seconds": 42.9999999999985,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 463,
+        "elapsed_seconds": 43.999999999998465,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 462,
+        "elapsed_seconds": 44.99999999999843,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 461,
+        "elapsed_seconds": 45.999999999998394,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 460,
+        "elapsed_seconds": 46.99999999999836,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 459,
+        "elapsed_seconds": 47.99999999999832,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 458,
+        "elapsed_seconds": 48.99999999999829,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 457,
+        "elapsed_seconds": 49.99999999999825,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 456,
+        "elapsed_seconds": 50.99999999999822,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 455,
+        "elapsed_seconds": 51.99999999999818,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 454,
+        "elapsed_seconds": 52.999999999998145,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 453,
+        "elapsed_seconds": 53.99999999999811,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 452,
+        "elapsed_seconds": 54.999999999998074,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 451,
+        "elapsed_seconds": 55.99999999999804,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 450,
+        "elapsed_seconds": 56.999999999998,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 449,
+        "elapsed_seconds": 57.99999999999797,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 448,
+        "elapsed_seconds": 58.99999999999793,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 447,
+        "elapsed_seconds": 59.9999999999979,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 446,
+        "elapsed_seconds": 60.99999999999786,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 445,
+        "elapsed_seconds": 61.999999999997826,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 444,
+        "elapsed_seconds": 62.99999999999779,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 443,
+        "elapsed_seconds": 63.999999999997755,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 442,
+        "elapsed_seconds": 64.99999999999773,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 441,
+        "elapsed_seconds": 65.9999999999977,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 440,
+        "elapsed_seconds": 66.99999999999767,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 439,
+        "elapsed_seconds": 67.99999999999764,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 438,
+        "elapsed_seconds": 68.99999999999761,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 437,
+        "elapsed_seconds": 69.99999999999758,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 436,
+        "elapsed_seconds": 70.99999999999756,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 435,
+        "elapsed_seconds": 71.99999999999753,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 434,
+        "elapsed_seconds": 72.9999999999975,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 433,
+        "elapsed_seconds": 73.99999999999747,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 432,
+        "elapsed_seconds": 74.99999999999744,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 431,
+        "elapsed_seconds": 75.99999999999741,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 430,
+        "elapsed_seconds": 76.99999999999739,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 429,
+        "elapsed_seconds": 77.99999999999736,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 428,
+        "elapsed_seconds": 78.99999999999733,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 427,
+        "elapsed_seconds": 79.9999999999973,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 426,
+        "elapsed_seconds": 80.99999999999727,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 425,
+        "elapsed_seconds": 81.99999999999724,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 424,
+        "elapsed_seconds": 82.99999999999721,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 423,
+        "elapsed_seconds": 83.99999999999719,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 422,
+        "elapsed_seconds": 84.99999999999716,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 421,
+        "elapsed_seconds": 85.99999999999713,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 420,
+        "elapsed_seconds": 86.9999999999971,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 419,
+        "elapsed_seconds": 87.99999999999707,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 418,
+        "elapsed_seconds": 88.99999999999704,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 417,
+        "elapsed_seconds": 89.99999999999702,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 416,
+        "elapsed_seconds": 90.99999999999699,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 415,
+        "elapsed_seconds": 91.99999999999696,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 414,
+        "elapsed_seconds": 92.99999999999693,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 507,
+        "y": 413,
+        "elapsed_seconds": 93.9999999999969,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 506,
+        "y": 413,
+        "elapsed_seconds": 94.99999999999687,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 505,
+        "y": 413,
+        "elapsed_seconds": 95.99999999999685,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 505,
+        "y": 412,
+        "elapsed_seconds": 96.99999999999682,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 504,
+        "y": 412,
+        "elapsed_seconds": 97.99999999999679,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 504,
+        "y": 411,
+        "elapsed_seconds": 98.99999999999676,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 503,
+        "y": 411,
+        "elapsed_seconds": 99.99999999999673,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 502,
+        "y": 411,
+        "elapsed_seconds": 100.9999999999967,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 501,
+        "y": 411,
+        "elapsed_seconds": 101.99999999999667,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 501,
+        "y": 410,
+        "elapsed_seconds": 102.99999999999665,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 501,
+        "y": 409,
+        "elapsed_seconds": 103.99999999999662,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 501,
+        "y": 408,
+        "elapsed_seconds": 104.99999999999659,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 501,
+        "y": 407,
+        "elapsed_seconds": 105.99999999999656,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 501,
+        "y": 406,
+        "elapsed_seconds": 106.99999999999653,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 501,
+        "y": 405,
+        "elapsed_seconds": 107.9999999999965,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 501,
+        "y": 404,
+        "elapsed_seconds": 108.99999999999648,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 501,
+        "y": 403,
+        "elapsed_seconds": 109.99999999999645,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 501,
+        "y": 402,
+        "elapsed_seconds": 110.99999999999642,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 500,
+        "y": 402,
+        "elapsed_seconds": 111.99999999999639,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 500,
+        "y": 401,
+        "elapsed_seconds": 112.99999999999636,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 500,
+        "y": 400,
+        "elapsed_seconds": 113.99999999999633,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 400,
+        "elapsed_seconds": 114.9999999999963,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 399,
+        "elapsed_seconds": 115.99999999999628,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 398,
+        "elapsed_seconds": 116.99999999999625,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 397,
+        "elapsed_seconds": 117.99999999999622,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 396,
+        "elapsed_seconds": 118.99999999999619,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 395,
+        "elapsed_seconds": 119.99999999999616,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 394,
+        "elapsed_seconds": 120.99999999999613,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 393,
+        "elapsed_seconds": 121.9999999999961,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 392,
+        "elapsed_seconds": 122.99999999999608,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 391,
+        "elapsed_seconds": 123.99999999999605,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 390,
+        "elapsed_seconds": 124.99999999999602,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 389,
+        "elapsed_seconds": 125.99999999999599,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 388,
+        "elapsed_seconds": 126.99999999999596,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 387,
+        "elapsed_seconds": 127.99999999999594,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 386,
+        "elapsed_seconds": 128.9999999999959,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 385,
+        "elapsed_seconds": 129.99999999999588,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 384,
+        "elapsed_seconds": 130.99999999999585,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 383,
+        "elapsed_seconds": 131.99999999999582,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 382,
+        "elapsed_seconds": 132.9999999999958,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 381,
+        "elapsed_seconds": 133.99999999999577,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 380,
+        "elapsed_seconds": 134.99999999999574,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 379,
+        "elapsed_seconds": 135.9999999999957,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 378,
+        "elapsed_seconds": 136.99999999999568,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 377,
+        "elapsed_seconds": 137.99999999999565,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 376,
+        "elapsed_seconds": 138.99999999999562,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 375,
+        "elapsed_seconds": 139.9999999999956,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 374,
+        "elapsed_seconds": 140.99999999999557,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 373,
+        "elapsed_seconds": 141.99999999999554,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 372,
+        "elapsed_seconds": 142.9999999999955,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 371,
+        "elapsed_seconds": 143.99999999999548,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 370,
+        "elapsed_seconds": 144.99999999999545,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 369,
+        "elapsed_seconds": 145.99999999999542,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 368,
+        "elapsed_seconds": 146.9999999999954,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 367,
+        "elapsed_seconds": 147.99999999999537,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 366,
+        "elapsed_seconds": 148.99999999999534,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 365,
+        "elapsed_seconds": 149.9999999999953,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 364,
+        "elapsed_seconds": 150.99999999999528,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 363,
+        "elapsed_seconds": 151.99999999999525,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 362,
+        "elapsed_seconds": 152.99999999999523,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 361,
+        "elapsed_seconds": 153.9999999999952,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 360,
+        "elapsed_seconds": 154.99999999999517,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 359,
+        "elapsed_seconds": 155.99999999999514,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 358,
+        "elapsed_seconds": 156.9999999999951,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 357,
+        "elapsed_seconds": 157.99999999999508,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 356,
+        "elapsed_seconds": 158.99999999999505,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 355,
+        "elapsed_seconds": 159.99999999999503,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 354,
+        "elapsed_seconds": 160.999999999995,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 353,
+        "elapsed_seconds": 161.99999999999497,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 352,
+        "elapsed_seconds": 162.99999999999494,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 351,
+        "elapsed_seconds": 163.9999999999949,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 350,
+        "elapsed_seconds": 164.99999999999488,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 349,
+        "elapsed_seconds": 165.99999999999486,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 348,
+        "elapsed_seconds": 166.99999999999483,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 347,
+        "elapsed_seconds": 167.9999999999948,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 346,
+        "elapsed_seconds": 168.99999999999477,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 345,
+        "elapsed_seconds": 169.99999999999474,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 344,
+        "elapsed_seconds": 170.9999999999947,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 343,
+        "elapsed_seconds": 171.99999999999469,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 342,
+        "elapsed_seconds": 172.99999999999466,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 341,
+        "elapsed_seconds": 173.99999999999463,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 340,
+        "elapsed_seconds": 174.9999999999946,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 339,
+        "elapsed_seconds": 175.99999999999457,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 338,
+        "elapsed_seconds": 176.99999999999454,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 337,
+        "elapsed_seconds": 177.99999999999451,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 336,
+        "elapsed_seconds": 178.9999999999945,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 335,
+        "elapsed_seconds": 179.99999999999446,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 334,
+        "elapsed_seconds": 180.99999999999443,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 333,
+        "elapsed_seconds": 181.9999999999944,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 332,
+        "elapsed_seconds": 182.99999999999437,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 331,
+        "elapsed_seconds": 183.99999999999434,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 330,
+        "elapsed_seconds": 184.99999999999432,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 329,
+        "elapsed_seconds": 185.9999999999943,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 328,
+        "elapsed_seconds": 186.99999999999426,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 327,
+        "elapsed_seconds": 187.99999999999423,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 326,
+        "elapsed_seconds": 188.9999999999942,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 499,
+        "y": 325,
+        "elapsed_seconds": 189.99999999999417,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 325,
+        "elapsed_seconds": 190.99999999999415,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 324,
+        "elapsed_seconds": 191.99999999999412,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 323,
+        "elapsed_seconds": 192.9999999999941,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 322,
+        "elapsed_seconds": 193.99999999999406,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 321,
+        "elapsed_seconds": 194.99999999999403,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 320,
+        "elapsed_seconds": 195.999999999994,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 319,
+        "elapsed_seconds": 196.99999999999397,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 318,
+        "elapsed_seconds": 197.99999999999395,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 317,
+        "elapsed_seconds": 198.99999999999392,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 316,
+        "elapsed_seconds": 199.9999999999939,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 315,
+        "elapsed_seconds": 200.99999999999386,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 314,
+        "elapsed_seconds": 201.99999999999383,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 313,
+        "elapsed_seconds": 202.9999999999938,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 312,
+        "elapsed_seconds": 203.99999999999378,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 311,
+        "elapsed_seconds": 204.99999999999375,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 310,
+        "elapsed_seconds": 205.99999999999372,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 309,
+        "elapsed_seconds": 206.9999999999937,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 308,
+        "elapsed_seconds": 207.99999999999366,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 307,
+        "elapsed_seconds": 208.99999999999363,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 306,
+        "elapsed_seconds": 209.9999999999936,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 305,
+        "elapsed_seconds": 210.99999999999358,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 304,
+        "elapsed_seconds": 211.99999999999355,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 303,
+        "elapsed_seconds": 212.99999999999352,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 302,
+        "elapsed_seconds": 213.9999999999935,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 301,
+        "elapsed_seconds": 214.99999999999346,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 300,
+        "elapsed_seconds": 215.99999999999343,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 299,
+        "elapsed_seconds": 216.9999999999934,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 298,
+        "elapsed_seconds": 217.99999999999338,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 297,
+        "elapsed_seconds": 218.99999999999335,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 296,
+        "elapsed_seconds": 219.99999999999332,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 295,
+        "elapsed_seconds": 220.9999999999933,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 294,
+        "elapsed_seconds": 221.99999999999326,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 293,
+        "elapsed_seconds": 222.99999999999324,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 292,
+        "elapsed_seconds": 223.9999999999932,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 291,
+        "elapsed_seconds": 224.99999999999318,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 290,
+        "elapsed_seconds": 225.99999999999315,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 289,
+        "elapsed_seconds": 226.99999999999312,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 288,
+        "elapsed_seconds": 227.9999999999931,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 287,
+        "elapsed_seconds": 228.99999999999307,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 286,
+        "elapsed_seconds": 229.99999999999304,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 285,
+        "elapsed_seconds": 230.999999999993,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 284,
+        "elapsed_seconds": 231.99999999999298,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 283,
+        "elapsed_seconds": 232.99999999999295,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 282,
+        "elapsed_seconds": 233.99999999999292,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 281,
+        "elapsed_seconds": 234.9999999999929,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 280,
+        "elapsed_seconds": 235.99999999999287,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 279,
+        "elapsed_seconds": 236.99999999999284,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 278,
+        "elapsed_seconds": 237.9999999999928,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 277,
+        "elapsed_seconds": 238.99999999999278,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 276,
+        "elapsed_seconds": 239.99999999999275,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 275,
+        "elapsed_seconds": 240.99999999999272,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 274,
+        "elapsed_seconds": 241.9999999999927,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 273,
+        "elapsed_seconds": 242.99999999999267,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 272,
+        "elapsed_seconds": 243.99999999999264,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 271,
+        "elapsed_seconds": 244.9999999999926,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 270,
+        "elapsed_seconds": 245.99999999999258,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 269,
+        "elapsed_seconds": 246.99999999999255,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 268,
+        "elapsed_seconds": 247.99999999999253,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 267,
+        "elapsed_seconds": 248.9999999999925,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 266,
+        "elapsed_seconds": 249.99999999999247,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 265,
+        "elapsed_seconds": 250.99999999999244,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 264,
+        "elapsed_seconds": 251.9999999999924,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 263,
+        "elapsed_seconds": 252.99999999999238,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 262,
+        "elapsed_seconds": 253.99999999999235,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 261,
+        "elapsed_seconds": 254.99999999999233,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 260,
+        "elapsed_seconds": 255.9999999999923,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 259,
+        "elapsed_seconds": 256.99999999999227,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 258,
+        "elapsed_seconds": 257.9999999999922,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 257,
+        "elapsed_seconds": 258.99999999999216,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 256,
+        "elapsed_seconds": 259.9999999999921,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 255,
+        "elapsed_seconds": 260.99999999999204,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 254,
+        "elapsed_seconds": 261.999999999992,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 253,
+        "elapsed_seconds": 262.9999999999919,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 252,
+        "elapsed_seconds": 263.99999999999187,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 251,
+        "elapsed_seconds": 264.9999999999918,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 250,
+        "elapsed_seconds": 265.99999999999176,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 249,
+        "elapsed_seconds": 266.9999999999917,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 248,
+        "elapsed_seconds": 267.99999999999164,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 247,
+        "elapsed_seconds": 268.9999999999916,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 246,
+        "elapsed_seconds": 269.99999999999153,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 245,
+        "elapsed_seconds": 270.9999999999915,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 244,
+        "elapsed_seconds": 271.9999999999914,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 243,
+        "elapsed_seconds": 272.99999999999136,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 242,
+        "elapsed_seconds": 273.9999999999913,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 241,
+        "elapsed_seconds": 274.99999999999125,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 240,
+        "elapsed_seconds": 275.9999999999912,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 239,
+        "elapsed_seconds": 276.99999999999113,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 238,
+        "elapsed_seconds": 277.9999999999911,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 237,
+        "elapsed_seconds": 278.999999999991,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 236,
+        "elapsed_seconds": 279.99999999999096,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 235,
+        "elapsed_seconds": 280.9999999999909,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 234,
+        "elapsed_seconds": 281.99999999999085,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 233,
+        "elapsed_seconds": 282.9999999999908,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 232,
+        "elapsed_seconds": 283.99999999999073,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 231,
+        "elapsed_seconds": 284.9999999999907,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 230,
+        "elapsed_seconds": 285.9999999999906,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 229,
+        "elapsed_seconds": 286.99999999999056,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 228,
+        "elapsed_seconds": 287.9999999999905,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 227,
+        "elapsed_seconds": 288.99999999999045,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 226,
+        "elapsed_seconds": 289.9999999999904,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 225,
+        "elapsed_seconds": 290.99999999999034,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 224,
+        "elapsed_seconds": 291.9999999999903,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 223,
+        "elapsed_seconds": 292.9999999999902,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 222,
+        "elapsed_seconds": 293.99999999999017,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 221,
+        "elapsed_seconds": 294.9999999999901,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 220,
+        "elapsed_seconds": 295.99999999999005,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 219,
+        "elapsed_seconds": 296.99999999999,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 218,
+        "elapsed_seconds": 297.99999999998994,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 217,
+        "elapsed_seconds": 298.9999999999899,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 216,
+        "elapsed_seconds": 299.9999999999898,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 215,
+        "elapsed_seconds": 300.99999999998977,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 214,
+        "elapsed_seconds": 301.9999999999897,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 213,
+        "elapsed_seconds": 302.99999999998965,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 212,
+        "elapsed_seconds": 303.9999999999896,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 211,
+        "elapsed_seconds": 304.99999999998954,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 210,
+        "elapsed_seconds": 305.9999999999895,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 498,
+        "y": 209,
+        "elapsed_seconds": 306.9999999999894,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 497,
+        "y": 209,
+        "elapsed_seconds": 307.99999999998937,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 496,
+        "y": 209,
+        "elapsed_seconds": 308.9999999999893,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 496,
+        "y": 208,
+        "elapsed_seconds": 309.99999999998926,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 496,
+        "y": 207,
+        "elapsed_seconds": 310.9999999999892,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 496,
+        "y": 206,
+        "elapsed_seconds": 311.99999999998914,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 496,
+        "y": 205,
+        "elapsed_seconds": 312.9999999999891,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 496,
+        "y": 204,
+        "elapsed_seconds": 313.99999999998903,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 496,
+        "y": 203,
+        "elapsed_seconds": 314.999999999989,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 496,
+        "y": 202,
+        "elapsed_seconds": 315.9999999999889,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 496,
+        "y": 201,
+        "elapsed_seconds": 316.99999999998886,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 496,
+        "y": 200,
+        "elapsed_seconds": 317.9999999999888,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 496,
+        "y": 199,
+        "elapsed_seconds": 318.99999999998875,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 496,
+        "y": 198,
+        "elapsed_seconds": 319.9999999999887,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 496,
+        "y": 197,
+        "elapsed_seconds": 320.99999999998863,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 495,
+        "y": 197,
+        "elapsed_seconds": 321.9999999999886,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 197,
+        "elapsed_seconds": 322.9999999999885,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 196,
+        "elapsed_seconds": 323.99999999998846,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 195,
+        "elapsed_seconds": 324.9999999999884,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 194,
+        "elapsed_seconds": 325.99999999998835,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 193,
+        "elapsed_seconds": 326.9999999999883,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 192,
+        "elapsed_seconds": 327.99999999998823,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 191,
+        "elapsed_seconds": 328.9999999999882,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 190,
+        "elapsed_seconds": 329.9999999999881,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 189,
+        "elapsed_seconds": 330.99999999998806,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 188,
+        "elapsed_seconds": 331.999999999988,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 187,
+        "elapsed_seconds": 332.99999999998795,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 186,
+        "elapsed_seconds": 333.9999999999879,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 185,
+        "elapsed_seconds": 334.99999999998784,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 184,
+        "elapsed_seconds": 335.9999999999878,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 183,
+        "elapsed_seconds": 336.9999999999877,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 182,
+        "elapsed_seconds": 337.99999999998766,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 181,
+        "elapsed_seconds": 338.9999999999876,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 180,
+        "elapsed_seconds": 339.99999999998755,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 179,
+        "elapsed_seconds": 340.9999999999875,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 178,
+        "elapsed_seconds": 341.99999999998744,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 177,
+        "elapsed_seconds": 342.9999999999874,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 494,
+        "y": 176,
+        "elapsed_seconds": 343.9999999999873,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 493,
+        "y": 176,
+        "elapsed_seconds": 344.99999999998727,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 492,
+        "y": 176,
+        "elapsed_seconds": 345.9999999999872,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 491,
+        "y": 176,
+        "elapsed_seconds": 346.99999999998715,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 490,
+        "y": 176,
+        "elapsed_seconds": 347.9999999999871,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 489,
+        "y": 176,
+        "elapsed_seconds": 348.99999999998704,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 489,
+        "y": 175,
+        "elapsed_seconds": 349.999999999987,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 488,
+        "y": 175,
+        "elapsed_seconds": 350.9999999999869,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 487,
+        "y": 175,
+        "elapsed_seconds": 351.99999999998687,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 486,
+        "y": 175,
+        "elapsed_seconds": 352.9999999999868,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 486,
+        "y": 174,
+        "elapsed_seconds": 353.99999999998676,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 485,
+        "y": 174,
+        "elapsed_seconds": 354.9999999999867,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 485,
+        "y": 173,
+        "elapsed_seconds": 355.99999999998664,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 485,
+        "y": 172,
+        "elapsed_seconds": 356.9999999999866,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 484,
+        "y": 172,
+        "elapsed_seconds": 357.9999999999865,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 484,
+        "y": 171,
+        "elapsed_seconds": 358.99999999998647,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 483,
+        "y": 171,
+        "elapsed_seconds": 359.9999999999864,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 483,
+        "y": 170,
+        "elapsed_seconds": 360.99999999998636,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 482,
+        "y": 170,
+        "elapsed_seconds": 361.9999999999863,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 482,
+        "y": 169,
+        "elapsed_seconds": 362.99999999998624,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 482,
+        "y": 168,
+        "elapsed_seconds": 363.9999999999862,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 481,
+        "y": 168,
+        "elapsed_seconds": 364.99999999998613,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 481,
+        "y": 167,
+        "elapsed_seconds": 365.9999999999861,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 480,
+        "y": 167,
+        "elapsed_seconds": 366.999999999986,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 479,
+        "y": 167,
+        "elapsed_seconds": 367.99999999998596,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 478,
+        "y": 167,
+        "elapsed_seconds": 368.9999999999859,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 477,
+        "y": 167,
+        "elapsed_seconds": 369.99999999998585,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 476,
+        "y": 167,
+        "elapsed_seconds": 370.9999999999858,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 475,
+        "y": 167,
+        "elapsed_seconds": 371.99999999998573,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 474,
+        "y": 167,
+        "elapsed_seconds": 372.9999999999857,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 473,
+        "y": 167,
+        "elapsed_seconds": 373.9999999999856,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 472,
+        "y": 167,
+        "elapsed_seconds": 374.99999999998556,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 471,
+        "y": 167,
+        "elapsed_seconds": 375.9999999999855,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 470,
+        "y": 167,
+        "elapsed_seconds": 376.99999999998545,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 469,
+        "y": 167,
+        "elapsed_seconds": 377.9999999999854,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 468,
+        "y": 167,
+        "elapsed_seconds": 378.99999999998533,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 467,
+        "y": 167,
+        "elapsed_seconds": 379.9999999999853,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 466,
+        "y": 167,
+        "elapsed_seconds": 380.9999999999852,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 465,
+        "y": 167,
+        "elapsed_seconds": 381.99999999998516,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 464,
+        "y": 167,
+        "elapsed_seconds": 382.9999999999851,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 463,
+        "y": 167,
+        "elapsed_seconds": 383.99999999998505,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 462,
+        "y": 167,
+        "elapsed_seconds": 384.999999999985,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 461,
+        "y": 167,
+        "elapsed_seconds": 385.99999999998494,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 460,
+        "y": 167,
+        "elapsed_seconds": 386.9999999999849,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 459,
+        "y": 167,
+        "elapsed_seconds": 387.9999999999848,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 458,
+        "y": 167,
+        "elapsed_seconds": 388.99999999998477,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 457,
+        "y": 167,
+        "elapsed_seconds": 389.9999999999847,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 456,
+        "y": 167,
+        "elapsed_seconds": 390.99999999998465,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 455,
+        "y": 167,
+        "elapsed_seconds": 391.9999999999846,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 454,
+        "y": 167,
+        "elapsed_seconds": 392.99999999998454,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 453,
+        "y": 167,
+        "elapsed_seconds": 393.9999999999845,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 452,
+        "y": 167,
+        "elapsed_seconds": 394.9999999999844,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 451,
+        "y": 167,
+        "elapsed_seconds": 395.99999999998437,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 450,
+        "y": 167,
+        "elapsed_seconds": 396.9999999999843,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 449,
+        "y": 167,
+        "elapsed_seconds": 397.99999999998425,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 448,
+        "y": 167,
+        "elapsed_seconds": 398.9999999999842,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 447,
+        "y": 167,
+        "elapsed_seconds": 399.99999999998414,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 446,
+        "y": 167,
+        "elapsed_seconds": 400.9999999999841,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 445,
+        "y": 167,
+        "elapsed_seconds": 401.999999999984,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 444,
+        "y": 167,
+        "elapsed_seconds": 402.99999999998397,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 444,
+        "y": 166,
+        "elapsed_seconds": 403.9999999999839,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 443,
+        "y": 166,
+        "elapsed_seconds": 404.99999999998386,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 443,
+        "y": 165,
+        "elapsed_seconds": 405.9999999999838,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 443,
+        "y": 164,
+        "elapsed_seconds": 406.99999999998374,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 442,
+        "y": 164,
+        "elapsed_seconds": 407.9999999999837,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 441,
+        "y": 164,
+        "elapsed_seconds": 408.99999999998363,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 440,
+        "y": 164,
+        "elapsed_seconds": 409.9999999999836,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 439,
+        "y": 164,
+        "elapsed_seconds": 410.9999999999835,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 438,
+        "y": 164,
+        "elapsed_seconds": 411.99999999998346,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 437,
+        "y": 164,
+        "elapsed_seconds": 412.9999999999834,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 436,
+        "y": 164,
+        "elapsed_seconds": 413.99999999998334,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 435,
+        "y": 164,
+        "elapsed_seconds": 414.9999999999833,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 434,
+        "y": 164,
+        "elapsed_seconds": 415.99999999998323,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 433,
+        "y": 164,
+        "elapsed_seconds": 416.9999999999832,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 432,
+        "y": 164,
+        "elapsed_seconds": 417.9999999999831,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 431,
+        "y": 164,
+        "elapsed_seconds": 418.99999999998306,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 430,
+        "y": 164,
+        "elapsed_seconds": 419.999999999983,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 429,
+        "y": 164,
+        "elapsed_seconds": 420.99999999998295,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 428,
+        "y": 164,
+        "elapsed_seconds": 421.9999999999829,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 427,
+        "y": 164,
+        "elapsed_seconds": 422.99999999998283,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 426,
+        "y": 164,
+        "elapsed_seconds": 423.9999999999828,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 425,
+        "y": 164,
+        "elapsed_seconds": 424.9999999999827,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 424,
+        "y": 164,
+        "elapsed_seconds": 425.99999999998266,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 423,
+        "y": 164,
+        "elapsed_seconds": 426.9999999999826,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 422,
+        "y": 164,
+        "elapsed_seconds": 427.99999999998255,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 421,
+        "y": 164,
+        "elapsed_seconds": 428.9999999999825,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 420,
+        "y": 164,
+        "elapsed_seconds": 429.99999999998244,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 419,
+        "y": 164,
+        "elapsed_seconds": 430.9999999999824,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 418,
+        "y": 164,
+        "elapsed_seconds": 431.9999999999823,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      },
+      {
+        "x": 417,
+        "y": 164,
+        "elapsed_seconds": 432.99999999998226,
+        "rate_msv_per_day": null,
+        "cumulative_dose_msv": null
+      }
+    ]
+  },
+  "radiation_weight_units": "demo cost units per mSv; movement only, excludes goal dwell",
+  "radiation_missing_policy": "blocked when radiation_weight > 0; incomplete dose otherwise",
+  "radiation_and_science": "radiation dose integrated; science information only",
+  "protected_cells_on_path": 104,
+  "protected_distance_m": 103.99999999999648
+}

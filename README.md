@@ -11,7 +11,7 @@ Team "Houston, we have a map" · NASA Space Apps Challenge 2026, challenge "Inte
 | Path | Content |
 |---|---|
 | `frontend/` | Static web app: habitat console with crew display (Vite, Leaflet 1.9.4) |
-| `backend/` | Offline Python mapper and A* routing; see `backend/MAPPER_ROUTING.md` |
+| `backend/` | No server. Offline Python tools: GeoMapper, the A* router and a radiation dose model (`backend/MAPPER_ROUTING.md`, `backend/AGENTS.md`). The console's routes come from the A* through `pipeline/astar_import.py` |
 | `pipeline/` | Offline Python data pipeline, e.g. the orthophoto overlay; see `pipeline/README.md` |
 | `data/` | Small, versioned sample data and data structures |
 | `shared/` | Data contracts, e.g. the grid spec |
