@@ -13,6 +13,13 @@ import { estimateDuration } from './route-duration.js';
 import { sectionsFromTrack } from './route-duration-input.js';
 
 const $ = (s) => document.querySelector(s);
+// preview of the colour scales of pipeline/map_layers.py (RAMPS), low values left
+const RAMP_PREVIEW = {
+  blues: ['#3fa9f5', '#3891d6', '#3179b8', '#2a6199', '#22487a', '#1b305b', '#14183d'],
+  viridis: ['#440154', '#3B528B', '#21918C', '#5EC962', '#FDE725'],
+  magma: ['#000004', '#3B0F70', '#8C2981', '#DE4968', '#FE9F6D', '#FCFDBF'],
+  greys: ['#EDF0E6', '#80878B', '#2B2D2F'],
+};
 const HDR = { 'X-RL-Tools': '1' };
 let tools = null;            // status from the local data tools, or null
 let picking = false;
@@ -174,13 +181,16 @@ export function initDataTools(model, mapApi, { onStationsChanged, reloadData, on
       const b = e.target.closest('[data-rm-point]'); if (b) removePoint(b.dataset.rmPoint);
     });
   }
+  const rampPrev = () => { $('#ad-ramp-prev').style.background = `linear-gradient(90deg, ${RAMP_PREVIEW[$('#ad-map-ramp').value].join(', ')})`; };
+  $('#ad-map-ramp').addEventListener('change', rampPrev);
+  rampPrev();
   $('#ad-file').addEventListener('change', () => { $('#ad-radius-row').hidden = !/\.csv$/i.test($('#ad-file').files[0]?.name ?? ''); });
   $('#ad-map-add').addEventListener('click', async () => {
     const f = $('#ad-file').files[0];
     if (!f) { busy(false, 'Choose a GeoTIFF or a CSV first.'); return; }
     busy(true, `Uploading ${f.name} and anchoring it with GeoMapper…`);
     try {
-      const q = new URLSearchParams({ file: f.name, name: $('#ad-map-name').value.trim() || f.name.replace(/\.(tiff?|csv)$/i, ''), units: $('#ad-map-units').value.trim(), radius: $('#ad-radius').value.trim() });
+      const q = new URLSearchParams({ file: f.name, name: $('#ad-map-name').value.trim() || f.name.replace(/\.(tiff?|csv)$/i, ''), units: $('#ad-map-units').value.trim(), radius: $('#ad-radius').value.trim(), ramp: $('#ad-map-ramp').value });
       const r = await fetch(`/__tools/layers?${q}`, { method: 'POST', headers: { ...HDR, 'Content-Type': 'application/octet-stream' }, body: f });
       const out = await r.json();
       if (!out.ok) throw new Error(out.error || 'pipeline failed');

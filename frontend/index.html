@@ -72,10 +72,10 @@
       <button class="btn" id="btn-layers" aria-expanded="false" aria-controls="layers"><svg class="i"><use href="#i-layers"/></svg><span class="t">Layers</span></button>
       <div class="popover" id="layers" hidden>
         <h3>Always available</h3>
-        <label><input type="checkbox" id="ly-area" checked> Return stages along the route, 60-minute line</label>
-        <label><input type="checkbox" id="ly-zones" checked> Protected zones</label>
-        <label><input type="checkbox" id="ly-trav" checked> Curiosity traverse</label>
-        <label><input type="checkbox" id="ly-names" checked> Place names (Curiosity mission, not IAU)</label>
+        <label><input type="checkbox" id="ly-area"> Return stages along the route, 60-minute line</label>
+        <label><input type="checkbox" id="ly-zones"> Protected zones</label>
+        <label><input type="checkbox" id="ly-trav"> Curiosity traverse</label>
+        <label><input type="checkbox" id="ly-names"> Place names (Curiosity mission, not IAU)</label>
         <h3>Map layers <small>top of the list lies on top</small></h3>
         <ol class="ly-list" id="ly-maps"></ol>
         <span class="cap">Every layer is anchored on the console grid by GeoMapper (pipeline/map_layers.py).</span>
@@ -217,6 +217,14 @@
               <label class="ad-f"><span>Name</span><input id="ad-map-name" maxlength="80" placeholder="e.g. Thermal inertia"></label>
               <label class="ad-f"><span>Units</span><input id="ad-map-units" maxlength="20" placeholder="e.g. TIU"></label>
             </div>
+            <label class="ad-f"><span>Colour scale (low → high)</span>
+              <select id="ad-map-ramp">
+                <option value="blues" selected>Blues</option>
+                <option value="viridis">Viridis</option>
+                <option value="magma">Magma</option>
+                <option value="greys">Greys</option>
+              </select></label>
+            <div class="ad-ramp" id="ad-ramp-prev" aria-hidden="true"></div>
             <button type="button" class="btn btn-go" id="ad-map-add">Add map</button>
           </div>
           <p class="cap" id="ad-map-off">Maps need GeoMapper (Python): run the console with <code>npm run dev</code>, or put the GeoTIFF or CSV into <code>data/layers/</code> and run <code>pipeline/map_layers.py</code>.</p>

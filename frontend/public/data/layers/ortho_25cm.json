@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "pipeline/map_layers.py",
-  "created_utc": "2026-11-15T10:18:13.783233+00:00",
+  "created_utc": "2026-11-15T12:06:29.448150+00:00",
   "image": "ortho_25cm.png",
   "image_path": "data/layers/ortho_25cm.png",
   "numeric_file": "layers/ortho_25cm.f32",

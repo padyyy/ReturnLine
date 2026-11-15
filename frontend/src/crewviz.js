@@ -8,7 +8,7 @@ import { contour } from './contour.js';
 import { LS, navView } from './layerstate.js';
 
 const BASE = import.meta.env.BASE_URL;
-export const NAMES = { on: true };                // place names on the tablet map too (Layers menu)
+export const NAMES = { on: false };               // place names on the tablet map too (Layers menu)
 export const ZOOMS = [0.45, 0.75, 1.2, 1.9, 3];   // screen px per metre on the navigation map
 const HUD_RANGE = 250;                             // metres from the HUD centre to its rim
 export const STAGE = {

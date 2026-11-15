@@ -6,7 +6,7 @@
 //   GET    /__tools/status                         python, catalogs
 //   POST   /__tools/points  {name, lon, lat, reason?}   add a target, rebuild the plan
 //   DELETE /__tools/points?id=...                  remove a target, rebuild the plan
-//   POST   /__tools/layers?name=&units=&file=&radius=  body: GeoTIFF or CSV bytes; anchor it with GeoMapper
+//   POST   /__tools/layers?name=&units=&file=&radius=&ramp=  body: GeoTIFF or CSV bytes; anchor it with GeoMapper
 //   DELETE /__tools/layers?id=...                  remove a map, re-export the layers
 //
 // Every request must carry the header X-RL-Tools: 1. A custom header makes browsers ask before a
@@ -22,6 +22,7 @@ const LAYERS = join(ROOT, 'data', 'layers');
 const OUT_LAYERS = join(ROOT, 'frontend', 'public', 'data', 'layers');
 const MAX_TIFF = 400 * 1024 * 1024;
 const MAP_EXT = /\.(tiff?|csv)$/i;   // GeoTIFF raster or CSV point table (latitude, longitude, values)
+const RAMPS = new Set(['blues', 'viridis', 'magma', 'greys']);   // colour scales of pipeline/map_layers.py
 const slug = (s) => String(s).toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'item';
 
 function python() {
@@ -96,10 +97,12 @@ async function handle(req, res, url) {
   }
   if (url.pathname === '/__tools/layers' && req.method === 'POST') {
     const file = String(url.searchParams.get('file') ?? ''), name = String(url.searchParams.get('name') ?? '').trim().slice(0, 80);
-    if (!MAP_EXT.test(file)) return send(res, 400, { ok: false, error: 'a GeoTIFF (.tif) or a CSV with latitude and longitude is required' });
+    // a refusal must still read the upload, else the browser sees a broken connection instead of the message
+    const refuse = (status, error) => { req.resume(); return send(res, status, { ok: false, error }); };
+    if (!MAP_EXT.test(file)) return refuse(400, 'a GeoTIFF (.tif) or a CSV with latitude and longitude is required');
     const ext = file.match(MAP_EXT)[0].toLowerCase();
     const id = slug(name || file.replace(MAP_EXT, ''));
-    if (layerList().some((l) => l.id === id)) return send(res, 409, { ok: false, error: `a map with the id ${id} exists; pick another name` });
+    if (layerList().some((l) => l.id === id)) return refuse(409, `a map with the id ${id} exists; pick another name`);
     mkdirSync(LAYERS, { recursive: true });
     const tif = join(LAYERS, `${id}${ext === '.csv' ? '.csv' : '.tif'}`);
     let size = 0, tooBig = false;
@@ -112,7 +115,8 @@ async function handle(req, res, url) {
     if (tooBig || size === 0) { rmSync(tif, { force: true }); return send(res, 400, { ok: false, error: tooBig ? 'file over 400 MB' : 'empty file' }); }
     const units = String(url.searchParams.get('units') ?? '').trim().slice(0, 20);
     const radius = Number(url.searchParams.get('radius'));   // CSV search radius in metres; empty = twice the point spacing
-    writeFileSync(join(LAYERS, `${id}.layer.json`), `${JSON.stringify({ name: name || id, ...(units ? { units } : {}), ...(radius > 0 ? { radius_m: radius } : {}), source_note: `added in the console (${file})` }, null, 2)}\n`);
+    const ramp = String(url.searchParams.get('ramp') ?? '');   // colour scale; unknown names fall back to the default
+    writeFileSync(join(LAYERS, `${id}.layer.json`), `${JSON.stringify({ name: name || id, ...(units ? { units } : {}), ...(radius > 0 ? { radius_m: radius } : {}), ...(RAMPS.has(ramp) ? { ramp } : {}), source_note: `added in the console (${file})` }, null, 2)}\n`);
     const r = await run('map_layers.py');
     const made = existsSync(OUT_LAYERS) ? readdirSync(OUT_LAYERS).filter((f) => f === `${id}.json` || (f.startsWith(`${id}_`) && f.endsWith('.json'))) : [];
     if (!made.length) { // GeoMapper could not anchor it: do not keep a broken map

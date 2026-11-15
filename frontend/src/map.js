@@ -86,9 +86,11 @@ export function createMap(el, data, model, { onStation } = {}) {
   }
 
   const layers = {
-    area: L.layerGroup().addTo(map),
-    traverse: L.layerGroup().addTo(map),
-    zones: L.layerGroup().addTo(map),
+    // off at the start: the base map shows only the orthophoto, the stations and the plan;
+    // the Layers menu switches these on
+    area: L.layerGroup(),
+    traverse: L.layerGroup(),
+    zones: L.layerGroup(),
     routes: L.layerGroup().addTo(map),
     markers: L.layerGroup().addTo(map),
     crew: L.layerGroup().addTo(map),
@@ -134,7 +136,7 @@ export function createMap(el, data, model, { onStation } = {}) {
     L.marker(ll(q), { interactive: false, keyboard: false, icon: L.divIcon({ className: 'mk', iconSize: [10, 10], iconAnchor: [5, 5],
       html: `<span class="mk-name"></span><span class="mk-lbl name${left ? ' left' : ''}">${q.name.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`)}</span>` }) }).addTo(layers.names);
   }
-  layers.names.addTo(map);
+  // place names start switched off (Layers menu)
 
   const stationMarkers = new Map();
   function stationIcon(s, state) {

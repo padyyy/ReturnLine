@@ -1,0 +1,224 @@
+/* Mission-control theme (2026-11-15, after the team's console mock-up and the ReturnLine logo):
+   dark panels with thin rules, square corners, uppercase condensed headings, one accent colour.
+   Design only: no element, button or behaviour changes. Loaded after console.css and app.css.
+   The crew displays keep their own light scheme where they draw on imagery or show the crew's values:
+   the Leaflet map stage, the tablet map and the data sheet (light variables restored below).
+   Palette: change the block "palette" only. The logo keeps its own orange in every palette. */
+
+:root {
+  --f-head: "Bahnschrift SemiCondensed", "Bahnschrift", "DIN Alternate", "Barlow Semi Condensed", "Arial Narrow", var(--f-text);
+  /* ---- palette: blues #3fa9f5 #3891d6 #3179b8 #2a6199 #22487a #1b305b #14183d #0d001e ---- */
+  --bg: #0d001e;           --bg-rgb: 13, 0, 30;
+  --panel: #14183d;        --panel-rgb: 20, 24, 61;
+  --panel-2: #1b305b;
+  --panel-3: #22487a;      --panel-3-rgb: 34, 72, 122;
+  --line: #22487a;
+  --line-2: #2a6199;
+  --ink: #EAF4FF;          --ink-rgb: 234, 244, 255;
+  --graphite-2: #9DBCDC;
+  --graphite-3: #5F7FA3;
+  --acc: #3fa9f5;
+  --acc-hover: #6BBDF8;
+  --on-acc: #0d001e;
+  --acc-tint: rgba(63, 169, 245, .16);
+  --blue: #A9D8FF;         /* planetary protection text; the accent is blue too, so this one is paler */
+  --blue-tint: rgba(169, 216, 255, .12);
+  /* previous palette (black and logo orange), to switch back:
+     --bg #000 (0,0,0) · --panel #0B0B0B (11,11,11) · --panel-2 #141414 · --panel-3 #1E1E1E (30,30,30) · --line #2C2C2C ·
+     --line-2 #3D3D3D · --ink #EDE6DC (237,230,220) · --graphite-2 #A39C92 · --graphite-3 #6E6963 · --acc #E8622C ·
+     --acc-hover #F07440 · --on-acc #140A05 · --acc-tint rgba(232,98,44,.16) · --blue #7FA8F0 */
+  /* ---- end of palette ---- */
+  --amber: #E8B400;
+  /* the console's own variables, dark */
+  --paper: var(--panel);
+  --paper-2: var(--panel-2);
+  --paper-3: var(--panel-3);
+  --graphite: var(--ink);
+  --rule: rgba(var(--ink-rgb), .11);
+  --rule-2: rgba(var(--ink-rgb), .22);
+  --red: #FF6A4A;
+  --green: #4CC27E;
+  --red-tint: rgba(255, 106, 74, .12);
+  --green-tint: rgba(76, 194, 126, .12);
+  --cover-tint: var(--acc-tint);
+}
+
+/* light again where the crew displays draw on imagery or show the crew's values */
+.stage, .nvmap, .nvdata {
+  --paper: #FCF9F5; --paper-2: #F2EBE3; --paper-3: #E6DCD1;
+  --graphite: #2B2D2F; --graphite-2: #51575B; --graphite-3: #80878B;
+  --rule: rgba(43, 45, 47, .15); --rule-2: rgba(43, 45, 47, .32);
+  --red: #C8361F; --blue: #2459A8; --green: #1F6B45;
+  --red-tint: rgba(200, 54, 31, .09); --blue-tint: rgba(36, 89, 168, .09); --green-tint: rgba(31, 107, 69, .10);
+  --cover-tint: rgba(232, 98, 44, .10);
+  color: var(--graphite);   /* text inherits the light scheme's ink, not the dark page's */
+}
+
+body { background: var(--bg); color: var(--ink); }
+::selection { background: var(--acc); color: #111; }
+:focus-visible { outline-color: var(--acc); }
+* { scrollbar-color: rgba(var(--ink-rgb), .25) transparent; }
+::-webkit-scrollbar-thumb { background: rgba(var(--ink-rgb), .22); }
+
+/* ---------- headings: uppercase, condensed ---------- */
+.sect-h, .panel-h, .assume-h h2, .legend h2, .popover h3, .pic-h h2, .np-k, .hc-label, .v-label, .st-title,
+.summary header h2, .tools h3, .tools h4 {
+  font-family: var(--f-head); text-transform: uppercase; letter-spacing: .06em;
+}
+.sect-h { font-size: 15px; font-weight: 700; color: var(--ink); border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 4px; }
+.sect-h .cap { text-transform: none; letter-spacing: 0; font-family: var(--f-text); }
+.panel-h { font-size: 14px; font-weight: 700; letter-spacing: .07em; }
+.panel-h .cap { text-transform: none; letter-spacing: 0; font-family: var(--f-text); }
+
+/* ---------- buttons ---------- */
+.btn {
+  border: 1px solid var(--line-2); border-radius: 2px; background: transparent; color: var(--ink);
+  font-family: var(--f-head); font-weight: 700; letter-spacing: .07em; text-transform: uppercase; font-size: 13px;
+}
+.btn:hover { background: rgba(var(--ink-rgb), .07); border-color: var(--ink); }
+.btn-dark, .btn-go { background: var(--acc); border-color: var(--acc); color: var(--on-acc); }
+.btn-dark:hover, .btn-go:hover { background: var(--acc-hover); border-color: var(--acc-hover); }
+.btn-go[disabled] { background: transparent; border-color: var(--line-2); color: var(--graphite-2); opacity: 1; }
+.btn-abort { background: #D23A1F; border-color: #D23A1F; color: #FFF3EC; }
+.btn-abort:hover { background: #E2452A; }
+.btn-sim { border-color: var(--acc); color: var(--acc); }
+.btn-sim:hover { background: var(--acc-tint); }
+.np-act .btn { height: 52px; padding: 0 26px; font-size: 18px; letter-spacing: .08em; }
+.seg { border: 1px solid var(--line-2); border-radius: 2px; padding: 2px; }
+.seg button { border-radius: 1px; color: var(--ink); font-family: var(--f-head); font-weight: 700; letter-spacing: .05em; }
+.seg button:hover { background: rgba(var(--ink-rgb), .08); }
+.seg button[aria-pressed="true"] { background: var(--acc); color: var(--on-acc); }
+.switch .track { border-color: var(--line-2); }
+.switch .track::after { background: var(--graphite-2); }
+.src { border-radius: 2px; }
+
+/* ---------- header band ---------- */
+.band { background: var(--bg); border-bottom: 1px solid var(--line-2); }
+.wordmark { color: var(--ink); font-family: var(--f-head); font-weight: 700; letter-spacing: .18em; font-size: 20px; }
+.meta { border-left-color: var(--line-2); color: var(--graphite-2); font-family: var(--f-head); text-transform: uppercase; letter-spacing: .06em; }
+.meta-item { font-size: 14px; }
+.meta-item b, .meta .num { color: var(--ink); }
+.meta .num { font-family: var(--f-head); font-size: 16px; font-weight: 700; letter-spacing: .06em; }
+.tag-sketch { border-radius: 2px; border-color: var(--line-2); color: var(--graphite-2); font-family: var(--f-head); text-transform: uppercase; letter-spacing: .06em; }
+.tag-sketch.is-ph { border-color: var(--acc); color: var(--acc); background: var(--acc-tint); }
+
+/* ---------- menus and panels over the map ---------- */
+.popover, .legend, .credits-text { background: rgba(var(--panel-rgb), .97); border: 1px solid var(--line-2); border-radius: 2px; color: var(--ink); }
+.popover h3 { color: var(--ink); font-size: 12.5px; }
+.popover h3 small { text-transform: none; letter-spacing: 0; font-family: var(--f-text); color: var(--graphite-2); }
+.popover input { accent-color: var(--acc); }
+.ly-row { border-radius: 2px; border-color: var(--line); }
+.ly-row.is-on { border-color: var(--line-2); background: rgba(var(--ink-rgb), .03); }
+.ly-b { border-radius: 2px; background: transparent; border-color: var(--line-2); color: var(--ink); }
+.ly-n { border-radius: 2px; background: var(--acc); color: var(--on-acc); }
+.ly-n.is-out { background: transparent; color: var(--graphite-2); border-color: var(--line-2); }
+.legend li { color: var(--ink); }
+.legend svg [stroke="#2B2D2F"] { stroke: var(--ink); }
+.info-btn { border: 1px solid var(--line-2); border-radius: 2px; background: rgba(var(--panel-rgb), .9); color: var(--ink);
+  font-family: var(--f-head); text-transform: uppercase; letter-spacing: .06em; }
+.info-btn:hover { background: rgba(var(--panel-3-rgb), .95); }
+.info-btn[aria-expanded="true"] { background: var(--acc); border-color: var(--acc); color: var(--on-acc); }
+.tg { background: rgba(var(--panel-rgb), .92); border-color: var(--line-2); color: var(--ink); }
+.tg:hover { background: var(--panel-3); }
+.readout { background: rgba(var(--panel-rgb), .9); border: 1px solid var(--line-2); border-radius: 2px; color: var(--ink); }
+.tip { background: var(--panel-3); color: var(--ink); border: 1px solid var(--line-2); border-radius: 2px; }
+
+/* Leaflet controls: dark squares (prefixed: leaflet.css loads after this file) */
+.leaflet-container .leaflet-bar { border: 1px solid var(--line-2) !important; border-radius: 2px !important; }
+.leaflet-container .leaflet-bar a, .leaflet-container .leaflet-bar a:hover { background: rgba(var(--panel-rgb), .92); color: var(--ink); border-bottom-color: var(--line-2); }
+.leaflet-container .leaflet-bar a:hover { background: var(--panel-3); }
+.leaflet-container .leaflet-bar a.leaflet-disabled { background: rgba(var(--panel-rgb), .75); color: var(--graphite-3); }
+.leaflet-container .leaflet-control-scale-line { background: rgba(var(--panel-rgb), .9); border-color: var(--ink); color: var(--ink); border-radius: 0; }
+.credits-btn { border: 1px solid var(--line-2); background: rgba(var(--panel-rgb), .92); color: var(--ink); }
+.credits-btn:hover, .credits.is-open .credits-btn { background: var(--acc); color: var(--on-acc); }
+.credits-text { color: var(--ink); }
+.credits-text a { color: var(--acc-hover); }
+
+/* ---------- console layout: black ground, framed panels, square corners ---------- */
+.console, .navmode { background: var(--bg); gap: 10px; padding: 10px; }
+.mapcol, .logcol { border: 1px solid var(--line-2); border-radius: 0; background: var(--panel); }
+.budget, .story { background: var(--panel); border-top: 1px solid var(--line-2); }
+.budget-bar text { fill: var(--ink); }
+.budget-bar [stroke="#2B2D2F"] { stroke: var(--ink); }
+.budget-bar rect[fill="#2B2D2F"] { fill: var(--acc); }
+.budget-bar rect[fill="rgba(43,45,47,.08)"] { fill: rgba(var(--ink-rgb), .07); }
+.budget-bar rect[fill="rgba(43,45,47,.12)"] { fill: rgba(var(--ink-rgb), .12); }
+.budget-bar .t-lbl[style*="#51575B"] { fill: var(--graphite-2) !important; }
+.budget-sum .row.total { border-top-color: var(--ink); }
+.clock .eva { font-family: var(--f-head); font-size: 34px; letter-spacing: .02em; }
+.clock .lbl { font-family: var(--f-head); text-transform: uppercase; letter-spacing: .06em; }
+
+/* ---------- verdict: the big word on a solid block ---------- */
+.verdict { border-radius: 0; background: var(--panel-2); border: 1px solid var(--line); margin: 10px 10px 4px; }
+.verdict.is-go { background: var(--panel-2); }
+.verdict.is-nogo { background: rgba(255, 106, 74, .07); border-color: rgba(255, 106, 74, .35); }
+.v-label { color: var(--graphite-2); font-size: 12px; }
+.v-label b { color: var(--ink); }
+.v-word { font-family: var(--f-head); letter-spacing: .02em; line-height: 1; }
+.verdict .v-word.go, .verdict .v-word.nogo, .verdict .v-word.abort { display: inline-block; padding: .08em .22em .04em; margin-top: 6px; }
+.verdict .v-word.go { background: var(--acc); color: var(--on-acc); }
+.verdict .v-word.nogo, .verdict .v-word.abort { background: #D23A1F; color: #FFF3EC; }
+.v-cons { color: var(--acc); font-family: var(--f-head); letter-spacing: .08em; margin: 8px 0 2px; }
+.v-sub { color: var(--ink); }
+.v-status.amber, .amber-t { color: var(--amber); }
+.stat.warn { color: var(--amber); }
+.hud-warn li.amber { color: var(--amber); background: rgba(232, 180, 0, .12); border-color: var(--amber); }
+.constraint { border-color: var(--line-2); }
+
+/* ---------- planning list and rows ---------- */
+.np-row { border-radius: 0; border-color: var(--line); color: var(--ink); }
+.np-row:hover { background: rgba(var(--ink-rgb), .05); }
+.np-row.is-on { background: var(--acc-tint); border-color: var(--acc); }
+.np-rm { border-radius: 0; border-color: var(--line); }
+.badge { border-color: var(--ink); color: var(--ink); background: transparent; }
+.badge.done { background: var(--acc); border-color: var(--acc); color: var(--on-acc); }
+.np-row.is-on .badge { background: var(--acc); border-color: var(--acc); color: var(--on-acc); }
+.row4, .rows-empty { border-top-color: var(--line); }
+.row4 .v { font-family: var(--f-head); font-weight: 700; font-size: 18px; letter-spacing: .02em; }
+.np-v { font-family: var(--f-head); font-weight: 700; font-size: 17px; letter-spacing: .03em; }
+.target { border-top-color: var(--line-2); }
+.lg-media canvas, .lg-media img, .pic-btn { border-radius: 0; border-color: var(--line-2); }
+.pic-btn span { border-radius: 0; background: rgba(var(--bg-rgb), .8); font-family: var(--f-head); text-transform: uppercase; letter-spacing: .06em; }
+.pic-btn:hover, .pic-btn:focus-visible { border-color: var(--acc); }
+
+/* ---------- side panels: assumptions, add data, picture view ---------- */
+.assume { background: var(--panel); border-left: 1px solid var(--line-2); }
+.assume-h { background: var(--panel-2); border-bottom: 1px solid var(--line-2); }
+.as { border-bottom-color: var(--line); }
+.tools input, .tools select { background: var(--panel-2); color: var(--ink); border-color: var(--line-2); border-radius: 0; }
+.pic-box { background: var(--panel); color: var(--ink); border: 1px solid var(--line-2); border-radius: 0; }
+.pic-box::backdrop { background: rgba(var(--bg-rgb), .75); }
+.pic-fig { border-radius: 0; background: #000; }
+.pic-note { color: var(--amber); }
+
+/* ---------- navigation mode: the tablet and the crew panels ---------- */
+.tablet { background: var(--bg); border: 1px solid var(--line-2); border-radius: 26px; }
+.screen { border-color: var(--line); border-radius: 14px; }
+.key { background: var(--panel-2); color: var(--ink); border-color: var(--line-2); border-radius: 14px; font-family: var(--f-head); text-transform: uppercase; letter-spacing: .06em; }
+.key:hover { background: var(--panel-3); }
+.key[aria-pressed="true"] { background: var(--acc); border-color: var(--acc); color: var(--on-acc); }
+.key[aria-pressed="true"] .kn { color: var(--on-acc); border-color: var(--on-acc); }
+.hud-panel, .mini { background: var(--panel); border: 1px solid var(--line-2); border-radius: 0; }
+.hud-line span { background: var(--panel-3); border-radius: 0; color: var(--ink); }
+.hud-warn li { border-radius: 0; }
+/* HUD: the disc stays light; compass letters, ticks and corner values outside it turn light on the dark panel */
+#hud svg > text:not([stroke]) { fill: var(--ink); }
+#hud svg > path[stroke="#2B2D2F"] { stroke: var(--ink); }
+
+/* ---------- emergency rehearsal ---------- */
+.st-steps button { border-color: var(--graphite-3); color: var(--graphite-2); }
+.st-steps li.is-done button { background: var(--ink); border-color: var(--ink); color: #111; }
+.st-steps li.is-now button { background: var(--acc); border-color: var(--acc); color: var(--on-acc); }
+.hc { border-left-color: var(--line-2); }
+.hc .v-word { font-family: var(--f-head); }
+.hc .v-word.go { color: var(--acc); }
+.simview { background: var(--panel); }
+.sv-head { border-bottom-color: var(--line-2); }
+.summary { background: var(--panel); border-color: var(--line-2); border-radius: 0; }
+.summary header { background: var(--acc); color: var(--on-acc); }
+.summary dl > div { border-bottom-color: var(--line); }
+
+/* accent on the console's own controls */
+.switch input:checked + .track { background: var(--acc-tint); border-color: var(--acc); }
+.switch input:checked + .track::after { background: var(--acc); }
+.tip b { color: var(--acc); }

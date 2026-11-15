@@ -1,6 +1,6 @@
 {
   "generator": "pipeline/map_layers.py",
-  "created_utc": "2026-11-15T10:18:18.850325+00:00",
+  "created_utc": "2026-11-15T12:06:35.002165+00:00",
   "grid_file": "data/grid.json",
   "grid_id": "mars-eqc-76ee605d6394f17a713f",
   "layers": [

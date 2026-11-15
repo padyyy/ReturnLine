@@ -50,6 +50,14 @@ DATA = ROOT / "frontend" / "public" / "data"
 CATALOG = ROOT / "data" / "layers" / "layers.json"
 GENERATOR = "pipeline/map_layers.py"
 DEFAULT_RAMP = ["#EDF0E6", "#80878B", "#2B2D2F"]
+# Colour scales a map can be given by name ("ramp" in its .layer.json, chosen in the console's Add data
+# form): low values first. "mask" is the colour of the 1s when the map turns out to be a 0/1 mask.
+RAMPS = {
+    "blues": {"colors": ["#3fa9f5", "#3891d6", "#3179b8", "#2a6199", "#22487a", "#1b305b", "#14183d"], "mask": "#3179b8"},
+    "viridis": {"colors": ["#440154", "#3B528B", "#21918C", "#5EC962", "#FDE725"], "mask": "#21918C"},
+    "magma": {"colors": ["#000004", "#3B0F70", "#8C2981", "#DE4968", "#FE9F6D", "#FCFDBF"], "mask": "#8C2981"},
+    "greys": {"colors": DEFAULT_RAMP, "mask": "#2B2D2F"},
+}
 MAX_DISPLAY_PX = 4096                              # longest edge of a detail picture
 
 
@@ -226,8 +234,12 @@ def export(grid: MappingGrid, e: dict, out: Path, upsample: int) -> dict:
     finally:
         source.close()
     style = e.get("style", {})
-    if not style and source.csv and set(np.unique(values[ok])) <= {0.0, 1.0}:   # a 0/1 mask: show the 1s only
-        style = {"kind": "classes", "thresholds": [0.5], "colors": [None, "#2459A8"], "labels": ["0", "1"]}
+    ramp = RAMPS.get(e.get("ramp", ""))
+    is_mask = set(np.unique(values[ok])) <= {0.0, 1.0}
+    if not style and is_mask and (source.csv or ramp):   # a 0/1 mask: show the 1s only
+        style = {"kind": "classes", "thresholds": [0.5], "colors": [None, ramp["mask"] if ramp else "#2459A8"], "labels": ["0", "1"]}
+    elif not style and ramp:
+        style = {"kind": "ramp", "colors": ramp["colors"]}
     rgba, legend = colourize(pic, style)
     lid = e["id"]
     Image.fromarray(rgba).save(out / f"{lid}.png")
