@@ -42,7 +42,7 @@ A demo button plays these beats from precomputed data, each with a one-line Engl
 
 The 30-second video uses beats 3, 5 and 6.
 
-**Per-beat script (to write first, Alex and Patrick):** one page; for each beat what is on screen, which number is shown, which file it comes from, which simulation time applies, and the English subtitle. Paul derives the Kanban issues from it. Put it next to this file as `demo-script.md`.
+**Per-beat script (to write first, Alex and Patrick):** one page; for each beat what is on screen, which number is shown, which file it comes from, which simulation time applies, and the English subtitle. Paul derives the Kanban issues from it. Draft of 2026-11-14: `demo-script.md` (next to this file), including the data checks the real grid must pass.
 
 ## Pitch
 
@@ -54,7 +54,17 @@ The 30-second video uses beats 3, 5 and 6.
 
 ## Crew display
 
-Read-only inset in the console, five values: next target, time to base, reserve to the turnaround point, life support remaining (labeled assumption), time to sunset. The accumulated radiation dose is shown in the console, not in the crew display. A forearm cuff skin of the same component comes after feature freeze (about 30 minutes of CSS). No touch input, no HUD over rover photos.
+Read-only inset in the console, five values: next target, time to base, reserve to the turnaround point, life support remaining (labeled assumption), time to sunset. The accumulated radiation dose is shown in the console, not in the crew display. No touch input, no HUD over rover photos.
+
+**Team decisions of 2026-11-14:**
+- Every action is controlled from the habitat only. Starting a route, rerouting, starting the return and every GO, TERMINATE or ABORT is a click of habitat control; the crew displays stay read-only.
+- The forearm cuff skin is a fixed feature, no longer after feature freeze.
+- Built as well: a navigation view (the forearm tablet: heading-up map, data sheet with the elevation profile, four hardware keys) and a helmet HUD (compass with base and target at their bearing, return-stage colour and word, EVA time, time to sunset, dose, life support, up to three warnings). Draft: `design/navigation-hud-sketch.html` (Alex, branch `navigation-view-/-hud`).
+- The amber return stage (`#D9A300`, under 15 min to spare) stays for now, although DESIGN.md keeps yellow out of status colours. Revisit if time allows.
+- The cuff's hardware keys (data, zoom, base map) only change the crew's own view.
+- The demo starts only after habitat control picks a target in the picker and presses Start (as in the navigation sketch); the EVA goes habitat → target station → habitat. Where navigation view and HUD appear per beat: `demo-script.md`.
+- Open: in the navigation draft the return area does not shrink yet.
+- Crew view design rules (later the same day): three tabs. Values; Cuff, the forearm display with the hardware-key frame and two switchable modes, the five values (default) and a navigation map after Alex's draft; HUD, a compass ring with minimap and the warning status. Details: `demo-script.md`, "Crew view".
 
 ## Operating area
 
@@ -78,9 +88,9 @@ Any sol shown for the crewed EVA must lie in the future (Curiosity was past sol 
 
 ## Must-have, after freeze, cut
 
-**Must-have:** map with orthophoto, zones and stops; time-to-base grid with return pointers in two variants; return area; autopilot with labeled time jump; crew display, verdict panel, station log; injury event with logged ABORT override; demo button with subtitles; Curiosity comparison and radio check along the route.
+**Must-have:** map with orthophoto, zones and stops; time-to-base grid with return pointers in two variants; return area; autopilot with labeled time jump; crew display with console and cuff skins, navigation view and helmet HUD (decided 2026-11-14), verdict panel, station log; injury event with logged ABORT override; demo button with subtitles; Curiosity comparison and radio check along the route.
 
-**After feature freeze, in order:** cuff skin; "what if" click; solar storm event (SEP WATCH, SEP ALERT); footprint trail; rover photo preview in the log; one spoken warning.
+**After feature freeze, in order:** "what if" click; solar storm event (SEP WATCH, SEP ALERT); footprint trail; rover photo preview in the log; one spoken warning.
 
 **Cut:** HUD over rover photos (the photo shows the rover's position, not the crew's), free steering, route computation in the browser, full viewshed, the word "validated" (always "compared with Curiosity"), debrief export and replay (the end summary is the debrief). From the original ReturnLine × PRISTINE concept: weighted "smart" optimization, dynamic replanning, radiation models, a computed "science value" score.
 

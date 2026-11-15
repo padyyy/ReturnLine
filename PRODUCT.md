@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-- Static web app with Vite and Leaflet 1.9.4, no UI framework, pinned and bundled. JavaScript or TypeScript is the tech lead's call at kickoff.
+- Static web app with Vite and Leaflet 1.9.4, no UI framework, pinned and bundled. JavaScript, decided by the tech lead on 2026-11-14.
 - Static build hosted on GitHub Pages. No backend.
 - Map data is produced ahead of time and shipped as static files:
   - an offline Python pipeline (numpy, scikit-image, tifffile or rasterio) crops the data and computes slope, the ridge mask and the overlays,
@@ -21,7 +21,7 @@ web
 
 - **Primary: the crew of a first human Mars mission**, planning and carrying out one Marswalk (EVA). NASA's concept for Mars EVAs has a pair of astronauts on the surface, directed by an intravehicular (IV) crew member in the habitat.
   - **Habitat control (the IV crew member):** at a large screen before and during the EVA. Checks the route against the safety rules, watches the timeline and decides GO, TERMINATE or ABORT. Every action in the demo is a decision of this person. This is the main user. On screen the role is called "Habitat control", not "IV".
-  - **The two crew members on the surface:** they wear pressurized suits with thick gloves. NASA found touch screens poorly suited to suit gloves and plans cuff displays, head-up displays and voice. The product shows what they see as a read-only crew display inside the console. A forearm cuff skin of the same display comes after feature freeze.
+  - **The two crew members on the surface:** they wear pressurized suits with thick gloves. NASA found touch screens poorly suited to suit gloves and plans cuff displays, head-up displays and voice. The product shows what they see as a read-only crew display inside the console, with a forearm cuff skin, a navigation view and a helmet HUD (decided 2026-11-14). Every action stays with habitat control.
 - **Secondary: the NASA Space Apps 2026 judges.** At Heilbronn they see a live pitch, the project page, a 30-second video and a public demo link. Global judges never see us live, so page, video and demo must work without anyone narrating. They score on Impact, Creativity, Validity, Relevance and Presentation.
 
 ## Product Purpose
@@ -62,12 +62,12 @@ Success for the hackathon: a submitted demo, video and project page by the Heilb
 - Time-to-base grid with return pointers, in two variants: zones penalized and zones allowed.
 - Return area = the tightest of three limits: 60 minutes to shelter, remaining life support, sunset. Walking speed enters as a factor.
 - Autopilot along the route with time compression and a labeled time jump.
-- Crew display with five values, verdict panel and station log.
+- Crew display with five values in a console skin and a forearm cuff skin, a navigation view (forearm tablet with heading-up map and hardware keys) and a helmet HUD; all read-only. Verdict panel and station log.
 - Event "crew member injured" with a logged ABORT override.
 - Demo button with subtitles per beat.
 - Comparison with Curiosity (leave-one-out) and a radio check along the route.
 
-**After feature freeze, in this order:** cuff skin of the crew display; a "what if" click for habitat control; solar storm event (SEP WATCH and SEP ALERT); footprint trail; rover photo as a preview in the log; one spoken warning.
+**After feature freeze, in this order:** a "what if" click for habitat control; solar storm event (SEP WATCH and SEP ALERT); footprint trail; rover photo as a preview in the log; one spoken warning.
 
 **Cut:** HUD over a rover photo (the photo shows the rover's position, not the crew's); free steering of the astronaut; route computation in the browser; a full viewshed; the word "validated". Also out of scope: 3D globe, backend, machine learning, login, a per-EVA dose limit, sand detection from THEMIS.
 
@@ -82,9 +82,15 @@ Success for the hackathon: a submitted demo, video and project page by the Heilb
 - Priority order: crew safety → planetary protection → science.
 - Site: Gale crater, boxwork region.
 - One crew display component with two skins, no HUD over photos.
+
+**Decided on 2026-11-14** (team):
+- Frontend language: JavaScript.
+- Every action is controlled from the habitat only; the crew displays are read-only.
+- The cuff skin is a fixed feature. A navigation view and a helmet HUD (not over photos) are built as well (draft `docs/design/navigation-hud-sketch.html`).
+- The amber return stage stays for now, against the "no yellow for status" rule in DESIGN.md; revisit if time allows.
 - The six-beat demo script in `docs/preparation/preparations.md`, built first; anything not in the script is not built.
 
-**Undecided:** JavaScript or TypeScript; the exact slope penalty function and the zone buffer radius (both labeled assumptions, set at kickoff).
+**Undecided:** the exact slope penalty function and the zone buffer radius (both labeled assumptions, set at kickoff).
 
 ## Brand Commitments
 
@@ -104,7 +110,7 @@ Success for the hackathon: a submitted demo, video and project page by the Heilb
   - REMS weather with sunrise and sunset up to 2026-08-25
   - RAD data for the boxwork campaign at PDS PPI
 - **Radiation:** Hassler et al. 2014 report 0.64 ± 0.12 mSv per day dose equivalent at the surface in Gale, measured 2012–13 about 13 km from the boxwork. Use 0.64. The SwRI press release says 0.67. Dose is information only.
-- **EVA rules and parameters:** NASA's xEVA concept of operations, Apollo planning documents and suited walking tests give the 60-minute safe-haven rule, the 20° slope limit, walking speed, EVA duration and the 5-minute radio-gap rule. Citations are in `docs/preparation/preparations.md`.
+- **EVA rules and parameters:** NASA's xEVA concept of operations, Apollo planning documents and suited walking tests give the 60-minute safe-haven rule, the 20° slope limit, walking speed, EVA duration and the procedure after a radio loss (xEVA §9.5: regain line of sight first). The 5-minute limit on radio gaps is our own planning threshold; §9.5 gives no number (checked 2026-11-15). Citations are in `docs/preparation/preparations.md`.
 - **Planetary protection:** COSPAR guidelines for human missions to Mars and NASA NID 8715.129 (2020). Not yet checked against the primary texts.
 - **Absences:** There is no user testing with astronauts and no endorsement by NASA or anyone else. Future work must not invent either.
 

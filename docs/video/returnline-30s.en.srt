@@ -1,0 +1,29 @@
+1
+00:00:00,300 --> 00:00:03,800
+We're team Houston, we have a map.
+This is ReturnLine.
+
+2
+00:00:04,000 --> 00:00:10,000
+It shows, for every ten meters of Gale crater,
+whether astronauts can still get home in time.
+
+3
+00:00:10,200 --> 00:00:16,000
+A crew member is hurt. Only the path through
+a protected zone gets them home in time.
+
+4
+00:00:16,200 --> 00:00:21,800
+Habitat control overrides.
+Safety first, and the entry is logged.
+
+5
+00:00:22,000 --> 00:00:24,800
+Built on NASA maps,
+for the first crews on Mars.
+
+6
+00:00:24,800 --> 00:00:28,000
+Explore Mars. Return safely.
+Preserve the evidence.
