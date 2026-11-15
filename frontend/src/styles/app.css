@@ -18,6 +18,9 @@
 .mk-stn { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--blue); background: var(--paper); color: var(--blue); font: 700 12px/1 var(--f-num); box-sizing: border-box; }
 .mk-stn.target { box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--blue); }
 .mk-stn.done { background: var(--blue); color: var(--paper); }
+/* Curiosity drill hole: a small graphite diamond, distinct from stations (blue rings) and the habitat (square) */
+.mk-drill { display: block; width: 8px; height: 8px; margin: 1.5px; background: var(--graphite); border: 1.5px solid var(--paper); transform: rotate(45deg); box-sizing: border-box; }
+.leaflet-tooltip.drill-lbl { font-size: 12px; }
 .mk-lbl { position: absolute; left: calc(100% + 6px); top: 50%; transform: translateY(-50%); white-space: nowrap; font: 700 13px/1 var(--f-text); color: var(--graphite);
   text-shadow: 0 0 2px var(--paper), 0 0 2px var(--paper), 0 0 3px var(--paper), 0 0 3px var(--paper); pointer-events: none; }
 .mk-lbl.stn { color: var(--blue); }

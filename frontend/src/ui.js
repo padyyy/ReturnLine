@@ -262,7 +262,7 @@ function beat1Sub(model, text) {
   const rc = ruleChecks(model);
   const fail = rc.find((x) => x.ok === false);
   if (fail) return `Habitat control picks the target and plans the Marswalk. The planner says NO-GO: ${fail.l} fails.`;
-  if (rc.some((x) => x.ok == null)) return 'Habitat control picks the target and plans the Marswalk. The route avoids every protected drill site, and every safety rule with data passes.';
+  if (rc.some((x) => x.ok == null)) return 'Habitat control picks the target and plans the Marswalk. The route avoids every protected site, and every safety rule with data passes.';
   return text;
 }
 

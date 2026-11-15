@@ -23,13 +23,13 @@ Gemessen am 15.11.2026 um 01:40 Uhr: Headless Chrome, 1920 × 1080, Build von `m
 | 0,0 s | 0:00 | Beat 1: Route zur Station 1, GO |
 | 8,1 s | 4:45 | Beat 2: Zeitsprung-Banner |
 | 13,2 s | 4:45 | Beat 3: Der Rückkehrbereich schrumpft. Ab 5:00 startet habitat control den Rückweg. |
-| 31,2 s | 5:02 | Beat 4: Die Crew driftet zu Drill site A. |
+| 31,2 s | 5:02 | Beat 4: Die Crew driftet zu Protected site A. |
 | 37,2 s | 5:05 | Warnung und Reroute |
 | 39,8 s | 5:06 | Beat 5: Banner „Crew member injured“, Urteil ABORT, 57 min ✗ gegen 52 min ✓ |
 | 44,8 s | 5:06 | Beat 6 |
 | 46,8 s | 5:06 | Klick auf „Confirm ABORT“, „Override logged“ |
-| 50,1 s | 5:19 | Die Crew betritt Drill site B. |
-| 59,8 s | 5:58 | HOME, „Override logged · 157 m inside Drill site B · reason: ABORT“, Zusammenfassung mit Slogan |
+| 50,1 s | 5:19 | Die Crew betritt Protected site B. |
+| 59,8 s | 5:58 | HOME, „Override logged · 157 m inside Protected site B · reason: ABORT“, Zusammenfassung mit Slogan |
 
 Ein ganzer Lauf dauert also gut 60 Sekunden. Kommen die Stationen und Zonen des Datenteams vorher, verschieben sich die Zeiten. Der Ablauf bleibt gleich. Die Beat-Nummer steht unten links im Untertitelstreifen der App.
 
@@ -41,9 +41,9 @@ Die Ausschnitte sind in Pixeln einer Aufnahme mit 1920 × 1080 angegeben, links 
 |---|---|---|---|
 | 0:00–0:04 | **Ausschnitt A** (x 0–1280, y 120–840): Karte mit Rückkehrbereich, links das Helm-HUD. Darüber eine Titelkarte: „ReturnLine“, darunter „Explore Mars. Return Safely. Preserve the Evidence.“, klein „Team Houston, we have a map · NASA Space Apps 2026 · Interplanetary Survival Guide: Martian Map“. | Beat 3, Rohzeit 13–17 s, Tempo ×1 | We're team Houston, we have a map. This is ReturnLine. |
 | 0:04–0:10 | **Ausschnitt A.** Der grüne Rückkehrbereich zieht sich entlang des Geländes zurück. | Beat 3, Rohzeit 17–31 s, Tempo ×2,3 | It shows, for every ten meters of Gale crater, whether astronauts can still get home in time. |
-| 0:10–0:16 | **Ausschnitt B** (x 400–1920, y 30–885): Banner „Crew member injured“, Karte, ABORT, 57 min ✗ und 52 min ✓, Knopf „Confirm ABORT“. Einblendung oben links: „Protected zone: keeps Earth microbes off a drill site“. | Beat 5, Rohzeit 39,8–44,8 s, Tempo ×1, letztes Bild 1 s halten | A crew member is hurt. Only the path through a protected zone gets them home in time. |
-| 0:16–0:22 | **Ausschnitt C** (x 240–1320, y 220–828): Die rote ABORT-Route führt durch Drill site B zum Habitat. Einblendung oben links für 3 s: „Habitat control: the crew member inside who directs the walk“. | Beat 6, Rohzeit 46–60 s, Tempo ×2,3 | Habitat control overrides. Safety first, and the entry is logged. |
-| 0:22–0:28 | **Ausschnitt D** (x 860–1920, y 56–652): HOME, „Override logged · 157 m inside Drill site B“, Zusammenfassung mit Slogan. Unten eingeblendet: „Live demo: padyyy.github.io/ReturnLine“ und „Data: USGS Gale DEM and orthophoto (NASA HiRISE, CTX, ESA HRSC) · Curiosity traverse (NASA JPL)“. | HOME, Rohzeit ab 60 s, als Standbild halten | Built on NASA maps, for the first crews on Mars. Explore Mars. Return safely. Preserve the evidence. |
+| 0:10–0:16 | **Ausschnitt B** (x 400–1920, y 30–885): Banner „Crew member injured“, Karte, ABORT, 57 min ✗ und 52 min ✓, Knopf „Confirm ABORT“. Einblendung oben links: „Protected zone: keeps Earth microbes off a sensitive site“. | Beat 5, Rohzeit 39,8–44,8 s, Tempo ×1, letztes Bild 1 s halten | A crew member is hurt. Only the path through a protected zone gets them home in time. |
+| 0:16–0:22 | **Ausschnitt C** (x 240–1320, y 220–828): Die rote ABORT-Route führt durch Protected site B zum Habitat. Einblendung oben links für 3 s: „Habitat control: the crew member inside who directs the walk“. | Beat 6, Rohzeit 46–60 s, Tempo ×2,3 | Habitat control overrides. Safety first, and the entry is logged. |
+| 0:22–0:28 | **Ausschnitt D** (x 860–1920, y 56–652): HOME, „Override logged · 157 m inside Protected site B“, Zusammenfassung mit Slogan. Unten eingeblendet: „Live demo: padyyy.github.io/ReturnLine“ und „Data: USGS Gale DEM and orthophoto (NASA HiRISE, CTX, ESA HRSC) · Curiosity traverse (NASA JPL)“. | HOME, Rohzeit ab 60 s, als Standbild halten | Built on NASA maps, for the first crews on Mars. Explore Mars. Return safely. Preserve the evidence. |
 | 0:28–0:29 | Standbild ausklingen lassen, kein Ton. Puffer bis zur 30-s-Grenze. | | |
 
 **Sprechtempo:** etwa 2,8 Wörter pro Sekunde, also zügig, aber ohne Hast. Ist ein Satz zu lang für sein Fenster, wird der Satz gekürzt, nicht das Bild verlängert.

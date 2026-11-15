@@ -137,11 +137,11 @@ Stand 14.11.2026, abends. Das ist der geplante Python-Fallback für die Engine. 
 - **Datenprüfung für den Demo-Ablauf:** `frontend/scripts/find-scenario.mjs` (Node, etwa 30 s) prüft auf diesem Grid viele Kombinationen aus Habitat, Szenario-Station, Drift-Zone und ABORT-Zone mit derselben Logik wie die Konsole.
   - Bedingungen: Plan heim vor 6:00, Drift auf 10 m möglich, nach der Verletzung ist der geschützte Weg zu lang und der Weg durch die Zone reicht.
   - Mit 40 m Zonenpuffer trug keine Kombination (höchstens 1,9 min Unterschied). Mit 80 m trugen fünf, seit der Umstellung auf Tobler nur noch zwei (Stand 15.11., 02:00). Beide haben dasselbe Habitat, Station Sol 4596 und Drift-Zone Sol 4633; die ABORT-Zone liegt bei Sol 4818 oder 4830. Größter Abstand am Verletzungspunkt: 2,6 min.
-  - Gewählt (Platzhalter, in `frontend/scripts/make-placeholder-data.mjs`): Habitat 137.384902° O, 4.812105° S; Stationen auf Curiositys Wegpunkten der Sols 4596 (Szenario), 4609, 4667, 4839; Drill site A bei Sol 4633 (Drift), Drill site B bei Sol 4818 (ABORT); Puffer 80 m.
+  - Gewählt (Platzhalter, in `frontend/scripts/make-placeholder-data.mjs`): Habitat 137.384902° O, 4.812105° S; Stationen auf Curiositys Wegpunkten der Sols 4596 (Szenario), 4609, 4667, 4839; Protected site A bei Sol 4633 (Drift), Protected site B bei Sol 4818 (ABORT); Puffer 80 m.
 - **Ergebnis in der Konsole, voller Demo-Lauf** (Tobler, Stand 15.11.):
-  - 5:05 Warnung „Crew 10 m from Drill site A“, Umleitung +1 min.
+  - 5:05 Warnung „Crew 10 m from Protected site A“, Umleitung +1 min.
   - 5:06 Verletzung, Grenze 54 min: geschützter Weg 57 min ✗, durch die Zone 52 min ✓.
-  - ABORT mit 157 m in Drill site B, protokolliert. Crew um 5:58 zu Hause, 2 min Reserve.
+  - ABORT mit 157 m in Protected site B, protokolliert. Crew um 5:58 zu Hause, 2 min Reserve.
 - **Reihenfolge bei Änderungen:** `npm run data:placeholder` (in `frontend/`), dann `.venv/Scripts/python pipeline/time_grid.py`, dann `node scripts/find-scenario.mjs` zur Kontrolle.
 
 ## Tageslicht aus REMS: `rems_daylight.py`

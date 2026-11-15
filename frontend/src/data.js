@@ -22,11 +22,12 @@ export async function loadData() {
     return null;
   }
 
-  const [scenario, stations, zones, routes, traverse, radio, comparison, temperature, ortho] = await Promise.all([
+  const [scenario, stations, zones, routes, traverse, radio, comparison, temperature, drillHoles, ortho] = await Promise.all([
     load('scenario.json'), load('stations.geojson'), load('zones.geojson'), load('routes.json'),
     load('curiosity_traverse.geojson'), load('radio_check.json', { placeholder: false }),
     load('curiosity_comparison.json', { placeholder: false }),
     load('temperature.json', { placeholder: false }),   // REMS air temperature, information only
+    load('drill_holes.geojson', { placeholder: false }), // Curiosity's real drill holes, information only
     fetchJson('maps/ortho_gale_1m.json').catch(() => null),
   ]);
   // slope display layer (pipeline/mapping_bridge.py); optional, display only
@@ -39,7 +40,7 @@ export async function loadData() {
     console.warn('slope layer does not match grid.json; not drawn');
     slopeLayer = null;
   }
-  return { scenario, stations, zones, routes, traverse, radio, comparison, temperature, ortho, grid, slopeLayer, placeholders, missing };
+  return { scenario, stations, zones, routes, traverse, radio, comparison, temperature, drillHoles, ortho, grid, slopeLayer, placeholders, missing };
 }
 
 // Time-to-base grids and return pointers from the routing engine (grid spec in shared/).
