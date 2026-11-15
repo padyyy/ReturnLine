@@ -1,0 +1,58 @@
+{
+  "sol_4612": {
+    "avoid_protected": {
+      "status": "found",
+      "length_m": 434.9999999999853,
+      "protected_distance_m": 0.0,
+      "total_cost": 1289.6001714462748
+    },
+    "allow_protected": {
+      "status": "found",
+      "length_m": 432.99999999998533,
+      "protected_distance_m": 103.99999999999648,
+      "total_cost": 1192.9712430880923
+    }
+  },
+  "sol_4671": {
+    "avoid_protected": {
+      "status": "found",
+      "length_m": 173.99999999999412,
+      "protected_distance_m": 33.99999999999885,
+      "total_cost": 9944.087869596913
+    },
+    "allow_protected": {
+      "status": "found",
+      "length_m": 171.99999999999417,
+      "protected_distance_m": 51.99999999999824,
+      "total_cost": 388.7896677951316
+    }
+  },
+  "sol_4709": {
+    "avoid_protected": {
+      "status": "found",
+      "length_m": 174.9999999999941,
+      "protected_distance_m": 53.999999999998174,
+      "total_cost": 15146.39482006408
+    },
+    "allow_protected": {
+      "status": "found",
+      "length_m": 174.9999999999941,
+      "protected_distance_m": 54.99999999999814,
+      "total_cost": 413.10349425565664
+    }
+  },
+  "sol_4818": {
+    "avoid_protected": {
+      "status": "found",
+      "length_m": 268.9999999999909,
+      "protected_distance_m": 0.0,
+      "total_cost": 599.3022749827667
+    },
+    "allow_protected": {
+      "status": "found",
+      "length_m": 268.9999999999909,
+      "protected_distance_m": 0.0,
+      "total_cost": 599.3022749827667
+    }
+  }
+}
