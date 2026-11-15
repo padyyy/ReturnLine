@@ -1,0 +1,10 @@
+{
+  "mode": "local_metric",
+  "reference_latitude": -4.8106,
+  "reference_longitude": 137.3807,
+  "reference_position": "center",
+  "cell_size_m": 0.9999999999999661,
+  "columns": 1000,
+  "rows": 1000,
+  "mars_radius_m": 3396190.0
+}

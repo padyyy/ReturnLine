@@ -120,6 +120,7 @@ frontend/public/maps/*
 *.tmp
 *.log
 .cache/
+backend/routes/**/*.npz
 tmp/
 
 # ==========================================

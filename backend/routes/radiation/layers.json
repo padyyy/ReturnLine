@@ -1,0 +1,10 @@
+{
+  "radiation_msv_per_day": {
+    "path": "radiation_background_msv_per_day.tif",
+    "band": 1,
+    "quantity": "dose_equivalent_rate",
+    "unit": "mSv/day",
+    "scenario": "spatially_uniform_historical_gcr_background",
+    "source": "https://doi.org/10.1126/science.1244797"
+  }
+}
