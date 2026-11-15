@@ -8,7 +8,8 @@ export const st = {
   target: null,        // picked station number
   beat: 0,             // 0 = planning, 1..6
   t: 0,                // EVA minutes
-  speedX: 60,
+  speedX: 60,          // clock compression: simulated minutes per real minute
+  userSpeed: null,     // speed habitat control picked for this run, or null for the stretch defaults
   retStart: null,      // EVA minute when habitat control started the return
   drift: false,        // beat 4: the scripted drift toward a protected zone has begun
   driftAt: null,       // EVA minute of the proximity warning
@@ -27,7 +28,7 @@ export const st = {
 };
 
 export function resetRun(target) {
-  Object.assign(st, { phase: 'plan', target, beat: 0, t: 0, retStart: null, drift: false, driftAt: null, rerouted: false, rerouteAt: null, injuredAt: null, slow: 1, abort: false, abortAt: null, done: false, skin: 'values', cuffMode: 'values' });
+  Object.assign(st, { phase: 'plan', target, beat: 0, t: 0, retStart: null, drift: false, driftAt: null, rerouted: false, rerouteAt: null, injuredAt: null, slow: 1, abort: false, abortAt: null, done: false, skin: 'values', cuffMode: 'values', speedX: 60, userSpeed: null });
 }
 
 // The six scripted beats belong to the scenario station; other targets navigate without events.
