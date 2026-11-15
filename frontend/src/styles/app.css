@@ -147,6 +147,8 @@ button.cuff-key:focus-visible { outline: 2px solid var(--cover); outline-offset:
 .ly-key { display: grid; gap: 3px; margin: 2px 0 4px 24px; font-size: 12.5px; }
 .ly-key span { display: flex; align-items: center; gap: 7px; }
 .ly-key .sw { width: 14px; height: 10px; border: 1px solid var(--graphite); flex: none; }
+/* the Layers menu grows with the map layers: it scrolls inside the window, so "Add a map" stays reachable */
+#layers { max-height: calc(100vh - 72px); overflow-y: auto; overscroll-behavior: contain; box-sizing: border-box; }
 /* map layers (pipeline/map_layers.py) and "Add a map" in the Layers menu */
 .ly-map-more { margin: 0 0 6px 24px; display: grid; gap: 4px; }
 .ly-map-more .ly-key { margin-left: 0; }

@@ -102,6 +102,42 @@ export function distM(a, b) { // ground metres between {lon, lat} points (small 
   const lat = ((a.lat + b.lat) / 2) * Math.PI / 180;
   return Math.hypot((b.lon - a.lon) * M_PER_DEG * Math.cos(lat), (b.lat - a.lat) * M_PER_DEG);
 }
+
+// The point d metres along a track (d_m of its vertices), or null outside the track
+function pointAtDistance(track, d) {
+  const v = track?.vertices;
+  if (!v?.length || d < 0 || d > v[v.length - 1].d_m) return null;
+  for (let i = 1; i < v.length; i++) {
+    if (v[i].d_m >= d) {
+      const seg = v[i].d_m - v[i - 1].d_m, u = seg > 0 ? (d - v[i - 1].d_m) / seg : 0;
+      return { lon: v[i - 1].lon + u * (v[i].lon - v[i - 1].lon), lat: v[i - 1].lat + u * (v[i].lat - v[i - 1].lat) };
+    }
+  }
+  return { lon: v[0].lon, lat: v[0].lat };
+}
+
+// Radio gaps of station n on the map (pipeline/radio_check.py): one point at the middle of each gap along
+// the way out and the way back, with its length in walking minutes. Both ways share most of their path,
+// so a gap found on both is drawn once, with the longer duration. The longest gap is marked.
+export function radioGapPoints(model, n) {
+  const rs = model.radio?.stations?.find((x) => x.station === n);
+  const r = model.routes.get(n);
+  if (!rs || !r) return [];
+  const pts = [];
+  for (const leg of ['out', 'ret']) {
+    for (const g of rs[leg]?.gaps ?? []) {
+      const p = pointAtDistance(r[leg], (g.from_d_m + g.to_d_m) / 2);
+      if (!p) continue;
+      const min = g.to_t_min - g.from_t_min;
+      const same = pts.find((q) => distM(q, p) < 20);
+      if (same) same.min = Math.max(same.min, min);
+      else pts.push({ ...p, min, len: g.to_d_m - g.from_d_m });
+    }
+  }
+  const top = pts.reduce((a, q) => (!a || q.min > a.min ? q : a), null);
+  if (top) top.longest = true;
+  return pts;
+}
 function inRing(p, ring) { // ray casting on lon/lat, fine for zones a few hundred metres wide
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {

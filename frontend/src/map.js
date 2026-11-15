@@ -77,6 +77,7 @@ export function createMap(el, data, model) {
     traverse: L.layerGroup().addTo(map),
     zones: L.layerGroup().addTo(map),
     routes: L.layerGroup().addTo(map),
+    radio: L.layerGroup().addTo(map), // radio gaps along the picked route (radio_check.json)
     markers: L.layerGroup().addTo(map),
     crew: L.layerGroup().addTo(map),
     slope: L.layerGroup(), // off by default; switched on in the Layers menu
@@ -207,6 +208,7 @@ export function createMap(el, data, model) {
   let crewMarker = null;
   let crewHalo = null;
   let routeKey = '';
+  let radioKey = '';
 
   function drawTrack(track, kind) {
     const pts = trackLatLngs(track);
@@ -306,5 +308,18 @@ export function createMap(el, data, model) {
       if (!on && map.hasLayer(lg)) map.removeLayer(lg);
     },
     setMapLayerOpacity(id, v) { mapOverlays[id]?.setOpacity(v); },
+    // radio gaps: a dashed graphite ring at the middle of each stretch without line of sight to the
+    // habitat; the longest one carries its label, the others show it on hover or focus
+    showRadioGaps(gaps) {
+      const key = gaps.map((g) => `${g.lat.toFixed(6)},${g.lon.toFixed(6)},${g.min.toFixed(2)}`).join('|');
+      if (key === radioKey) return;
+      radioKey = key;
+      layers.radio.clearLayers();
+      for (const g of gaps) {
+        const m = L.circleMarker(ll(g), { radius: 12, color: '#2B2D2F', weight: 2, dashArray: '3 3', fillColor: '#EDF0E6', fillOpacity: 0.35, renderer: svg, className: 'radio-gap' }).addTo(layers.radio);
+        m.bindTooltip(g.longest ? `No radio · ${g.min.toFixed(1)} min` : `Radio gap · ${g.min.toFixed(1)} min, ${Math.round(g.len)} m without line of sight to the habitat`,
+          { permanent: !!g.longest, direction: 'right', className: 'map-lbl radio-lbl', offset: [14, 0] });
+      }
+    },
   };
 }
