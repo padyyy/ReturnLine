@@ -92,6 +92,8 @@ export function renderVerdict(model) {
       const what = over.length ? over.map((e) => `${R(e.m)} m inside ${esc(e.zone.name)}`).join(', ') : (model.grid ? 'no protected zone entered' : 'zone metres need the grid');
       o += `<div class="v-status red">${icon('check')}Override logged · ${what} · reason: ABORT</div>`;
     }
+    // back to planning: pick the next station and start a new EVA
+    o += `<div class="v-actions"><button type="button" class="btn btn-dark" id="act-reset">${icon('reset')}Plan a new EVA</button></div>`;
   } else if (st.injuredAt != null && !st.abort) {
     // the two ways home from where the injury happened, at injured speed, against the return limit
     // (the same numbers the map labels show)
