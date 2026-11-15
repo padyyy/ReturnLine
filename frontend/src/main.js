@@ -1,7 +1,7 @@
 import './styles/console.css';
 import './styles/app.css';
 import { loadData } from './data.js';
-import { buildModel } from './model.js';
+import { buildModel, radioGapPoints } from './model.js';
 import { createMap } from './map.js';
 import { st, route, crewState, resetRun, scenarioStation, isScripted, limits, walkFactor, abortTrack, script, rerouteTrack, detourMin, injure, injuryOptions } from './sim.js';
 import { renderCrew, crewFrame, cuffKey } from './crew.js';
@@ -94,6 +94,8 @@ function renderMap() {
     if (st.done) mapApi.setCrew(null);
     else mapApi.setCrew(c.pos, { red: st.injuredAt != null, label: st.injuredAt != null ? 'Crew · injured' : 'Crew' });
   }
+  // radio gaps along the picked station's route (pipeline/radio_check.py)
+  mapApi.showRadioGaps(st.target != null ? radioGapPoints(model, st.target) : []);
   crewFrame(model); // moving parts of the crew view (navigation map, HUD)
   model.stations.forEach((s) => {
     const arrived = st.phase !== 'plan' && s.n === st.target && st.t >= (r?.out.minutes ?? Infinity);
@@ -271,6 +273,7 @@ function wire() {
   $('#ly-area').addEventListener('change', (e) => mapApi.setLayer('area', e.target.checked));
   $('#ly-zones').addEventListener('change', (e) => mapApi.setLayer('zones', e.target.checked));
   $('#ly-trav').addEventListener('change', (e) => mapApi.setLayer('traverse', e.target.checked));
+  $('#ly-radio').addEventListener('change', (e) => mapApi.setLayer('radio', e.target.checked));
   // slope layer from the pipeline: only offered when its file is there
   $('#ly-slope-row').hidden = !model.hasSlopeLayer;
   $('#ly-slope').addEventListener('change', (e) => { mapApi.setLayer('slope', e.target.checked); $('#ly-slope-key').hidden = !e.target.checked; });

@@ -200,12 +200,13 @@ Vollständige Schnittstelle, Node.js-Aufruf, Quellen/Annahmen, Zellformeln und n
   - Je Ebene entstehen `frontend/public/data/layers/<id>.png` (Anzeige), `.f32` (Werte) und `.json` (Grenzen, Legende, Quelle).
   - `layers/index.json` listet alle Ebenen.
 - **Aufruf:** `.venv/Scripts/python pipeline/map_layers.py`, etwa 4 s.
-- **Übernommene Ebenen**, alle aus Magnus' Branch `newData`, 1 km um die Basis:
+- **Übernommene Ebenen**, beide aus Magnus' Branch `newData`, 1 km um die Basis:
   - Orthofoto 25 cm;
-  - Höhenmodell 1 m (CSV);
   - Boxwork-Schutzmaske 50 m.
 
-  Die Rohdateien (108 MB) sind nicht in main. Ihre Exporte sind committet, und `map_layers.py` behält sie, wenn die Quelle fehlt und der Export auf demselben Raster liegt.
+  Das Höhenmodell 1 m (CSV) ist seit dem 15.11. nicht mehr im Menü (Teamwunsch).
+
+  Die Rohdateien sind nicht in main. Ihre Exporte sind committet, und `map_layers.py` behält sie, wenn die Quelle fehlt und der Export auf demselben Raster liegt.
 - **Boxwork-Schutzmaske:** Sie ist nur Anzeige. Die Routenplanung nutzt sie nicht; sie plant um die Schutzzonen aus `zones.geojson`.
 - **In der Konsole:** Layers-Menü → „Maps“. Je Ebene gibt es einen Schalter, die Deckkraft, die Legende und die Quelle. Alle Ebenen sind beim Start aus.
 - **„Add a map“:** funktioniert nur mit `npm run dev`. Der Dev-Server von Vite hat dann lokale Endpunkte (`frontend/tools/data-tools.js`, nur mit dem Header `X-RL-Tools: 1`).

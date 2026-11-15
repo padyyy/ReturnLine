@@ -1,12 +1,11 @@
 {
   "generator": "pipeline/map_layers.py",
-  "created_utc": "2026-11-15T10:36:01.303540+00:00",
+  "created_utc": "2026-11-15T10:46:00.049267+00:00",
   "grid_file": "data/grid.json",
   "grid_id": "mars-eqc-76ee605d6394f17a713f",
   "layers": [
     "data/slope_10m.json",
     "data/layers/ortho_25cm.json",
-    "data/layers/boxwork_protection.json",
-    "data/layers/gale_dem_csv.json"
+    "data/layers/boxwork_protection.json"
   ]
 }
