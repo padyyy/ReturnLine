@@ -21,7 +21,8 @@
           "name": "Boxwork protection mask, 50 m",
           "style": { "kind": "classes", "thresholds": [0.5], "colors": [null, "#2459A8"], "labels": ["0", "1: masked"] },
           "opacity": 0.55,
-          "priority": 30
+          "priority": 30,
+          "visible": true
         }
       },
       "source_note": "Branch newData: JMARS-style CSV, 1 000 000 points at 1 m, values 0/1"

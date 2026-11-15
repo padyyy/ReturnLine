@@ -17,8 +17,8 @@
  "eva_number": 7,
  "sol": 5120,
  "eva_start_lmst": "09:00",
- "sunrise_lmst": "05:47",
- "sunset_lmst": "17:31",
+ "sunrise_lmst": "05:39",
+ "sunset_lmst": "17:55",
  "life_support_min": 360,
  "backup_min": 60,
  "walk_speed_kmh": 1.5,
@@ -36,17 +36,17 @@
   "injury_factor": "assumption",
   "caution_margin_min": "assumption",
   "dose_rate_msv_per_day": "Hassler et al. 2014, Science 343",
-  "sunset_lmst": "REMS, sol 4596 (2025-07-11), measured by Curiosity; used for the EVA sol (assumption)",
+  "sunset_lmst": "REMS, sol 4839 (2026-03-18), measured by Curiosity; used for the EVA sol (assumption)",
   "slope_block_deg": "xEVA suit requirement",
   "zone_buffer_m": "assumption (placeholder value)",
   "zone_clearance_m": "assumption (placeholder value)",
   "zone_warn_m": "assumption (design sketch value)",
   "habitat": "A* routing base (backend/config/base.json), team choice",
-  "sunrise_lmst": "REMS, sol 4596 (2025-07-11), measured by Curiosity; used for the EVA sol (assumption)",
+  "sunrise_lmst": "REMS, sol 4839 (2026-03-18), measured by Curiosity; used for the EVA sol (assumption)",
   "radio_gap_max_min": "assumption (our planning threshold; after a radio loss NASA first regains line of sight, xEVA 9.5)"
  },
  "radio_gap_max_min": 5,
- "daylight_source_sol": 4596,
+ "daylight_source_sol": 4839,
  "updated_by": [
   "pipeline/rems_daylight.py"
  ]
