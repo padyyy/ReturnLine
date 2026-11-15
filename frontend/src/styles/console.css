@@ -228,7 +228,12 @@ g.finding.old.is-hl .ring { opacity: 1; }
   position: absolute; z-index: 8; right: 16px; top: 16px;
   width: min(430px, calc(100% - 32px)); background: var(--paper); border: 1.5px solid var(--graphite);
 }
-.summary header { background: var(--green); color: var(--paper); padding: 14px 18px; }
+.summary header { position: relative; background: var(--green); color: var(--paper); padding: 14px 58px 14px 18px; }
+.sum-toggle { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; display: grid; place-items: center; border: 1.5px solid rgba(237,240,230,.6); background: transparent; color: var(--paper); cursor: pointer; }
+.sum-toggle:hover, .sum-toggle:focus-visible { border-color: var(--paper); background: rgba(237,240,230,.12); }
+.sum-toggle .chev { transform: rotate(180deg); }
+.summary.is-collapsed .sum-toggle .chev { transform: none; }
+.summary.is-collapsed dl, .summary.is-collapsed .slogan, .summary.is-collapsed header p { display: none; }
 .summary header h2 { margin: 0; font-size: var(--t-big); font-weight: 800; }
 .summary header p { margin: 3px 0 0; font-size: 14px; }
 .summary dl { margin: 0; padding: 6px 18px 4px; }
