@@ -47,6 +47,7 @@ export function createMap(el, data, model) {
   creditsControl(data).addTo(map);
   // panes: orthophoto, return area, vectors (overlayPane 400), crew dot above the routes
   map.createPane('base').style.zIndex = 250;
+  map.createPane('imagery').style.zIndex = 275; // finer imagery map layers over the base image, under the slope layer
   map.createPane('slope').style.zIndex = 300;
   map.getPane('slope').style.pointerEvents = 'none';
   map.createPane('area').style.zIndex = 350;
@@ -89,11 +90,14 @@ export function createMap(el, data, model) {
       .addTo(layers.slope);
   }
   // map layers on the console grid (pipeline/map_layers.py, GeoMapper); display only, switched in the
-  // Layers menu. They sit in the terrain pane: above the base image, below return area, zones and routes.
+  // Layers menu. Imagery (catalog priority below 20, e.g. the 25 cm orthophoto) lies under the slope layer,
+  // like the base image; thematic overlays (priority 20 and above, e.g. the protection mask) lie above it.
+  // Both stay below return area, zones and routes.
   const mapOverlays = {};
   for (const ly of data.mapLayers || []) {
     const g = L.layerGroup();
-    mapOverlays[ly.id] = L.imageOverlay(`${BASE}${ly.image}`, ly.bounds, { pane: 'slope', opacity: ly.opacity, zIndex: ly.priority, className: 'slope-img', interactive: false }).addTo(g);
+    const pane = ly.priority < 20 ? 'imagery' : 'slope';
+    mapOverlays[ly.id] = L.imageOverlay(`${BASE}${ly.image}`, ly.bounds, { pane, opacity: ly.opacity, zIndex: ly.priority, className: 'slope-img', interactive: false }).addTo(g);
     layers[`map:${ly.id}`] = g;
     if (ly.visible) g.addTo(map);
   }

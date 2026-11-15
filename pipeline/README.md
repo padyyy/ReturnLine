@@ -208,7 +208,7 @@ Vollständige Schnittstelle, Node.js-Aufruf, Quellen/Annahmen, Zellformeln und n
 
   Die Rohdateien sind nicht in main. Ihre Exporte sind committet, und `map_layers.py` behält sie, wenn die Quelle fehlt und der Export auf demselben Raster liegt.
 - **Boxwork-Schutzmaske:** Sie ist nur Anzeige. Die Routenplanung nutzt sie nicht; sie plant um die Schutzzonen aus `zones.geojson`.
-- **In der Konsole:** Layers-Menü → „Maps“. Je Ebene gibt es einen Schalter, die Deckkraft, die Legende und die Quelle. Alle Ebenen sind beim Start aus.
+- **In der Konsole:** Layers-Menü → „Maps“. Je Ebene gibt es einen Schalter, die Deckkraft, die Legende und die Quelle. Alle Ebenen sind beim Start aus. Bildkarten (Priorität unter 20 im Katalog, etwa das 25-cm-Orthofoto) liegen unter dem Hang-Layer, thematische Overlays (ab 20, etwa die Schutzmaske) darüber.
 - **„Add a map“:** funktioniert nur mit `npm run dev`. Der Dev-Server von Vite hat dann lokale Endpunkte (`frontend/tools/data-tools.js`, nur mit dem Header `X-RL-Tools: 1`).
   - Sie speichern die Datei in `data/layers/` und starten `map_layers.py`.
   - Die hochgeladenen Quelldateien ignoriert Git (`.gitignore`).
