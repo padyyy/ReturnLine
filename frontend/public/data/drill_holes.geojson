@@ -1,0 +1,43 @@
+{
+ "type": "FeatureCollection",
+ "note": "Curiosity's drill holes of the boxwork campaign (real). Positions are Curiosity's MMGIS waypoints where the rover stood while drilling (frontend/src/boxwork-path.js), so each hole lies within a few metres of its point. Dates and settings from the NASA Curiosity blog. Information only: the protected zones of the rehearsal are separate, assumed sites.",
+ "source": "NASA Mars Science Laboratory mission blog; positions from MMGIS MSL_waypoints.json",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": { "type": "Point", "coordinates": [137.381035, -4.807839] },
+   "properties": {
+    "name": "Valle de la Luna",
+    "setting": "hollow (Monte Grande)",
+    "drilled": "Oct 2025",
+    "drilled_note": "drilled on the weekend of Oct. 18-19, 2025, the first sol of the plan for sols 4689-4694",
+    "position_sol": 4687,
+    "source_url": "https://science.nasa.gov/blog/curiosity-blog-sols-4689-4694-drill-in-the-boxwork-unit-is-go/"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": { "type": "Point", "coordinates": [137.381004, -4.808008] },
+   "properties": {
+    "name": "Nevado Sajama",
+    "setting": "ridge, about 10 m from Valle de la Luna",
+    "drilled": "Nov 2025",
+    "drilled_note": "drill activities started on Nov. 7, 2025 (plan for sols 4709-4715)",
+    "position_sol": 4711,
+    "source_url": "https://science.nasa.gov/blog/curiosity-blog-sols-4709-4715-drilling-high-and-low-in-the-boxwork-unit"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": { "type": "Point", "coordinates": [137.380992, -4.808005] },
+   "properties": {
+    "name": "Nevado Sajama 2",
+    "setting": "ridge, beside Nevado Sajama",
+    "drilled": "early 2026",
+    "drilled_note": "the hole was imaged on Feb. 9, 2026 (sol 4803); position approximate (waypoint of sol 4789)",
+    "position_sol": 4789,
+    "source_url": "https://science.nasa.gov/blog/curiosity-blog-sols-4804-4811-kicking-off-the-final-phase-of-boxwork-exploration"
+   }
+  }
+ ]
+}

@@ -1,7 +1,7 @@
 // Writes placeholder data files in the shape of shared/data-contract.md into public/data/placeholder/.
 // They let the console run before the pipeline and the routing engine deliver real files.
 // Real: station, zone centre and traverse positions (Curiosity waypoints, MMGIS).
-// Placeholder: habitat position, station names, which waypoints are stations and drill sites, zone
+// Placeholder: habitat position, station names, which waypoints are stations and protected sites, zone
 // buffer, sunset, sol, and the grid: flat ground at 1.5 km/h, no slope, no ridges. The grid search
 // below stands in for the routing engine (C#) and is NOT the product's routing; real files replace it.
 // Run: npm run data:placeholder (from frontend/)
@@ -36,9 +36,9 @@ const writeBin = (name, arr) => writeFileSync(new URL(name, OUT), Buffer.from(ar
 
 // ---------- layout (placeholder choices on real waypoints) ----------
 // Chosen by the data checks on the real time-to-base grid (scripts/find-scenario.mjs, 2026-11-14,
-// BUFFER=80): station 1 (sol 4596) is the scenario station; the crew drifts toward drill site A
+// BUFFER=80): station 1 (sol 4596) is the scenario station; the crew drifts toward protected site A
 // (sol 4633) in beat 4; after the injury the protected way home is too long and the way through
-// drill site B (sol 4818) fits. Run pipeline/time_grid.py after changing anything here.
+// protected site B (sol 4818) fits. Run pipeline/time_grid.py after changing anything here.
 const stationSols = [4596, 4609, 4667, 4839];
 const zoneSols = [4633, 4818];
 const habitat = [137.384902, -4.812105];
@@ -51,7 +51,7 @@ const ring = (c, r) => {                   // polygon around [lon, lat], r metre
   }
   return pts;
 };
-const zones = zoneSols.map((sol, i) => ({ id: String.fromCharCode(65 + i), name: `Drill site ${String.fromCharCode(65 + i)}`, sol, c: at(sol), ring: ring(at(sol), BUFFER) }));
+const zones = zoneSols.map((sol, i) => ({ id: String.fromCharCode(65 + i), name: `Protected site ${String.fromCharCode(65 + i)}`, sol, c: at(sol), ring: ring(at(sol), BUFFER) }));
 const inRing = (p, rg) => {                // ray casting on lon/lat, fine for small polygons
   let inside = false;
   for (let i = 0, j = rg.length - 1; i < rg.length; j = i++) {
@@ -70,7 +70,7 @@ write('scenario.json', {
   placeholder_fields: ['habitat', 'scenario_station', 'drift_zone', 'eva_start_lmst', 'sol', 'sunset_lmst', 'sunrise_lmst', 'zone_buffer_m', 'zone_clearance_m', 'zone_warn_m'],
   habitat,
   scenario_station: 1,                     // the six beats play for this station; pick the real one by the data checks in docs/demo-script.md
-  drift_zone: 'A',                         // beat 4 drifts toward this zone; the ABORT in beat 5-6 then still crosses drill site B
+  drift_zone: 'A',                         // beat 4 drifts toward this zone; the ABORT in beat 5-6 then still crosses protected site B
   eva_number: 7,
   sol: 5120,
   eva_start_lmst: '09:00',
@@ -98,7 +98,7 @@ const stations = stationSols.map((sol, i) => ({
 }));
 write('stations.geojson', { type: 'FeatureCollection', note: NOTE, generator: GENERATOR, features: stations });
 write('zones.geojson', {
-  type: 'FeatureCollection', note: NOTE + ' (centres are real Curiosity waypoints; which ones are drill sites is a placeholder)', generator: GENERATOR,
+  type: 'FeatureCollection', note: NOTE + ' (centres are real Curiosity waypoints; the sites are assumed for the rehearsal and are not Curiosity drill sites, see drill_holes.geojson)', generator: GENERATOR,
   features: zones.map((z) => ({ type: 'Feature', geometry: { type: 'Polygon', coordinates: [z.ring] }, properties: { id: z.id, name: z.name, drill_sol: z.sol, buffer_m: BUFFER } })),
 });
 

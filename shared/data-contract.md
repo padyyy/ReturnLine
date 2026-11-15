@@ -32,6 +32,7 @@ Folder `frontend/public/data/` unless noted.
 | `radio_check.json` | per leg: longest gap (min) and the gap segments, from the DEM line-of-sight sampling | pipeline | rules panel: the picked station's own legs when listed under `stations`, otherwise the top-level `longest_gap_min`; fails above `radio_gap_max_min` |
 | `curiosity_comparison.json` | mean deviation (leave-one-out), straight-line baseline, number of drives | engine | info row |
 | `temperature.json` | REMS air temperature of one sol: five-minute LMST medians of quality-filtered measurements (`samples[].air_c`, null where there is none), source URL and hash; separately labeled model estimates (`air_model_c`) that the console never shows | `backend/rems/rems_temperature.py` (Paul) | info row "Air temperature now": the measurement at the same local time, or "no measurement"; information only, never a gate |
+| `drill_holes.geojson` | Curiosity's real drill holes of the boxwork campaign (Point; `name`, `setting`, `drilled`, `position_sol`, `source_url`); positions are the rover's MMGIS waypoints while drilling | team, from the NASA mission blog | map markers and the label "Curiosity drill holes"; information only, not protected zones |
 
 ## What the sketches compute in the browser, and the replacement
 

@@ -11,7 +11,7 @@ A crew of a first human Mars mission walks one EVA (Marswalk) from the habitat t
 ## Priority order, not weights
 
 1. **Crew safety:** four hard rules, each can say NO-GO.
-2. **Planetary protection:** protected zones around Curiosity's drill sites are avoided while safety allows. Every entry is shown and logged.
+2. **Planetary protection:** protected zones around sensitive science sites are avoided while safety allows. The two zones of the rehearsal are assumed sites at Curiosity waypoints; Curiosity's real drill holes (Valle de la Luna, Nevado Sajama) are marked on the map as information (decided 2026-11-15). Every entry is shown and logged.
 3. **Science:** 4–5 stops along Curiosity's traverse that tell the story of Mars' groundwater.
 
 ## The four safety rules
@@ -36,9 +36,9 @@ A demo button plays these beats from precomputed data, each with a one-line Engl
 1. **Plan.** "Plan route" shows a route around the protected zones, all four rules green: GO. Curiosity's traverse is shown with one number, the deviation in the leave-one-out comparison.
 2. **Time jump.** Autopilot at x60, labeled jump to EVA hour 4:45 at stop 4. The return area still sits on the 60-minute line.
 3. **The area pulls away.** Life support binds. The area shrinks along the terrain, about 30 seconds at x60. Alternative: sunset binds.
-4. **Deviation caught.** The crew drifts toward a drill-site zone. The console warns, habitat control reroutes and sees the detour in minutes.
+4. **Deviation caught.** The crew drifts toward a protected zone. The console warns, habitat control reroutes and sees the detour in minutes.
 5. **Crew member injured.** Walking speed halves (labeled assumption, one factor on the grid). The area collapses. Only the route through the zone fits. Verdict: ABORT.
-6. **Deliberate override, logged.** Habitat control confirms. Log: "Zone entered · Drill site X · 140 m · reason: ABORT". The crew gets home; summary with meters inside zones and rules fired; slogan.
+6. **Deliberate override, logged.** Habitat control confirms. Log: "Zone entered · Protected site X · 140 m · reason: ABORT". The crew gets home; summary with meters inside zones and rules fired; slogan.
 
 The 30-second video uses beats 3, 5 and 6.
 

@@ -103,7 +103,7 @@ export function createMap(el, data, model) {
     const poly = L.polygon(pts, { color: '#2459A8', weight: 1.8, fillOpacity: 1, className: 'zone', renderer: svg }).addTo(layers.zones);
     const cLon = z.ring.reduce((a, p) => a + p[0], 0) / z.ring.length;
     const left = cLon < midLon;
-    poly.bindTooltip(`${z.name} · protected`, { permanent: true, direction: left ? 'left' : 'right', className: 'map-lbl zone-lbl', offset: [left ? -10 : 10, 0] });
+    poly.bindTooltip(/protect/i.test(z.name) ? z.name : `${z.name} · protected`, { permanent: true, direction: left ? 'left' : 'right', className: 'map-lbl zone-lbl', offset: [left ? -10 : 10, 0] });
   });
 
   const habIcon = L.divIcon({ className: 'mk', html: '<span class="mk-hab"></span><span class="mk-lbl">Habitat</span>', iconSize: [16, 16], iconAnchor: [8, 8] });
@@ -121,6 +121,14 @@ export function createMap(el, data, model) {
   model.stations.forEach((s) => {
     const m = L.marker(ll(s), { icon: stationIcon(s, ''), keyboard: false, title: s.name }).addTo(layers.markers);
     stationMarkers.set(s.n, { marker: m, s, state: '' });
+  });
+
+  // Curiosity's real drill holes (information only; not protected zones of the rehearsal). They lie within
+  // about 10 m of each other, so one label names the group and each hole has its own hover tooltip.
+  const holeIcon = L.divIcon({ className: 'mk', html: '<span class="mk-drill"></span>', iconSize: [11, 11], iconAnchor: [5.5, 5.5] });
+  model.drillHoles.forEach((h, i) => {
+    const m = L.marker(ll(h), { icon: holeIcon, keyboard: false, title: `${h.name}: Curiosity drill hole, ${h.drilled} (${h.setting})` }).addTo(layers.markers);
+    if (i === 0) m.bindTooltip(model.drillHoles.length > 1 ? 'Curiosity drill holes' : `${h.name} drill hole`, { permanent: true, direction: 'top', className: 'map-lbl drill-lbl', offset: [0, -8] });
   });
 
   // ---------- return area from the time-to-base grid (rule B) ----------

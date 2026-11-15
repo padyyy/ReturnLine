@@ -29,6 +29,7 @@ export function buildModel(d) {
     hasSlopeLayer: !!d.slopeLayer,
     comparison: d.comparison,
     temperature: d.temperature,
+    drillHoles: (d.drillHoles?.features ?? []).map((f) => ({ lon: f.geometry.coordinates[0], lat: f.geometry.coordinates[1], ...f.properties })),
   };
 }
 

@@ -1,6 +1,6 @@
 {
  "type": "FeatureCollection",
- "note": "PLACEHOLDER until the pipeline and the routing engine deliver real files (centres are real Curiosity waypoints; which ones are drill sites is a placeholder)",
+ "note": "PLACEHOLDER until the pipeline and the routing engine deliver real files (centres are real Curiosity waypoints; the sites are assumed for the rehearsal and are not Curiosity drill sites, see drill_holes.geojson)",
  "generator": "frontend/scripts/make-placeholder-data.mjs",
  "features": [
   {
@@ -146,7 +146,7 @@
    },
    "properties": {
     "id": "A",
-    "name": "Drill site A",
+    "name": "Protected site A",
     "drill_sol": 4633,
     "buffer_m": 80
    }
@@ -294,7 +294,7 @@
    },
    "properties": {
     "id": "B",
-    "name": "Drill site B",
+    "name": "Protected site B",
     "drill_sol": 4818,
     "buffer_m": 80
    }
