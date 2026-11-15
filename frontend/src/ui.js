@@ -274,6 +274,11 @@ export function renderSubs(model) {
     : nav ? 'The crew walks out and back along the planned route. The scripted beats belong to the scenario station.'
     : 'Habitat control picks a target. Start begins the rehearsed Marswalk.';
   if ($('#subs-text').textContent !== subText) $('#subs-text').textContent = subText;
+  // where to look on the map, for viewers without a narrator
+  const watch = b ? b.watch ?? ''
+    : nav ? 'On the map: the crew walks the dark route out and back; the green area is where it can still get home in time.'
+    : `On the map: pick a station to see its route. Hatched circles are protected sites${model.drillHoles?.length ? "; diamonds mark Curiosity's real drill holes" : ''}.`;
+  if ($('#subs-watch').textContent !== watch) $('#subs-watch').textContent = watch;
   document.querySelectorAll('#tp-dots button').forEach((x, i) => (i + 1 === st.beat ? x.setAttribute('aria-current', 'step') : x.removeAttribute('aria-current')));
 }
 
