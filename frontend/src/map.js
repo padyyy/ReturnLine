@@ -262,9 +262,10 @@ export function createMap(el, data, model, { onStation } = {}) {
     setArea,
     setGrid,
     invalidate() { map.invalidateSize({ pan: false }); },
-    showRoutes(route, { ret = false, preview = false, faded = false, abort = null, drift = null, reroute = null, rerouteLabel = null, ring = null, rings = [], candidates = [], callouts = [], label = null, alt = null, altLabel = null } = {}) {
+    showRoutes(route, { ret = false, preview = false, faded = false, abort = null, drift = null, reroute = null, rerouteLabel = null, ring = null, rings = [], candidates = [], callouts = [], label = null, alt = null, altLabel = null, returnSegments = [] } = {}) {
       const all = ring ? [ring, ...rings] : rings;
-      const key = route ? [route.station, route.out.minutes.toFixed(3), ret, preview, faded, abort?.minutes.toFixed(3), drift?.vertices.length, reroute?.minutes.toFixed(3), rerouteLabel, all.map((q) => q.lat.toFixed(6)).join(','), candidates.map((c) => c.label).join(','), callouts.map((c) => c.text).join(','), label, altLabel].join('|') : '';
+      const stageKey = returnSegments.map(s=>`${s.from.d_m.toFixed(2)}:${s.to.d_m.toFixed(2)}:${s.stage}`).join(';');
+      const key = route ? [route.station, route.out.minutes.toFixed(3), ret, preview, faded, abort?.minutes.toFixed(3), drift?.vertices.length, reroute?.minutes.toFixed(3), rerouteLabel, all.map((q) => q.lat.toFixed(6)).join(','), candidates.map((c) => c.label).join(','), callouts.map((c) => c.text).join(','), label, altLabel, stageKey].join('|') : '';
       if (key === routeKey) return;
       routeKey = key;
       layers.routes.clearLayers();
@@ -282,6 +283,10 @@ export function createMap(el, data, model, { onStation } = {}) {
       // finding rings (DESIGN.md signature): red pencil around the place of a finding, pixel-sized
       all.forEach((q, i) => L.circleMarker(ll(q), { radius: 17, color: '#C8361F', weight: 2.4, opacity: i < all.length - 1 ? 0.45 : 1, fill: false, renderer: svg, interactive: false }).addTo(layers.routes));
       if (abort) drawTrack(abort, 'abort');
+      for (const segment of returnSegments) L.polyline([ll(segment.from),ll(segment.to)],{
+        color:segment.color,weight:4.5,opacity:0.95,renderer:svg,
+        dashArray:segment.stage==null?'3 5':null,interactive:false,
+      }).addTo(layers.routes);
       for (const c of callouts) pill(ll(c.pos), c.text, c.tone, 'left');
     },
     addStation(s) { if (!stationMarkers.has(s.n)) addStationMarker(s); },

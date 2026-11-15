@@ -1,6 +1,7 @@
 import './styles/console.css';
 import './styles/app.css';
 import './styles/theme.css';   // mission-control look (design only)
+import './styles/return-line.css';
 import { loadData } from './data.js';
 import { buildModel, ttbAt, slopeAt, layerValueAt } from './model.js';
 import { createMap } from './map.js';
@@ -11,6 +12,7 @@ import { navStart, navWire, limitsAt, NAV } from './nav.js';
 import { simStart, simWire, simJump, SIM } from './rehearsal.js';
 import { initDataTools, canRemove } from './datatools.js';
 import { NAMES } from './crewviz.js';
+import { returnLineSegments } from './return-line.js';
 import { LS, initLayers, saveLayers, moveLayer, layerById, navChoices, navViews } from './layerstate.js';
 
 const $ = (s) => document.querySelector(s);
@@ -29,6 +31,8 @@ function renderPlanMap() {
   mapApi.showRoutes(has ? P.route : null, {
     preview: true, label: has ? `${P.variantName} · ${R(P.walk)} min out, ${R(P.back)} back` : null,
     alt: alt?.out ?? null, altLabel: alt ? `${alt.name} · ${R(alt.out.minutes)} min out` : null,
+    returnSegments: has && $('#ly-area').checked
+      ? returnLineSegments({model,plan:P,phase:'out',t:P.t0,tt:0}).segments : [],
   });
   mapApi.setCrew(null);
   model.stations.forEach((s) => mapApi.setStation(s.n, s.n === PLAN.n ? 'target' : ''));
@@ -201,7 +205,10 @@ function wire() {
   lb.addEventListener('click', (e) => { e.stopPropagation(); lp.hidden = !lp.hidden; lb.setAttribute('aria-expanded', String(!lp.hidden)); });
   // composedPath: a click on a menu row that re-renders itself still counts as inside the menu
   document.addEventListener('click', (e) => { if (!lp.hidden && !e.composedPath().includes(lp)) { lp.hidden = true; lb.setAttribute('aria-expanded', 'false'); } });
-  $('#ly-area').addEventListener('change', (e) => mapApi.setLayer('area', e.target.checked));
+  $('#ly-area').addEventListener('change', (e) => {
+    mapApi.setLayer('area', e.target.checked);
+    if (!SIM.on && !NAV.on) renderPlanMap();
+  });
   $('#ly-zones').addEventListener('change', (e) => mapApi.setLayer('zones', e.target.checked));
   $('#ly-trav').addEventListener('change', (e) => mapApi.setLayer('traverse', e.target.checked));
   $('#ly-names').addEventListener('change', (e) => { NAMES.on = e.target.checked; mapApi.setLayer('names', e.target.checked); });

@@ -2,11 +2,13 @@
 // tablet (left, about 3/4: navigation map, heading up, four hardware keys), the helmet HUD (top right)
 // and the data sheet (bottom right; key 1 swaps it with the map). The crew keeps the plan: walk out on
 // the engine's route, stay the planned time, then walk home on the engine's way back. Nothing is searched.
-import { onTrack, ttbAt, terrainAt, zoneDistance, doseAt } from './model.js';
+import { onTrack, terrainAt, zoneDistance } from './model.js';
 import { renderViews } from './crew.js';
 import { trackBearing, angNorm, angDiff, ZOOMS } from './crewviz.js';
 import { icon } from './format.js';
 import { navViews, navView as navMap } from './layerstate.js';
+import { createNavigationRun } from './navigation-run.js';
+import { returnLimitMessages } from './return-status.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
@@ -19,7 +21,6 @@ export function limitsAt(model, t) {
   return { B, L: Math.max(0, Math.min(60, B)), by: B >= 60 ? '60-minute rule' : (model.ls <= model.sunsetEva ? 'life support' : 'sunset') };
 }
 export const stageOf = (spare, caution) => (!(spare >= 0) ? 'red' : spare < caution ? 'yellow' : 'green');
-const finite = (x) => (x != null && Number.isFinite(x) ? x : null);
 
 // The values every crew view needs at the crew's place, from the grids and the track being walked
 export function placeValues(model, pos, track, tt) {
@@ -38,38 +39,33 @@ export function placeValues(model, pos, track, tt) {
   };
 }
 
-function phaseAt(t) {
-  const P = NAV.P;
-  return t < P.tArr ? 'out' : t < P.tLeave ? 'at' : t < P.tHome ? 'ret' : 'home';
-}
 function where() {
-  const P = NAV.P, t = NAV.t, ph = NAV.phase;
-  if (ph === 'out') return { track: P.out, tt: t - P.t0 };
-  if (ph === 'at') return { track: P.out, tt: P.out.minutes };
-  if (ph === 'ret') return { track: P.ret, tt: t - P.tLeave };
-  return { track: P.ret, tt: P.ret.minutes };
+  const s = NAV.run.snapshot();
+  return { track: s.track, tt: s.tt };
 }
 
-function navView() {
-  const model = NAV.model, P = NAV.P, t = NAV.t, ph = NAV.phase, home = ph === 'home', at = ph === 'at';
-  const { track, tt } = where();
-  const pos = home ? model.habitat : onTrack(track, 0, tt);
-  const lim = limitsAt(model, t), caution = model.sc.caution_margin_min;
-  const T = home ? 0 : finite(ttbAt(model, pos, 'penalized'));
-  const pv = placeValues(model, pos, track, tt);
-  const back = home ? 0 : T ?? (ph === 'ret' ? pv.rem.min : P.ret.minutes);
-  const spare = lim.L - back;
-  const s = P.station;
+export function navView() {
+  const model = NAV.model, P = NAV.P, state = NAV.run.snapshot();
+  const v = NAV.run.view(), home = state.phase === 'home', at = state.phase === 'at';
+  const pos = home ? model.habitat : v.pos;
+  const pv = placeValues(model, pos, v.track, v.tt), s = P.station;
   return {
-    t, pos, hd: NAV.hd, track, tt, homeward: ph === 'ret' || home, home, at,
-    outFaded: ph === 'ret' ? P.out : null, corridor: [P.out, P.ret],
-    target: ph === 'ret' || home ? { kind: 'base', n: 'H', name: 'Habitat', ...model.habitat } : { kind: 'stn', n: s.n, name: s.name, lon: s.lon, lat: s.lat },
-    targetN: s.n, stage: home ? 'green' : stageOf(spare, caution), spare, caution,
-    L: lim.L, f: 1, which: 'penalized', lim, ttb: T,
-    ls: model.ls - t, sun: model.sunsetEva - t, dose: doseAt(model, t - P.t0),
-    homeAt: P.tHome, reserve: model.ls - P.tHome, stay: P.stay, max: P.max, tLeave: P.tLeave, back: P.ret.minutes,
-    stayLeft: at ? P.tLeave - t : P.stay, onStation: at ? t - P.tArr : 0,
-    ...pv, rem: at || home ? { m: 0, min: 0 } : pv.rem,
+    ...v, pos, hd: NAV.hd, home, at, injured: state.injured,
+    outFaded: v.homeward ? P.out : null, corridor: [P.out, P.ret],
+    previousReturnTrack: v.injuryReturn?.switched ? P.ret : null,
+    returnSegments: home ? [] : NAV.run.colors().segments,
+    target: v.homeward ? { kind: 'base', n: 'H', name: 'Habitat', ...model.habitat }
+      : { kind: 'stn', n: s.n, name: s.name, lon: s.lon, lat: s.lat },
+    targetN: s.n, stage: home ? 'green' : v.stage ?? 'unknown',
+    reserve: v.homeAt == null ? null : model.ls - v.homeAt,
+    stay: P.stay, max: P.max, tLeave: at ? v.t + state.stayRemainingMinutes
+      : state.phase==='out' && v.rem.min!=null ? v.t + state.remainingDelayMinutes + v.rem.min + state.stayRemainingMinutes : null,
+    back: v.ttb, stayLeft: state.stayRemainingMinutes, onStation: at ? P.stay - state.stayRemainingMinutes : 0,
+    abort: state.returnMode === 'abort', abortRoute: state.returnMode === 'abort',
+    warn: v.status === 'NO_GO' ? returnLimitMessages(v).map(message => ['red', 'warn', message])
+      : !v.homeward && v.homeAt != null && (v.homeAt > model.ls || v.homeAt >= model.sunsetEva)
+        ? [['red', 'warn', 'Planned mission exceeds the remaining window · return now']] : [],
+    ...pv, rem: at || home ? { m: 0, min: 0 } : v.rem,
   };
 }
 
@@ -88,16 +84,38 @@ function frame(dt, forceUi) {
   renderViews(NAV.model, v, { map: true, hud: true, ui, zoomI: NAV.zoomI, base: NAV.base, small: NAV.swapped, onReady: () => frame(0, true) });
   $('#nd-end').hidden = !v.home;
   $('#hdr-clock').textContent = `${hhmm(NAV.model, v.t)} LMST`;
+  $('#nav-return-status').textContent = v.home ? 'Crew home' : v.stopped ? 'Crew stopped'
+    : ({green:'Within limits',yellow:'Low return margin',red:'Return limit exceeded'})[v.stage] ?? 'Data unavailable';
+  $('#nav-return-time').textContent = v.stopped ? 'Stopped' : v.ttb == null ? '—' : v.ttb.toFixed(1) + ' min';
+  $('#nav-return-eta').textContent = v.returnArrivalMinute == null ? '—' : hhmm(NAV.model,v.returnArrivalMinute);
+  $('#nav-planned-eta').textContent = v.homeAt == null ? '—' : hhmm(NAV.model,v.homeAt);
+  $('#nav-return-margin').textContent = v.spare == null ? '—' : v.spare.toFixed(1) + ' min';
+  $('#nav-return-margin').title = v.spare < 0 ? 'Minutes over the tightest return limit' : 'Minutes remaining under the tightest return limit';
+  $('#nav-budget-note').textContent = `Mission ends ${hhmm(NAV.model,NAV.model.ls)} · Sunset ${hhmm(NAV.model,NAV.model.sunsetEva)} LMST`;
+  $('.rl-status').dataset.stage = v.stage;
+  const reasons = returnLimitMessages(v);
+  $('#nav-return-reason').textContent = (v.violations?.includes('MISSION_END') ? `Mission ends ${hhmm(NAV.model, NAV.model.ls)} LMST · ` : '') + reasons.join(' · ');
+  $('#nav-return-reason').hidden = reasons.length === 0;
+  $('#nav-return-status').dataset.stage = v.stage;
+  ['nav-return', 'nav-abort', 'nav-speed'].forEach(id => { $('#' + id).disabled = v.home; });
+  $('#nav-injury').disabled = !v.canTriggerInjury;
+  $('#nav-injury').textContent = v.canTriggerInjury || !v.injured ? 'Injury' : 'Injury logged';
+  const choice = v.injuryReturn;
+  $('#nav-route-selection').hidden = !choice;
+  if (choice) {
+    const savedSeconds = !choice.accepted || v.stopped ? null : (choice.previousNominalMinutes - choice.selectedNominalMinutes) * v.f * 60;
+    $('#nav-route-selection').textContent = !choice.accepted ? 'Injury at station · no permitted prepared return is available.'
+      : `Selected return: ${choice.variant === 'fastest' ? 'prepared emergency alternative' : 'normal return (alternative unavailable)'}${choice.protected ? ' · protected passage logged' : ''} · ${choice.switched ? 'route changed · previous return shown grey' : 'same geometry already selected'}${savedSeconds == null ? '' : savedSeconds >= 0 ? ' · ' + savedSeconds.toFixed(1) + ' s saved' : ' · ' + (-savedSeconds).toFixed(1) + ' s longer in the loaded data'}.`;
+  }
 }
 const hhmm = (model, t) => { const m = Math.round(model.startMin + t); return `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
 function loop(now) {
   if (!NAV.on) return;
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   if (NAV.playing) {
-    const was = NAV.phase;
-    NAV.t = Math.min(NAV.P.tHome, NAV.t + dt * NAV.speedX / 60);
-    NAV.phase = phaseAt(NAV.t);
-    if (NAV.phase === 'home' && was !== 'home') { NAV.playing = false; syncPause(); }
+    const state = NAV.run.advance(dt * NAV.speedX / 60);
+    NAV.t = state.t; NAV.phase = state.phase;
+    if (state.phase === 'home') { NAV.playing = false; syncPause(); }
   }
   frame(dt);
   raf = requestAnimationFrame(loop);
@@ -119,10 +137,19 @@ function syncPause() {
 // P: the plan from the planning panel (ui.js planOf): station, out, ret, t0, tArr, stay, max, tLeave, tHome
 export function navStart(model, P, onEnd) {
   if (!P || !P.ok) return;
-  Object.assign(NAV, { on: true, model, P, t: P.t0, phase: 'out', playing: true, hd: null, swapped: false, onEnd });
+  const run = createNavigationRun(model, P);
+  Object.assign(NAV, { on: true, model, P: run.plan, run, t: P.t0, phase: 'out', playing: true, hd: null, swapped: false, onEnd });
+  $('#nav-return-message').textContent = '';
+  $('#nav-injury').textContent = 'Injury';
+  $('#nav-speed').value = '1';
+  $('#nav-speed-value').textContent = '×1.00';
+  $('#nav-speed').setAttribute('aria-valuetext', '100% of normal walking speed');
+  $('#nav-override').hidden = true;
+  $('#nav-approve').checked = false;
   if (!navViews(model).some((c) => c.id === NAV.base)) NAV.base = navViews(model)[0].id;   // the first ticked map
   document.body.classList.add('nav');
   $('#navmode').hidden = false; $('#nav-controls').hidden = false;
+  $('#navmode').scrollTop = 0;
   placeViews(); syncPause();
   $('#nv-legend').hidden = true; $('#nv-key').setAttribute('aria-expanded', 'false');
   $$('#nav-controls .seg button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.nx === NAV.speedX)));
@@ -148,7 +175,51 @@ function key(id) {
   frame(0, true);
 }
 
+function sendReturn(type) {
+  if (!NAV.on || NAV.phase === 'home') return;
+  const result = NAV.run.command(type, { approveProtected: $('#nav-approve').checked, reason: 'Habitat control: ' + type });
+  if (!result.accepted) {
+    $('#nav-override').hidden = !result.requiresOverride;
+    $('#nav-return-message').textContent = result.requiresOverride
+      ? 'At station: approve the protected return, then press Abort again.'
+      : 'Return cannot be confirmed: ' + (result.reason ?? 'missing data');
+  } else {
+    const state = NAV.run.snapshot(); NAV.phase = state.phase; NAV.t = state.t;
+    NAV.playing = state.phase !== 'home'; syncPause();
+    $('#nav-override').hidden = true;
+    $('#nav-return-message').textContent = state.phase === 'home' ? 'Crew at habitat.'
+      : type === 'abort' ? 'ABORT logged · returning on the permitted route.' : 'Return now · same route, homeward.';
+  }
+  frame(0, true);
+}
+
 export function navWire() {
+  $('#nav-return').addEventListener('click', () => sendReturn('return-now'));
+  $('#nav-abort').addEventListener('click', () => sendReturn('abort'));
+  $('#nav-injury').addEventListener('click', () => {
+    if (!NAV.on || NAV.phase === 'home') return;
+    const state = NAV.run.injury();
+    NAV.phase = state.phase; NAV.t = state.t;
+    $('#nav-return-message').textContent = state.injuryReturn?.accepted
+      ? 'Injury at station · work ended · immediate return. Walking speed unchanged.'
+      : state.injuryReturn ? 'Injury logged · automatic return unavailable.'
+        : 'Injury logged · walking speed and active route unchanged.';
+    if (state.injuryReturn?.accepted) $('#nav-override').hidden = true;
+    frame(0, true);
+  });
+  $('#nav-speed').addEventListener('input', () => {
+    if (!NAV.on || NAV.phase === 'home') return;
+    const before = NAV.run.view();
+    const factor = Number($('#nav-speed').value);
+    const state = NAV.run.setSpeedFactor(factor);
+    NAV.phase = state.phase; NAV.t = state.t;
+    $('#nav-speed-value').textContent = `×${factor.toFixed(2)}`;
+    $('#nav-speed').setAttribute('aria-valuetext', factor === 0 ? 'Stopped' : `${Math.round(factor * 100)}% of normal walking speed`);
+    const after = NAV.run.view(), a = before.ttb, b = after.ttb;
+    $('#nav-return-message').textContent = factor === 0 ? 'Crew stopped · mission clock continues. Increase speed to resume walking.'
+      : `Walking speed ×${factor.toFixed(2)} · return ${a == null ? '—' : a.toFixed(1)} → ${b == null ? '—' : b.toFixed(1)} min. Injury status and route unchanged.`;
+    frame(0, true);
+  });
   ['k-data', 'k-zin', 'k-zout', 'k-map'].forEach((id) => $(`#${id}`).addEventListener('click', () => { if (NAV.on) key(id); }));
   $('#nav-pause').addEventListener('click', () => { if (NAV.phase === 'home') return; NAV.playing = !NAV.playing; syncPause(); });
   $('#nav-end').addEventListener('click', navEnd);

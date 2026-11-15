@@ -15,6 +15,7 @@ export const STAGE = {
   green: { c: '#1F6B45', bg: '#1F6B45', fg: '#EDF0E6', tint: 'rgba(31,107,69,.22)', px: [31, 107, 69, 56], word: 'Home in time', hud: 'HOME IN TIME' },
   yellow: { c: '#D9A300', bg: '#D9A300', fg: '#2B2D2F', tint: 'rgba(217,163,0,.30)', px: [217, 163, 0, 77], word: 'Head home soon', hud: 'HEAD HOME SOON' },
   red: { c: '#C8361F', bg: '#C8361F', fg: '#EDF0E6', tint: 'rgba(200,54,31,.24)', px: [200, 54, 31, 61], word: 'ABORT: return to shelter now', hud: 'ABORT · RETURN NOW' },
+  unknown: { c: '#8A8F92', bg: '#8A8F92', fg: '#fff', tint: 'rgba(138,143,146,.25)', px: [138,143,146,56], word: 'Return data unavailable', hud: 'RETURN DATA UNAVAILABLE' },
 };
 
 // ---------- geometry in a local metric frame around p (x east, y south) ----------
@@ -105,7 +106,7 @@ export function drawNavMap(canvas, model, v, o, onReady) {
   // the ground). green = 15+ min spare, yellow = under 15 min, red = cannot get home in time
   ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   const g = model.grid;
-  if (g && !v.home && navView(model, o.base).id === 'plain') {
+  if (g && !v.home && !v.returnSegments && navView(model, o.base).id === 'plain') {
     const cv = corridorCanvas(model, v.corridor || [v.track, v.outFaded], { L: v.allRed ? -1 : v.L, f: v.f, which: v.which, caution: v.caution });
     if (cv) { ctx.imageSmoothingEnabled = true; ctx.drawImage(cv, ...rect(gridBox(g))); }
     ctx.setLineDash([7 / s, 5 / s]);
@@ -129,6 +130,7 @@ export function drawNavMap(canvas, model, v, o, onReady) {
     ctx.setLineDash([]);
   };
   if (v.outFaded) line(v.outFaded.vertices, 'rgba(43,45,47,.45)', 2.5, false, [6, 5]);
+  if (v.previousReturnTrack) line(v.previousReturnTrack.vertices, '#80878B', 3, false, [6, 5]);
   if (v.track && !v.home) {
     const vs = v.track.vertices;
     if (v.pending) line(vs, 'rgba(43,45,47,.5)', 3, false, [6, 5]);
@@ -138,6 +140,9 @@ export function drawNavMap(canvas, model, v, o, onReady) {
     }
   }
   const hb = habitatBox(model), hside = Math.max(6 / s, (hb.e - hb.w) * M_PER_DEG * Math.cos(model.habitat.lat * Math.PI / 180));
+  for (const segment of v.returnSegments ?? []) {
+    line([segment.from, segment.to], segment.color, 5, true, segment.stage == null ? [3, 5] : null);
+  }
   const hc = F.xy({ lon: (hb.w + hb.e) / 2, lat: (hb.n + hb.s) / 2 });
   ctx.fillStyle = '#2B2D2F'; ctx.strokeStyle = '#EDF0E6'; ctx.lineWidth = 2 / s;
   ctx.fillRect(hc[0] - hside / 2, hc[1] - hside / 2, hside, hside); ctx.strokeRect(hc[0] - hside / 2, hc[1] - hside / 2, hside, hside);
@@ -187,7 +192,7 @@ export function drawNavMap(canvas, model, v, o, onReady) {
 
 // ---------- the helmet HUD ----------
 export function hudSvg(model, v, words) {
-  const S = 420, c = 210, r = 146, k = r / HUD_RANGE, b = v.hd, p = v.pos, stg = STAGE[v.stage] || STAGE.green;
+  const S = 420, c = 210, r = 146, k = r / HUD_RANGE, b = v.hd, p = v.pos, stg = STAGE[v.stage] || STAGE.unknown;
   const F = frame(p), co = Math.cos(-b), si = Math.sin(-b);
   const rel = (q) => { const [x, y] = F.xy(q); return [(x * co - y * si) * k, (x * si + y * co) * k]; };
   const polar = (a, rad) => [c + Math.sin(a) * rad, c - Math.cos(a) * rad];
@@ -203,8 +208,16 @@ export function hudSvg(model, v, words) {
     if (pts.some(([x, y]) => Math.hypot(x, y) < r + 20)) g += `<path d="M${pts.map(([x, y]) => `${f1(x)} ${f1(y)}`).join('L')}Z" fill="url(#hud-hatch)" stroke="#2459A8" stroke-width="1.4"/>`;
   }
   if (!v.home && v.track) {
+    if (v.previousReturnTrack) {
+      const previous = v.previousReturnTrack.vertices.map(rel).map(([x, y]) => `${f1(x)} ${f1(y)}`).join('L');
+      g += `<path d="M${previous}" fill="none" stroke="#80878B" stroke-width="2.5" stroke-dasharray="6 5"/>`;
+    }
     const rp = v.track.vertices.map(rel).map(([x, y]) => `${f1(x)} ${f1(y)}`).join('L');
     g += `<g${v.pending ? ' opacity=".35"' : ''}><path d="M${rp}" fill="none" stroke="#EDF0E6" stroke-width="7" stroke-linejoin="round"/><path d="M${rp}" fill="none" stroke="${v.abort ? '#C8361F' : '#2B2D2F'}" stroke-width="3.5" stroke-linejoin="round"/></g>`;
+  }
+  if (!v.home) for (const segment of v.returnSegments ?? []) {
+    const coords = [segment.from, segment.to].map(rel).map(([x, y]) => `${f1(x)} ${f1(y)}`).join('L');
+    g += `<path d="M${coords}" fill="none" stroke="${segment.color}" stroke-width="4"${segment.stage == null ? ' stroke-dasharray="3 5"' : ''}/>`;
   }
   o.push(`<g clip-path="url(#hud-clip)"><g transform="translate(${c} ${c})">${g}</g></g>`);
   // stage ring and the compass rose turning with the heading

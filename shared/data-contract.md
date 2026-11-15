@@ -4,6 +4,14 @@ Draft of 2026-11-14, with the team decisions of the same day; derived from what 
 
 **Ground rule:** the browser reads and interpolates. It never searches for a route. Following return pointers, drawing contours of a loaded grid and interpolating along a precomputed track are fine.
 
+Consumer integration (2026-11-15, user request): `frontend/src/return-line.js`
+also computes directed runtime walking-time profiles from these unchanged
+Tracks and returns red/yellow/green sections for the current HUD navigation.
+Travel to each future point is included in mission/sunset checks. Walking speed
+and Injury are separate controls; prepared alternatives are selectable only at
+targets. This changes no exported file/grid format and adds no graph search.
+The original scripted rehearsal retains rule B. API: `../frontend/return-line.md`.
+
 ## Conventions
 
 - Positions in files: `[lon, lat]` in degrees, east-positive (GeoJSON order). Leaflet takes `[lat, lon]`; convert in the loader.

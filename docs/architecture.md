@@ -19,6 +19,19 @@ There is **no backend**. The browser never computes a route; it looks up precomp
 
 ## Components
 
+### Frontend ReturnLine integration (2026-11-15)
+
+On user request, `frontend/src/return-line.js` evaluates prepared native Tracks
+with the existing JavaScript walking model and suitable engine-time fallbacks.
+`navigation-run.js` owns progress/events while the HUD's existing RAF owns time.
+Walking speed, Injury, Return now and Abort are integrated into the current
+mission-control design. Tablet/HUD use crew-centered red/yellow/green segments
+on both outward and return legs. Mission end and loaded sunset limit arrival;
+backup remains unplanned. Injury at a target explicitly chooses its prepared
+emergency alternative; geometry is locked mid-leg. No graph search, new file
+format or rewritten data. Original grid-based rehearsal and radio warnings are
+retained. API and limitations: `frontend/return-line.md`.
+
 Current Python implementation: `backend/geoMapper/mars_mapping/` maps GeoTIFF
 and CSV sources onto one local metric grid. `backend/terrain_features.py` derives
 slope and roughness; `backend/terrain_costs.py` turns cell features into costs.

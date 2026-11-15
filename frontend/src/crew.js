@@ -16,9 +16,11 @@ export function warnings(model, v) {
   const w = v.warn ? v.warn.slice() : [];
   const caution = v.caution;
   if (v.home) return [['ok', 'check', `Crew home · ${lmst(model, v.t)} LMST`]];
+  if (v.stage === 'unknown') w.push(['amber', 'warn', 'Return data unavailable']);
+  if (v.injured) w.push(['red', 'warn', `Crew injured · walking speed ×${Number(v.speedFactor ?? model.sc.injury_factor ?? 0.1).toFixed(2)}`]);
   if (v.at && v.stayLeft != null && v.stayLeft <= 10) w.push(['amber', 'warn', `Return starts in ${hm(Math.max(0, v.stayLeft))}`]);
-  if (v.stage === 'red' && !v.abortVerdict) w.push(['red', 'warn', 'Cannot get home in time · return to shelter now']);
-  else if (v.stage === 'yellow' && !v.abortVerdict) w.push(['amber', 'warn', `Under ${caution} min to spare · head home soon`]);
+  if (v.stage === 'red' && !v.abortVerdict && !v.violations?.length) w.push(['red', 'warn', 'Cannot get home in time · return to shelter now']);
+  else if (v.stage === 'yellow' && !v.abortVerdict) w.push(['amber', 'warn', `Under ${caution} min to spare · ${v.homeward ? 'continue home' : 'head home soon'}`]);
   if (v.zone) {
     if (v.zone.d <= 0) w.push(['blue', 'warn', `Inside ${v.zone.name}${v.abortRoute ? ' · override' : ''}`]);
     else if (v.zone.d < 60) w.push(['blue', 'warn', `Protected zone ${R(v.zone.d)} m · ${v.zone.name}`]);
@@ -33,7 +35,9 @@ export function warnings(model, v) {
 function words(model, v) {
   return { lmst: lmst(model, v.t), eva: hm(v.t), sun: hm(v.sun), ls: hm(Math.max(0, v.ls)), dose: v.dose.toFixed(2) };
 }
-const spareText = (v) => v.spareTxt || (v.spare == null ? 'needs grid' : v.spare >= 0 ? `${R(v.spare)} min spare` : 'no way home');
+const spareText = (v) => v.spareTxt || (v.stopped ? 'crew stopped' : v.spare == null ? 'data unavailable' : v.spare >= 0 ? `${R(v.spare)} min spare` : `${R(-v.spare)} min over limit`);
+const travelText = (model, v) => v.stopped ? 'Stopped · no walking ETA'
+  : v.rem.min == null ? 'ETA unavailable' : `${R(v.rem.min)} min · ETA ${lmst(model, v.t + v.rem.min)} LMST`;
 
 export function tile(l, val, u, s, sk) {
   return `<div class="dt"><div class="dt-l"><span>${l}</span>${sk ? src(sk) : ''}</div>` +
@@ -46,8 +50,8 @@ function renderHud(model, v) {
   const t = v.target;
   setHTML($('#hud-line'), v.hudLine ? v.hudLine
     : v.home ? '<span>Habitat</span><span>arrived</span>'
-    : v.at ? `<span>Stn ${t.n} · return in ${hm(Math.max(0, v.stayLeft ?? 0))}</span><span>Home ${lmst(model, v.homeAt)}</span>`
-    : `<span>${t.kind === 'base' ? 'Base' : `Stn ${t.n}`} ${R(v.rem.m)} m · ${R(v.rem.min)} min</span><span>Home ${lmst(model, v.homeAt)}</span>`);
+    : v.at ? `<span>Stn ${t.n} · return in ${hm(Math.max(0, v.stayLeft ?? 0))}</span><span>Home ${v.homeAt==null?'—':lmst(model, v.homeAt)}</span>`
+    : `<span>${t.kind === 'base' ? 'Base' : `Stn ${t.n}`} ${R(v.rem.m)} m · ${v.stopped ? 'stopped' : v.rem.min == null ? '—' : R(v.rem.min) + ' min'}</span><span>Home ${v.homeAt == null ? '—' : lmst(model, v.homeAt)}</span>`);
   setHTML($('#hud-warn'), warnings(model, v).map(([cls, ic, txt]) => `<li class="${cls}">${icon(ic)}${esc(txt)}</li>`).join(''));
 }
 
@@ -99,7 +103,7 @@ if (window.ResizeObserver) new ResizeObserver(() => { if (lastProf && document.q
 
 // ---------- tablet map chrome and the data sheet ----------
 function renderUi(model, v, o) {
-  const stg = STAGE[v.stage] || STAGE.green, t = v.target, sp = spareText(v);
+  const stg = STAGE[v.stage] || STAGE.unknown, t = v.target, sp = spareText(v);
   let turn;
   if (v.turn) turn = v.turn;
   else if (v.home) turn = `${icon('check')}<div><div class="to">Crew home</div><div class="big">${lmst(model, v.t)}<small>LMST</small></div></div>`;
@@ -107,7 +111,7 @@ function renderUi(model, v, o) {
   else {
     const ah = v.ahead, ra = ah ? bearing(v.pos, ah) - v.hd : 0;
     turn = `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="#3A3D40"/><g transform="translate(20 20) rotate(${(ra * 180 / Math.PI).toFixed(0)})"><path d="M0 -12L8 7L0 2L-8 7Z" fill="#E8622C"/></g></svg>` +
-      `<div><div class="to">To ${t.kind === 'base' ? 'Habitat' : `Stn ${t.n} · ${esc(t.name)}`}</div><div class="big">${R(v.rem.m)} m<small>${R(v.rem.min)} min · ETA ${lmst(model, v.t + v.rem.min)}</small></div></div>`;
+      `<div><div class="to">To ${t.kind === 'base' ? 'Habitat' : `Stn ${t.n} · ${esc(t.name)}`}</div><div class="big">${R(v.rem.m)} m<small>${travelText(model, v)}</small></div></div>`;
   }
   $('#nv-turn').innerHTML = turn;
   const se = $('#nv-stage');
@@ -116,12 +120,16 @@ function renderUi(model, v, o) {
   const views = navViews(model), nv = navView(model, o.base), k = views.findIndex((c) => c.id === nv.id);
   $('#nv-mapname').innerHTML = `<b>Map ${k + 1}/${views.length} · ${esc(nv.label)}</b>${nv.parts.length > 1 ? `<small>${esc(nv.detail)}</small>` : ''}`;
   $('#nv-mapname').title = `${nv.label} · ${nv.detail}. Key 4 switches the map; the Layers menu sets which maps and their order.`;
-  $('#nv-legend').innerHTML = '<b>Home in time from there, now?</b><span class="cap">Along the route, fading away from it; on the Plain map (key 4)</span>' +
-    `<div><i style="background:${STAGE.green.tint};border-color:${STAGE.green.c}"></i>Yes, ${v.caution}+ min to spare</div>` +
-    `<div><i style="background:${STAGE.yellow.tint};border-color:${STAGE.yellow.c}"></i>Yes, under ${v.caution} min to spare</div>` +
-    `<div><i style="background:${STAGE.red.tint};border-color:${STAGE.red.c}"></i>No: ABORT if the crew is here</div>` +
-    '<div><i style="border:0;border-top:2px dashed #2B2D2F;height:0;border-radius:0"></i>60 min from base, fixed</div>' +
-    `<span class="cap">Return limit now ${R(v.lim.L)} min, set by ${v.lim.by === "life support" ? "" : "the "}${v.lim.by}${v.f > 1 ? ' · injured: times doubled' : ''} · time-to-base grid (rule B)</span>`;
+  $('#nv-legend').innerHTML = Array.isArray(v.returnSegments)
+    ? '<b>ReturnLine from the crew</b><span class="cap">Both ways: walk from the current crew position to each point, then finish the permitted return home.</span>' +
+    `<div><i style="background:${STAGE.green.tint};border-color:${STAGE.green.c}"></i>Return fits with ${v.caution}+ min to spare</div>` +
+    `<div><i style="background:${STAGE.yellow.tint};border-color:${STAGE.yellow.c}"></i>Return fits with under ${v.caution} min to spare</div>` +
+    `<div><i style="background:${STAGE.red.tint};border-color:${STAGE.red.c}"></i>Return exceeds a limit or walking is blocked</div>` +
+    `<span class="cap">Colors are evaluated section by section on outward and homeward routes. Return limit now ${R(v.lim.L)} min, set by ${v.lim.by === "life support" ? "" : "the "}${v.lim.by}. ${v.stopped ? 'Speed ×0: stopped.' : v.f > 1 ? `Walking times ×${v.f.toFixed(1)}.` : ''}</span>`
+    : '<b>Home in time from there, now?</b><span class="cap">Along the route on the Plain map · time-to-base grid (rule B)</span>' +
+      `<div><i style="background:${STAGE.green.tint};border-color:${STAGE.green.c}"></i>Yes, ${v.caution}+ min to spare</div>` +
+      `<div><i style="background:${STAGE.yellow.tint};border-color:${STAGE.yellow.c}"></i>Yes, under ${v.caution} min to spare</div>` +
+      `<div><i style="background:${STAGE.red.tint};border-color:${STAGE.red.c}"></i>No: return limit exceeded</div>`;
   // data sheet: stage, two key tiles, elevation, nine values
   const ds = $('#dv-stage');
   ds.style.background = stg.bg; ds.style.color = stg.fg;
@@ -132,13 +140,14 @@ function renderUi(model, v, o) {
     B = tile('Reserve', hm(v.reserve), '', 'life support left at arrival', 'ASSUME');
   } else if (v.at) {
     A = tile('Return starts in', hm(Math.max(0, v.stayLeft ?? 0)), '', `at Stn ${t.n} · ${hm(v.onStation ?? 0)} of ${hm(v.stay ?? 0)} on station`, 'ASSUME');
-    B = tile('Leave station', lmst(model, v.tLeave), '', `then ${R(v.back ?? 0)} min home · home ${lmst(model, v.homeAt)}`, 'ROUTE');
+    B = tile('Leave station', v.tLeave==null?'—':lmst(model, v.tLeave), '', v.stopped ? 'crew stopped · no walking return ETA'
+      : v.back==null ? 'return ETA unavailable' : `then ${R(v.back)} min home · home ${v.homeAt==null?'—':lmst(model, v.homeAt)}`, 'ROUTE');
   } else if (!v.homeward) {
-    A = tile(`To Stn ${t.n} · ${esc(t.name)}`, R(v.rem.m), 'm', `${R(v.rem.min)} min · ETA ${lmst(model, v.t + v.rem.min)} LMST`, 'ROUTE');
-    B = tile('Planned stay', hm(v.stay ?? 0), '', `max ${hm(v.max ?? 0)} · leave ${lmst(model, v.tLeave)}`, 'ASSUME');
+    A = tile(`To Stn ${t.n} · ${esc(t.name)}`, R(v.rem.m), 'm', travelText(model, v), 'ROUTE');
+    B = tile('Planned stay', hm(v.stay ?? 0), '', `max ${hm(v.max ?? 0)} · leave ${v.tLeave==null?'—':lmst(model, v.tLeave)}`, 'ASSUME');
   } else {
-    A = tile('To Habitat', R(v.rem.m), 'm', `${R(v.rem.min)} min · ETA ${lmst(model, v.t + v.rem.min)} LMST`, 'ROUTE');
-    B = tile('Home at', lmst(model, v.homeAt), '', `planned · EVA ${hm(v.homeAt)}`, 'ROUTE');
+    A = tile('To Habitat', R(v.rem.m), 'm', travelText(model, v), 'ROUTE');
+    B = tile('Home at', v.homeAt == null ? '—' : lmst(model, v.homeAt), '', v.stopped ? 'crew stopped' : `planned · EVA ${hm(v.homeAt)}`, 'ROUTE');
   }
   if (v.tileA) A = v.tileA;
   if (v.tileB) B = v.tileB;
@@ -151,7 +160,7 @@ function renderUi(model, v, o) {
     tile('Sunset in', hm(v.sun), '', `sunset ${model.sc.sunset_lmst} LMST`, 'REMS') +
     tile('Reserve', hm(v.reserve), '', 'at the planned arrival', 'ASSUME') +
     tile('Return limit', R(v.lim.L), 'min', `set by ${v.lim.by === "life support" ? "" : "the "}${v.lim.by}`, 'xEVA') +
-    tile('Time to base', fx(v.ttb), v.ttb == null ? '' : 'min', v.ttb == null ? 'needs the grid' : 'from here, engine grid', 'GRID') +
+    tile('Time to base', fx(v.ttb), v.ttb == null ? '' : 'min', v.stopped ? 'speed ×0: crew stopped' : v.ttb == null ? 'route data unavailable' : 'permitted route, current walking speed', 'ROUTE') +
     tile('Radiation', v.dose.toFixed(2), 'mSv', 'information only', 'RAD') +
     tile('Slope here', fx(v.slope, 1), v.slope == null ? '' : '°', `limit 20° · ${geo ? '10 m baseline' : '10 m grid'}`, geo ? 'GEOM' : 'DEM') +
     tile('Protected zone', v.zone ? Math.max(0, R(v.zone.d)) : '–', v.zone ? 'm' : '', v.zone ? esc(v.zone.name) : 'no zones', 'PP') +

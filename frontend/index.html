@@ -257,6 +257,25 @@
   </section>
 </main>
 <main class="navmode" id="navmode" hidden>
+  <section class="rl-status" aria-label="ReturnLine live status">
+    <div class="rl-status-head"><h2>ReturnLine</h2><strong id="nav-return-status" role="status"></strong><span id="nav-budget-note"></span></div>
+    <div class="rl-status-body"><dl class="rl-metrics">
+      <div><dt>Return now</dt><dd id="nav-return-time">—</dd></div>
+      <div><dt>Home now · LMST</dt><dd id="nav-return-eta">—</dd></div>
+      <div><dt>Planned home · LMST</dt><dd id="nav-planned-eta">—</dd></div>
+      <div><dt>Return margin</dt><dd id="nav-return-margin">—</dd></div>
+    </dl><div class="rl-actions" role="group" aria-label="ReturnLine controls">
+      <label class="nav-speed" for="nav-speed"><span>Walking speed <output id="nav-speed-value" for="nav-speed">×1.00</output></span>
+        <input id="nav-speed" type="range" min="0" max="1" step="0.01" value="1" aria-label="Crew walking speed factor"></label>
+      <button class="btn" id="nav-injury">Injury</button>
+      <button class="btn btn-dark" id="nav-return">Return now</button>
+      <button class="btn btn-abort" id="nav-abort">Abort</button>
+    </div></div>
+    <p id="nav-return-reason" role="status" hidden></p>
+    <p id="nav-route-selection" role="status" hidden></p>
+    <p id="nav-return-message" role="status"></p>
+    <label id="nav-override" hidden><input id="nav-approve" type="checkbox"> Approve protected return for this abort</label>
+  </section>
   <section class="nav-left" aria-label="Forearm tablet">
     <div class="tablet">
       <button type="button" class="key k1" id="k-data" aria-pressed="false"><span class="kn">1</span>Data</button>
