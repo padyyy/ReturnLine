@@ -46,7 +46,8 @@ async function loadLayers(grid) {
     const meta = await fetchJson(path).catch(() => null);
     if (!meta) continue;
     const ppc = meta.pixels_per_cell || 1;
-    if (grid && (meta.width_px !== grid.header.nx * ppc || meta.height_px !== grid.header.ny * ppc || (index && meta.grid_id !== index.grid_id))) {
+    const cells = meta.window ? [meta.window.cols, meta.window.rows] : [grid?.header.nx, grid?.header.ny]; // detail pictures cover a window of cells
+    if (grid && (meta.width_px !== cells[0] * ppc || meta.height_px !== cells[1] * ppc || (index && meta.grid_id !== index.grid_id))) {
       console.warn(`layer ${meta.layer?.id ?? path} does not match grid.json; not drawn`);
       continue;
     }

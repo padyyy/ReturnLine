@@ -159,12 +159,13 @@ export function initDataTools(model, mapApi, { onStationsChanged, reloadData }) 
     model.stations.splice(model.stations.indexOf(t.station), 1); model.routes.delete(t.station.n); mapApi.removeStation(t.station.n);
     renderLists(); onStationsChanged(null);
   });
+  $('#ad-file').addEventListener('change', () => { $('#ad-radius-row').hidden = !/\.csv$/i.test($('#ad-file').files[0]?.name ?? ''); });
   $('#ad-map-add').addEventListener('click', async () => {
     const f = $('#ad-file').files[0];
-    if (!f) { busy(false, 'Choose a GeoTIFF first.'); return; }
+    if (!f) { busy(false, 'Choose a GeoTIFF or a CSV first.'); return; }
     busy(true, `Uploading ${f.name} and anchoring it with GeoMapper…`);
     try {
-      const q = new URLSearchParams({ file: f.name, name: $('#ad-map-name').value.trim() || f.name.replace(/\.tiff?$/i, ''), units: $('#ad-map-units').value.trim() });
+      const q = new URLSearchParams({ file: f.name, name: $('#ad-map-name').value.trim() || f.name.replace(/\.(tiff?|csv)$/i, ''), units: $('#ad-map-units').value.trim(), radius: $('#ad-radius').value.trim() });
       const r = await fetch(`/__tools/layers?${q}`, { method: 'POST', headers: { ...HDR, 'Content-Type': 'application/octet-stream' }, body: f });
       const out = await r.json();
       if (!out.ok) throw new Error(out.error || 'pipeline failed');

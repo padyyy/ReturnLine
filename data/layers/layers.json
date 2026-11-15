@@ -1,6 +1,47 @@
 {
-  "note": "Map layers for the console. pipeline/map_layers.py anchors each one on the console grid with GeoMapper. Paths are relative to this file. GeoTIFFs dropped into this folder are picked up too.",
+  "note": "Map layers for the console. pipeline/map_layers.py anchors each one on the console grid with GeoMapper (GeoTIFF: raster_to_matrix; CSV: CsvPointLayer + csv_to_matrices, one layer per numeric column). Paths are relative to this file. GeoTIFFs and CSVs dropped into this folder are picked up too.",
   "layers": [
+    {
+      "id": "ortho_25cm",
+      "name": "Orthophoto 25 cm (1 km around the base)",
+      "source": "../gale_orthophoto_25cm_1km_lat-4.8106_lon137.3807.tif",
+      "band": 1,
+      "style": { "kind": "ramp", "colors": ["#000000", "#FFFFFF"], "range": [0, 255] },
+      "opacity": 1,
+      "priority": 15,
+      "source_note": "Branch newData: 4000 x 4000 px at 0.25 m, Mars equirectangular (USGS MSL Gale orthophoto mosaic)"
+    },
+    {
+      "id": "boxwork_protection",
+      "name": "Boxwork protection mask, 50 m",
+      "source": "../boxwork_protection_mask_50m.csv",
+      "columns": {
+        "Protection_mask": {
+          "id": "boxwork_protection",
+          "name": "Boxwork protection mask, 50 m",
+          "style": { "kind": "classes", "thresholds": [0.5], "colors": [null, "#2459A8"], "labels": ["0", "1: masked"] },
+          "opacity": 0.55,
+          "priority": 30
+        }
+      },
+      "source_note": "Branch newData: JMARS-style CSV, 1 000 000 points at 1 m, values 0/1"
+    },
+    {
+      "id": "gale_dem_csv",
+      "name": "Gale DEM 1 m (CSV)",
+      "source": "../gale_dem_1000x1000_current.csv",
+      "columns": {
+        "Elevation_m": {
+          "id": "gale_dem_csv",
+          "name": "Elevation, Gale DEM 1 m (CSV)",
+          "units": "m",
+          "style": { "kind": "ramp", "colors": ["#2B2D2F", "#80878B", "#EDF0E6"] },
+          "opacity": 0.7,
+          "priority": 12
+        }
+      },
+      "source_note": "Branch newData: JMARS-style CSV, 1 000 000 points at 1 m, elevation in metres"
+    },
     {
       "id": "radiation",
       "name": "Radiation dose rate",

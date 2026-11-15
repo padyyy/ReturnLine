@@ -21,7 +21,7 @@
 
 /* overlays above the Leaflet panes */
 .keybox, .tg, .readout { z-index: 800; }
-.readout { position: absolute; left: 16px; bottom: 14px; pointer-events: none; }
+.readout { position: absolute; left: 16px; bottom: 14px; pointer-events: none; max-width: calc(100% - 260px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* map markers and labels */
 .mk { background: none; border: 0; }

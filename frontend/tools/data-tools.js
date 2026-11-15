@@ -6,7 +6,7 @@
 //   GET    /__tools/status                         python, catalogs
 //   POST   /__tools/points  {name, lon, lat, reason?}   add a target, rebuild the plan
 //   DELETE /__tools/points?id=...                  remove a target, rebuild the plan
-//   POST   /__tools/layers?name=&units=&file=      body: the GeoTIFF bytes; anchor it with GeoMapper
+//   POST   /__tools/layers?name=&units=&file=&radius=  body: GeoTIFF or CSV bytes; anchor it with GeoMapper
 //   DELETE /__tools/layers?id=...                  remove a map, re-export the layers
 //
 // Every request must carry the header X-RL-Tools: 1. A custom header makes browsers ask before a
@@ -21,6 +21,7 @@ const POINTS = join(ROOT, 'data', 'points', 'points.json');
 const LAYERS = join(ROOT, 'data', 'layers');
 const OUT_LAYERS = join(ROOT, 'frontend', 'public', 'data', 'layers');
 const MAX_TIFF = 400 * 1024 * 1024;
+const MAP_EXT = /\.(tiff?|csv)$/i;   // GeoTIFF raster or CSV point table (latitude, longitude, values)
 const slug = (s) => String(s).toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'item';
 
 function python() {
@@ -50,10 +51,10 @@ function writePoints(doc) {
 const catalogFile = () => join(LAYERS, 'layers.json');
 function layerList() {
   const listed = existsSync(catalogFile()) ? JSON.parse(readFileSync(catalogFile(), 'utf8')).layers ?? [] : [];
-  const dropped = existsSync(LAYERS) ? readdirSync(LAYERS).filter((f) => /\.tiff?$/i.test(f)).map((f) => {
-    const side = join(LAYERS, f.replace(/\.tiff?$/i, '.layer.json'));
+  const dropped = existsSync(LAYERS) ? readdirSync(LAYERS).filter((f) => MAP_EXT.test(f)).map((f) => {
+    const side = join(LAYERS, f.replace(MAP_EXT, '.layer.json'));
     const extra = existsSync(side) ? JSON.parse(readFileSync(side, 'utf8')) : {};
-    return { id: f.replace(/\.tiff?$/i, ''), name: extra.name ?? f, units: extra.units ?? null, file: f, removable: true };
+    return { id: f.replace(MAP_EXT, ''), name: extra.name ?? f, units: extra.units ?? null, file: f, removable: true };
   }) : [];
   return [...listed.map((l) => ({ id: l.id, name: l.name, units: l.units ?? null, file: l.source, removable: false })), ...dropped];
 }
@@ -95,11 +96,12 @@ async function handle(req, res, url) {
   }
   if (url.pathname === '/__tools/layers' && req.method === 'POST') {
     const file = String(url.searchParams.get('file') ?? ''), name = String(url.searchParams.get('name') ?? '').trim().slice(0, 80);
-    if (!/\.tiff?$/i.test(file)) return send(res, 400, { ok: false, error: 'a GeoTIFF (.tif) is required' });
-    const id = slug(name || file.replace(/\.tiff?$/i, ''));
+    if (!MAP_EXT.test(file)) return send(res, 400, { ok: false, error: 'a GeoTIFF (.tif) or a CSV with latitude and longitude is required' });
+    const ext = file.match(MAP_EXT)[0].toLowerCase();
+    const id = slug(name || file.replace(MAP_EXT, ''));
     if (layerList().some((l) => l.id === id)) return send(res, 409, { ok: false, error: `a map with the id ${id} exists; pick another name` });
     mkdirSync(LAYERS, { recursive: true });
-    const tif = join(LAYERS, `${id}.tif`);
+    const tif = join(LAYERS, `${id}${ext === '.csv' ? '.csv' : '.tif'}`);
     let size = 0, tooBig = false;
     await new Promise((ok, bad) => {
       const out = createWriteStream(tif);
@@ -109,20 +111,23 @@ async function handle(req, res, url) {
     });
     if (tooBig || size === 0) { rmSync(tif, { force: true }); return send(res, 400, { ok: false, error: tooBig ? 'file over 400 MB' : 'empty file' }); }
     const units = String(url.searchParams.get('units') ?? '').trim().slice(0, 20);
-    writeFileSync(join(LAYERS, `${id}.layer.json`), `${JSON.stringify({ name: name || id, ...(units ? { units } : {}), source_note: `added in the console (${file})` }, null, 2)}\n`);
+    const radius = Number(url.searchParams.get('radius'));   // CSV search radius in metres; empty = twice the point spacing
+    writeFileSync(join(LAYERS, `${id}.layer.json`), `${JSON.stringify({ name: name || id, ...(units ? { units } : {}), ...(radius > 0 ? { radius_m: radius } : {}), source_note: `added in the console (${file})` }, null, 2)}\n`);
     const r = await run('map_layers.py');
-    if (!existsSync(join(OUT_LAYERS, `${id}.json`))) { // GeoMapper could not anchor it: do not keep a broken map
+    const made = existsSync(OUT_LAYERS) ? readdirSync(OUT_LAYERS).filter((f) => f === `${id}.json` || (f.startsWith(`${id}_`) && f.endsWith('.json'))) : [];
+    if (!made.length) { // GeoMapper could not anchor it: do not keep a broken map
       rmSync(tif, { force: true }); rmSync(join(LAYERS, `${id}.layer.json`), { force: true });
       await run('map_layers.py');
-      return send(res, 422, { ok: false, error: 'GeoMapper could not place this map on the grid (no Mars CRS, or it does not cover the grid)', log: r.log });
+      return send(res, 422, { ok: false, error: 'GeoMapper could not place this map on the grid (no Mars CRS, no latitude/longitude columns, or it does not cover the grid)', log: r.log });
     }
-    return send(res, 200, { ok: true, id, log: r.log });
+    return send(res, 200, { ok: true, id, layers: made.map((f) => f.replace(/\.json$/, '')), log: r.log });
   }
   if (url.pathname === '/__tools/layers' && req.method === 'DELETE') {
     const id = slug(url.searchParams.get('id') ?? '');
     const l = layerList().find((x) => x.id === id);
     if (!l || !l.removable) return send(res, 404, { ok: false, error: 'only maps added in data/layers/ can be removed here' });
-    for (const f of [join(LAYERS, l.file), join(LAYERS, `${id}.layer.json`), join(OUT_LAYERS, `${id}.png`), join(OUT_LAYERS, `${id}.f32`), join(OUT_LAYERS, `${id}.json`)]) rmSync(f, { force: true });
+    const outs = existsSync(OUT_LAYERS) ? readdirSync(OUT_LAYERS).filter((f) => /\.(png|f32|json)$/.test(f) && (f.replace(/\.(png|f32|json)$/, '') === id || f.startsWith(`${id}_`))) : [];
+    for (const f of [join(LAYERS, l.file), join(LAYERS, `${id}.layer.json`), ...outs.map((f) => join(OUT_LAYERS, f))]) rmSync(f, { force: true });
     const r = await run('map_layers.py');
     return send(res, r.code === 0 ? 200 : 500, { ok: r.code === 0, log: r.log });
   }

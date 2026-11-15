@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "pipeline/map_layers.py",
-  "created_utc": "2026-11-15T00:52:28.645199+00:00",
+  "created_utc": "2026-11-15T08:32:27.198754+00:00",
   "image": "radiation.png",
   "image_path": "data/layers/radiation.png",
   "numeric_file": "layers/radiation.f32",
@@ -59,27 +59,36 @@
   },
   "bounds": [
     [
-      -4.8501483297557,
-      137.33994154226008
+      -4.819106416816768,
+      137.37216439753908
     ],
     [
-      -4.769844250631072,
-      137.42007691533613
+      -4.802235811958653,
+      137.38920370844576
     ]
   ],
-  "width_px": 1900,
-  "height_px": 1904,
-  "pixels_per_cell": 4,
+  "window": {
+    "col0": 191,
+    "row0": 192,
+    "cols": 101,
+    "rows": 100
+  },
+  "width_px": 1010,
+  "height_px": 1000,
+  "pixels_per_cell": 10,
   "pixel_origin": "northwest",
   "sample_position": "cell_center",
-  "sampling": "GeoMapper raster_to_matrix: nearest neighbour at the centre of every console cell",
-  "smoothing": "bilinear between cell centres, then coloured",
+  "sampling": "GeoMapper raster_to_matrix: nearest neighbour at the centre of every cell",
+  "smoothing": "none: GeoMapper sampled 10 x 10 sub-cells per console cell",
   "nodata": "transparent where the map has no data",
   "units": "mSv/day",
   "source": {
     "path": "backend\\routes\\radiation\\radiation_background_msv_per_day.tif",
     "band": 1,
+    "column": null,
     "crs": "PROJCS[\"unknown\",GEOGCS[\"unknown\",DATUM[\"unknown\",SPHEROID[\"unknown\",3396190,0]],PRIMEM[\"Reference meridian\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Equirectangular\"],PARAMETER[\"latitude_of_origin\",-4.8106],PARAMETER[\"central_meridian\",137.3807],PARAMETER[\"standard_parallel_1\",-4.8106],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]",
+    "resolution_m": 1.0,
+    "search_radius_m": null,
     "note": "A* backend (backend/radiation.py): spatially uniform GCR background after Hassler et al. 2014, on the A* run's 1 km local grid. Make it with: .venv/Scripts/python -m backend.radiation"
   },
   "legend": [

@@ -148,7 +148,7 @@ function wire() {
     const p = { lon: e.latlng.lng, lat: e.latlng.lat }, T = ttbAt(model, p, 'penalized'), sl = slopeAt(model, p);
     // values of the switched-on map layers, read from their value grids
     const shown = model.layers.filter((ly) => ly.id !== 'slope' && $(`#ly-maps input[data-layer="${CSS.escape(ly.id)}"]`)?.checked);
-    const extra = shown.map((ly) => { const v = layerValueAt(model, ly, p); return v == null ? '' : ` · ${ly.name.toLowerCase()} ${+v.toPrecision(3)}${ly.units ? ` ${ly.units}` : ''}`; }).join('');
+    const extra = shown.map((ly) => { const v = layerValueAt(model, ly, p); return v == null ? '' : ` · ${ly.name.split(/[,(]/)[0].trim().toLowerCase()} ${+v.toPrecision(3)}${ly.units ? ` ${ly.units}` : ''}`; }).join('');
     ro.textContent = `${p.lon.toFixed(4)}°E  ${Math.abs(p.lat).toFixed(4)}°${p.lat < 0 ? 'S' : 'N'}` + (sl != null ? ` · slope ${sl.toFixed(1)}°` : '') +
       (T == null ? '' : Number.isFinite(T) ? ` · ${R(T)} min to habitat` : ' · no way home') + extra;
   });

@@ -119,11 +119,20 @@ def main() -> int:
         for path in ix["layers"]:
             m = json.loads((DATA.parent / path).read_text(encoding="utf-8"))
             ppc = m.get("pixels_per_cell", 1)
-            b_ok = all(abs(a - b) < 1e-9 for pa, pb in zip(m["bounds"], grid.bounds) for a, b in zip(pa, pb))
+            w = m.get("window")
+            if w:  # a detail picture: its bounds must be the edges of its window of console cells
+                cs = grid.cell_size_m
+                want = [[(grid.y0 - (w["row0"] + w["rows"]) * cs) / tg.M_PER_DEG, (grid.x0 + w["col0"] * cs) / tg.M_PER_DEG],
+                        [(grid.y0 - w["row0"] * cs) / tg.M_PER_DEG, (grid.x0 + (w["col0"] + w["cols"]) * cs) / tg.M_PER_DEG]]
+                cells_x, cells_y = w["cols"], w["rows"]
+            else:
+                want, cells_x, cells_y = grid.bounds, grid.columns, grid.rows
+            b_ok = all(abs(a - b) < 1e-9 for pa, pb in zip(m["bounds"], want) for a, b in zip(pa, pb))
             num = m.get("numeric_file")
             n_ok = True if not num else (DATA / num).stat().st_size == grid.columns * grid.rows * 4
-            check(m["grid_id"] == grid.grid_id and b_ok and m["width_px"] == grid.columns * ppc and m["height_px"] == grid.rows * ppc and n_ok,
-                  f"layer {m['layer']['id']}: grid_id, bounds, {m['width_px']} x {m['height_px']} px and value grid fit the console grid")
+            check(m["grid_id"] == grid.grid_id and b_ok and m["width_px"] == cells_x * ppc and m["height_px"] == cells_y * ppc and n_ok,
+                  f"layer {m['layer']['id']}: grid_id, bounds{' (window ' + str(w['cols']) + ' x ' + str(w['rows']) + ' cells)' if w else ''}, "
+                  f"{m['width_px']} x {m['height_px']} px and value grid fit the console grid")
     else:
         check(False, "layers/index.json missing; run pipeline/map_layers.py")
 

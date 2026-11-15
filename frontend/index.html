@@ -200,16 +200,17 @@
         </section>
         <section class="ad-sec" aria-label="New map">
           <h3>New map</h3>
-          <p class="cap">A georeferenced GeoTIFF in any Mars CRS. GeoMapper samples it at every cell of the console grid; it then appears under Map layers, on the tablet (key 4) and in the readout.</p>
+          <p class="cap">A GeoTIFF in any Mars CRS, or a CSV with latitude and longitude columns (also JMARS exports); each further number column of a CSV becomes its own layer. GeoMapper places it on the console grid; it then appears under Map layers, on the tablet (key 4) and in the readout.</p>
           <div id="ad-map-form">
-            <label class="ad-f"><span>GeoTIFF</span><input type="file" id="ad-file" accept=".tif,.tiff,image/tiff"></label>
+            <label class="ad-f"><span>GeoTIFF or CSV</span><input type="file" id="ad-file" accept=".tif,.tiff,.csv,image/tiff,text/csv"></label>
+            <label class="ad-f" id="ad-radius-row" hidden><span>CSV search radius, m (empty: twice the point spacing)</span><input id="ad-radius" inputmode="decimal" placeholder="auto"></label>
             <div class="ad-two">
               <label class="ad-f"><span>Name</span><input id="ad-map-name" maxlength="80" placeholder="e.g. Thermal inertia"></label>
               <label class="ad-f"><span>Units</span><input id="ad-map-units" maxlength="20" placeholder="e.g. TIU"></label>
             </div>
             <button type="button" class="btn btn-go" id="ad-map-add">Add map</button>
           </div>
-          <p class="cap" id="ad-map-off">Maps need GeoMapper (Python): run the console with <code>npm run dev</code>, or put the GeoTIFF into <code>data/layers/</code> and run <code>pipeline/map_layers.py</code>.</p>
+          <p class="cap" id="ad-map-off">Maps need GeoMapper (Python): run the console with <code>npm run dev</code>, or put the GeoTIFF or CSV into <code>data/layers/</code> and run <code>pipeline/map_layers.py</code>.</p>
           <h4>Maps in data/layers</h4>
           <ul class="ad-list" id="ad-layers"></ul>
         </section>

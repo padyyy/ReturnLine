@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "generator": "pipeline/map_layers.py",
+  "created_utc": "2026-11-15T08:32:21.490243+00:00",
+  "image": "ortho_25cm.png",
+  "image_path": "data/layers/ortho_25cm.png",
+  "numeric_file": "layers/ortho_25cm.f32",
+  "grid_file": "../grid.json",
+  "grid_id": "mars-eqc-76ee605d6394f17a713f",
+  "grid": {
+    "grid_id": "mars-eqc-76ee605d6394f17a713f",
+    "projection": "mars_eqc",
+    "mars_radius_m": 3396190.0,
+    "lat_ts": 0,
+    "lon_0": 0,
+    "origin_m": {
+      "x": 8140783.492786024,
+      "y": -282731.075189438
+    },
+    "cell_m": 10.0,
+    "nx": 475,
+    "ny": 476,
+    "row_order": "north_to_south",
+    "bounds": [
+      [
+        -4.8501483297557,
+        137.33994154226008
+      ],
+      [
+        -4.769844250631072,
+        137.42007691533613
+      ]
+    ],
+    "coordinate_order": "lon,lat",
+    "bounds_order": "[[south,west],[north,east]]",
+    "index_formula": "row * nx + column",
+    "sample_position": "cell_center",
+    "binary_order": "row-major",
+    "byte_order": "little-endian",
+    "nodata_json": null,
+    "files": {
+      "ttb_penalized": "ttb_penalized.f32",
+      "ttb_allowed": "ttb_allowed.f32",
+      "ptr_penalized": "ptr_penalized.i32",
+      "ptr_allowed": "ptr_allowed.i32",
+      "elev": "elev_10m.f32",
+      "slope": "slope_10m.f32"
+    },
+    "source": {
+      "source": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/MSL_Gale_DEM_Mosaic_1m_v3.tif",
+      "level_m": 4.0,
+      "nodata": -32767.0,
+      "reused_from": "elev_10m.f32 of the previous full run"
+    },
+    "placeholder": false,
+    "placeholder_inputs": [
+      "zones"
+    ]
+  },
+  "bounds": [
+    [
+      -4.819106416816768,
+      137.37233310358766
+    ],
+    [
+      -4.802235811958653,
+      137.38920370844576
+    ]
+  ],
+  "window": {
+    "col0": 192,
+    "row0": 192,
+    "cols": 100,
+    "rows": 100
+  },
+  "width_px": 1600,
+  "height_px": 1600,
+  "pixels_per_cell": 16,
+  "pixel_origin": "northwest",
+  "sample_position": "cell_center",
+  "sampling": "GeoMapper raster_to_matrix: nearest neighbour at the centre of every cell",
+  "smoothing": "none: GeoMapper sampled 16 x 16 sub-cells per console cell",
+  "nodata": "transparent where the map has no data",
+  "units": null,
+  "source": {
+    "path": "data\\gale_orthophoto_25cm_1km_lat-4.8106_lon137.3807.tif",
+    "band": 1,
+    "column": null,
+    "crs": "ESRI:103885",
+    "resolution_m": 0.25,
+    "search_radius_m": null,
+    "note": "Branch newData: 4000 x 4000 px at 0.25 m, Mars equirectangular (USGS MSL Gale orthophoto mosaic)"
+  },
+  "legend": [
+    {
+      "label": "0",
+      "rgba": [
+        0,
+        0,
+        0,
+        255
+      ]
+    },
+    {
+      "label": "255",
+      "rgba": [
+        255,
+        255,
+        255,
+        255
+      ]
+    }
+  ],
+  "value_range": [
+    8.0,
+    227.0
+  ],
+  "covered_cells": 10000,
+  "missing_cells": 216100,
+  "covered_box_cells": {
+    "col": [
+      192,
+      291
+    ],
+    "row": [
+      192,
+      291
+    ]
+  },
+  "layer": {
+    "id": "ortho_25cm",
+    "name": "Orthophoto 25 cm (1 km around the base)",
+    "priority": 15,
+    "opacity": 1,
+    "visible": false
+  },
+  "use": "display only; read values from the .f32 grid, never from the picture"
+}
