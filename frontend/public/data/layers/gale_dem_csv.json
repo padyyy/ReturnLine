@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "pipeline/map_layers.py",
-  "created_utc": "2026-11-15T09:35:27.747023+00:00",
+  "created_utc": "2026-11-15T10:06:38.653062+00:00",
   "image": "gale_dem_csv.png",
   "image_path": "data/layers/gale_dem_csv.png",
   "numeric_file": "layers/gale_dem_csv.f32",

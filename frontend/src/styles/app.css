@@ -159,3 +159,10 @@
 .np-rm.is-armed, .tg-rm.is-armed { color: #fff; background: #C8361F; border-color: #C8361F; }
 .np-rm:disabled, .tg-rm:disabled { opacity: .7; cursor: progress; }
 .tg-head .tg-rm { margin-left: auto; flex: none; align-self: flex-start; height: 32px; padding: 0 11px; font-size: 13px; gap: 6px; }
+
+/* verdict: GO with constraints (a protected-zone entry, PRODUCT.md), blue as planetary protection */
+.v-cons { font: 700 13px/1.2 var(--f-text); color: var(--blue); margin: -2px 0 4px; letter-spacing: .02em; text-transform: uppercase; }
+.v-status.blue { color: var(--blue); }
+b.blue { color: var(--blue); }
+.seg button:disabled { opacity: .4; cursor: default; }
+.hab-lbl { font-weight: 700; }

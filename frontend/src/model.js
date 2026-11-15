@@ -158,6 +158,18 @@ export function gridBounds(g) {
   const { nx, ny, cell, x0, y0 } = geo(g);
   return [[(y0 - ny * cell) / M_PER_DEG, x0 / M_PER_DEG], [y0 / M_PER_DEG, (x0 + nx * cell) / M_PER_DEG]]; // [[s, w], [n, e]]
 }
+// The habitat's footprint, fixed at 10 x 10 m: its cell of the console grid (the cell the time to base
+// counts from). Without the grid a 10 m square around it. { w, e, n, s } in degrees.
+export function habitatBox(model) {
+  const g = model.grid, h = model.habitat;
+  const i = g ? cellIndex(g, h) : -1;
+  if (i >= 0) {
+    const { nx, cell, x0, y0 } = geo(g), r = Math.floor(i / nx), c = i % nx;
+    return { w: (x0 + c * cell) / M_PER_DEG, e: (x0 + (c + 1) * cell) / M_PER_DEG, n: (y0 - r * cell) / M_PER_DEG, s: (y0 - (r + 1) * cell) / M_PER_DEG };
+  }
+  const dlat = 5 / M_PER_DEG, dlon = 5 / (M_PER_DEG * Math.cos(h.lat * Math.PI / 180));
+  return { w: h.lon - dlon, e: h.lon + dlon, n: h.lat + dlat, s: h.lat - dlat };
+}
 // Minutes to the habitat from p; which = 'penalized' (zones avoided) or 'allowed' (ABORT). null without grid.
 export function ttbAt(model, p, which = 'penalized') {
   const g = model.grid;

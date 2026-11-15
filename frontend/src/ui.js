@@ -10,7 +10,18 @@ const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
 
 // The plan habitat control is making: picked station, planned stay (-1 = as long as possible), test start
-export const PLAN = { n: null, stay: 30, t0: 0 };
+export const PLAN = { n: null, stay: 30, t0: 0, variant: 'safe' };
+// The two A* routes per station (routes.json): "safe" avoids the protected zones (out/ret), "fastest"
+// may cross them (fastest.out/ret). Stations without the second variant have the safe route only.
+export const VARIANT_NAME = { safe: 'Protected zones avoided', fastest: 'Fastest route' };
+const VARIANT_PHRASE = { safe: 'route that avoids the protected zones', fastest: 'fastest route' };
+function legsOf(r, variant) {
+  const fast = r.fastest && !r.fastest.same_as_safe ? r.fastest : null;
+  const use = variant === 'fastest' && fast ? 'fastest' : 'safe';
+  const pick = use === 'fastest' ? fast : r;
+  const other = !fast ? null : use === 'fastest' ? { out: r.out, ret: r.ret, name: VARIANT_NAME.safe } : { out: fast.out, ret: fast.ret, name: VARIANT_NAME.fastest };
+  return { variant: use, out: pick.out, ret: pick.ret, other, hasFast: !!fast, same: !!r.fastest?.same_as_safe };
+}
 // set by main.js: whether station s is an added target that can be removed (datatools.js canRemove)
 export const HOOKS = { canRemove: () => false };
 const rmBtn = (s, cls, txt) => `<button type="button" class="${cls}" data-rm-n="${s.n}" data-txt="${txt}" aria-label="Remove target ${s.n}, ${esc(s.name)}" title="Remove this added target">${icon('close')}<span>${txt}</span></button>`;
@@ -20,25 +31,32 @@ export function planOf(model, n) {
   const s = model.stations.find((x) => x.n === n), r = model.routes.get(n);
   if (!s) return null;
   if (!r) return { n, station: s, ok: false, noRoute: true, t0: PLAN.t0 };
-  const t0 = PLAN.t0, walk = r.out.minutes, back = r.ret.minutes, tArr = t0 + walk;
+  const lg = legsOf(r, PLAN.variant), route = { ...r, out: lg.out, ret: lg.ret };
+  const t0 = PLAN.t0, walk = lg.out.minutes, back = lg.ret.minutes, tArr = t0 + walk;
   const m = maxStay(model, back, tArr), max = m == null ? -1 : Math.floor(m);
   const inside = zoneAt(model, s);
-  const crossed = [...new Set([...zoneHits(model, r.out), ...zoneHits(model, r.ret)].map((h) => h.zone.name))];
+  const crossed = [...new Set([...zoneHits(model, lg.out), ...zoneHits(model, lg.ret)].map((h) => h.zone.name))];
   const ok = max > 0 && !inside;
   const stay = !ok ? 0 : PLAN.stay < 0 ? max : Math.min(PLAN.stay, max);
   const tLeave = tArr + stay, tHome = tLeave + back;
-  return { n, station: s, route: r, out: r.out, ret: r.ret, ok, t0, walk, back, tArr, max, stay, tLeave, tHome,
-    capped: ok && PLAN.stay > max, reserve: model.ls - tHome, inside, crossed };
+  // metres inside the boxwork protection mask, from the A* summary (planetary protection: shown and logged)
+  const protM = Math.max(lg.out.protected_m ?? 0, lg.ret.protected_m ?? 0);
+  return { n, station: s, route, out: lg.out, ret: lg.ret, ok, t0, walk, back, tArr, max, stay, tLeave, tHome,
+    capped: ok && PLAN.stay > max, reserve: model.ls - tHome, inside, crossed, protM,
+    variant: lg.variant, variantName: VARIANT_NAME[lg.variant], other: lg.other, hasFast: lg.hasFast, sameRoute: lg.same };
 }
 export function rulesOf(model, P) {
   const r = P.route, early = P.tArr + P.back, home = P.ok ? P.tHome : early;
   const ttb = Math.max(r.out.max_ttb_min ?? 0, r.ret.max_ttb_min ?? 0);
   const slope = Math.max(r.out.max_slope_deg ?? 0, r.ret.max_slope_deg ?? 0);
-  const radio = model.radio?.longest_gap_min;
+  // longest radio gap of this station's route (radio_check.json, per variant), else the overall worst
+  const rs = model.radio?.stations?.find((x) => x.station === P.n), rv = P.variant === 'fastest' ? rs?.fastest : rs;
+  const radio = rv?.out || rv?.ret ? Math.max(rv.out?.longest_gap_min ?? 0, rv.ret?.longest_gap_min ?? 0) : model.radio?.longest_gap_min ?? null;
+  const radioMax = model.sc.radio_gap_max_min ?? 5;
   return [
     { st: ttb <= 60 ? 'pass' : 'fail', l: 'Time to shelter', c: 'longest on the route · limit 60 min', v: R(ttb), u: 'min', vc: 'max', s: 'xEVA' },
     { st: slope <= model.sc.slope_block_deg ? 'pass' : 'fail', l: 'Slope, 10 m baseline', c: model.grid?.header?.files?.ridge ? `limit ${model.sc.slope_block_deg}° · ridge crossings: 0` : `limit ${model.sc.slope_block_deg}° · ridge mask pending`, v: slope.toFixed(1), u: '°', vc: 'max', s: 'DEM' },
-    { st: radio == null ? 'open' : radio <= 5 ? 'pass' : 'fail', l: 'Radio gap', c: 'longest on the route · limit 5 min', v: radio == null ? null : radio.toFixed(1), u: 'min', vc: radio == null ? 'from data' : 'max', s: 'xEVA' },
+    { st: radio == null ? 'open' : radio <= radioMax ? 'pass' : 'fail', l: 'Radio gap', c: `longest on the route · limit ${radioMax} min`, v: radio == null ? null : radio.toFixed(1), u: 'min', vc: radio == null ? 'from data' : 'max', s: 'RADIO' },
     { st: home <= model.sunsetEva ? 'pass' : 'fail', l: 'Daylight', c: `home before sunset ${model.sc.sunset_lmst}`, v: lmst(model, home), u: '', vc: 'home', s: 'REMS' },
   ];
 }
@@ -65,16 +83,19 @@ export function renderVerdict(model) {
     const P = planOf(model, PLAN.n), s = P.station;
     const fail = P.noRoute ? [] : rulesOf(model, P).filter((r) => r.st === 'fail');
     const open = P.noRoute ? [] : rulesOf(model, P).filter((r) => r.st === 'open');
-    if (P.ok && !fail.length && !P.crossed.length) {
-      o += word('GO', 'go') + `<p class="v-sub">${esc(s.name)}: ${R(P.walk)} min out, ${hm(P.stay)} on station, home at ${lmst(model, P.tHome)} LMST with ${hm(P.reserve)} of life support left. ${open.length ? `${4 - open.length} of 4 rules pass; ${open.map((r) => r.l.toLowerCase()).join(', ')} still open.` : 'All four rules pass.'}</p>`;
+    const zoneM = P.noRoute ? 0 : P.protM, zoneNames = P.noRoute ? [] : P.crossed;
+    if (P.ok && !fail.length) {
+      const constrained = zoneM > 0 || zoneNames.length;
+      o += word('GO', 'go') + (constrained ? '<div class="v-cons">with constraints</div>' : '') +
+        `<p class="v-sub">${esc(s.name)} on the ${VARIANT_PHRASE[P.variant]}: ${R(P.walk)} min out, ${hm(P.stay)} on station, home at ${lmst(model, P.tHome)} LMST with ${hm(P.reserve)} of life support left. ${open.length ? `${4 - open.length} of 4 rules pass; ${open.map((r) => r.l.toLowerCase()).join(', ')} still open.` : 'All four rules pass.'}</p>` +
+        (constrained ? `<div class="v-status blue">${icon('warn')}Constraint: the route runs ${zoneM > 0 ? `${R(zoneM)} m inside the boxwork protection zone` : `through ${esc(zoneNames.join(', '))}`}${P.variant === 'safe' && zoneM > 0 ? ' (the station lies inside it)' : ''} · every entry is logged</div>` : '');
       el.className = 'verdict is-go';
     } else {
       const why = P.noRoute ? `No route to ${esc(s.name)} from the routing engine.`
         : P.inside ? `${esc(s.name)} lies inside ${esc(P.inside.name)}, a protected zone.`
         : P.back > 60 ? `The way home from ${esc(s.name)} takes ${R(P.back)} min, over the 60-minute rule.`
         : !P.ok ? `Starting at EVA hour ${hm(PLAN.t0)}, the crew could not get back from ${esc(s.name)} before ${model.ls <= model.sunsetEva ? 'life support' : 'daylight'} runs out.`
-        : P.crossed.length ? `The route enters ${esc(P.crossed.join(', '))}, a protected zone.`
-        : `${fail.map((r) => r.l).join(', ')} fails.`;
+        : `${fail[0].l} fails on the ${VARIANT_PHRASE[P.variant]}: ${fail[0].v}${fail[0].u ? ` ${fail[0].u}` : ''}, ${fail[0].c.split(' · ').pop()}.`;
       o += word('NO-GO', 'nogo') + `<p class="v-sub">${why}</p>`;
       el.className = 'verdict is-nogo';
     }
@@ -89,7 +110,10 @@ export function renderPicker(model) {
     if (P.noRoute) cap = '<b class="red">no route from the engine</b>';
     else {
       cap = `${R(P.walk)} min out · ${R(P.back)} back · ${P.ok ? `max stay ${hm(P.max)}` : P.inside ? `<b class="red">inside ${esc(P.inside.name)}</b>` : '<b class="red">cannot get home in time</b>'}`;
-      if (P.crossed.length) cap += ` · <b class="red">route enters ${esc(P.crossed.join(', '))}</b>`;
+      const nogo = rulesOf(model, P).find((x) => x.st === 'fail');
+      if (nogo) cap += ` · <b class="red">NO-GO: ${esc(nogo.l.toLowerCase())}</b>`;
+      if (P.protM > 0) cap += ` · <b class="blue">${R(P.protM)} m in protected zone</b>`;
+      else if (P.crossed.length) cap += ` · <b class="blue">route enters ${esc(P.crossed.join(', '))}</b>`;
     }
     return `<li class="np-item"><button type="button" class="np-row${on ? ' is-on' : ''}" data-n="${s.n}" aria-pressed="${on}">` +
       `<span class="badge${on ? ' done' : ''}">${s.n}</span>` +
@@ -98,6 +122,17 @@ export function renderPicker(model) {
       `${HOOKS.canRemove(s) ? rmBtn(s, 'np-rm', '') : ''}</li>`;
   }).join('');
   $$('#np-t0 button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.t0 === PLAN.t0)));
+  // route variant: both buttons always shown; the fastest one only where it differs from the safe one
+  const Pv = PLAN.n == null ? null : planOf(model, PLAN.n);
+  $$('#np-variant button').forEach((b) => {
+    const isFast = b.dataset.variant === 'fastest', can = !isFast || !Pv || Pv.hasFast;
+    b.disabled = !can;
+    b.setAttribute('aria-pressed', String(Pv ? Pv.variant === b.dataset.variant : PLAN.variant === b.dataset.variant));
+  });
+  $('#np-variant-cap').textContent = !Pv || Pv.noRoute ? 'two A* routes per station'
+    : Pv.sameRoute ? 'both are the same route here'
+    : !Pv.hasFast ? 'one route only'
+    : Pv.variant === 'fastest' ? `${R(Pv.walk)} min out · ${R(Pv.protM)} m in protected zone` : `${R(Pv.walk)} min out · ${R(Pv.protM)} m in protected zone`;
   $$('#np-stay button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.stay === PLAN.stay)));
   const P = PLAN.n == null ? null : planOf(model, PLAN.n);
   $('#btn-start').disabled = !P || !P.ok;
@@ -145,13 +180,13 @@ export function renderTarget(model, onImage) {
     const T = ttbAt(model, s, 'penalized'), zd = zoneDistance(model, s);
     const ter = terrainAt(model, s), z = s.elev_m ?? ter.z ?? vs[vs.length - 1].elev_m;
     const geo = s.elev_m == null && ter.z != null && ter.src === 'geomapper';
-    rows = row('Route length', 'habitat to the station, zones avoided', (P.out.length_m / 1000).toFixed(2), 'km', 'ROUTE') +
+    rows = row('Route length', `habitat to the station · ${VARIANT_PHRASE[P.variant]}`, (P.out.length_m / 1000).toFixed(2), 'km', 'ROUTE') +
+      row('Inside the protected zone', P.variant === 'fastest' ? 'fastest route: may cross the boxwork protection mask' : 'route that avoids it where it can (A*)', R(P.protM), 'm', 'PP') +
       row('Walk out · back', `at ${model.sc.walk_speed_kmh} km/h, Tobler slope penalty; uphill and downhill differ`, `${R(P.walk)}·${R(P.back)}`, 'min', 'TOBLER') +
       row('Climb on the way out', haveZ ? `descent ${R(dn)} m` : 'needs elevation on the route', haveZ ? `+${R(up)}` : null, 'm', 'DEM') +
       row('Steepest on the route', `10 m baseline · limit ${model.sc.slope_block_deg}°`, (P.out.max_slope_deg ?? 0).toFixed(1), '°', 'DEM') +
       row('Max stay', P.max > 0 ? 'life support or daylight left, minus the way home' : 'cannot get home in time', P.max > 0 ? hm(P.max) : null, '', 'ASSUME') +
       row('Time to base from here', 'engine grid, zones avoided', Number.isFinite(T) ? R(T) : null, 'min', 'GRID') +
-      row('Nearest protected zone', zd ? `${esc(zd.zone.name)} · route inside zones: ${R(P.out.zone_m ?? 0)} m` : 'no zones', zd ? Math.max(0, R(zd.d)) : null, 'm', 'PP') +
       row('Elevation', geo ? esc(model.dem.name.replace(/^Elevation,\s*/i, '')) : 'from the DEM, 10 m grid', z != null ? R(z) : null, 'm', geo ? 'GEOM' : 'DEM');
   }
   el.innerHTML = `<div class="tg-head"><span class="badge done">${s.n}</span><div><b>${esc(s.name)}</b><div class="cap">${esc(s.reason ?? '')}</div></div>${HOOKS.canRemove(s) ? rmBtn(s, 'btn tg-rm', 'Remove target') : ''}</div>` +

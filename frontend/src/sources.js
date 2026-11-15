@@ -14,6 +14,7 @@ export const SRC = {
   ASSUME: ['assum.', 'Labeled assumption, set by the team and listed in the Assumptions panel.'],
   TOBLER: ['Tobler', 'Tobler 1993, NCGIA Technical Report 93-1: hiking speed against slope, normalised so level ground gives the base speed; uphill and downhill differ. A terrestrial function, not validated for suited crews on Mars.'],
   EWT: ['EWT', 'About 2 km/h in NASA lunar planning (xEVA); 1.5 km/h on Mars is a labeled slowdown after Norcross et al., NASA TP-2009-214796.'],
+  RADIO: ['assum.', 'Our planning threshold, not a NASA number: after a radio loss NASA first walks back into line of sight of the habitat (xEVA 9.5). Line of sight checked along the route (pipeline/radio_check.py).'],
   PP: ['COSPAR', 'COSPAR policy for human missions to Mars and NASA NID 8715.129 (2020): the reason for protected zones. Still to be checked against the primary texts.'],
 };
-export const src = (k) => srcChip(SRC[k][0], SRC[k][1], k === 'ASSUME');
+export const src = (k) => srcChip(SRC[k][0], SRC[k][1], k === 'ASSUME' || k === 'RADIO');

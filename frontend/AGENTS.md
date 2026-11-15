@@ -70,3 +70,9 @@
 - `route-duration.md`: Format, Formeln, Quellen, Ereignisse, Prüfbefehle und Grenzen. `examples/route-duration.mjs`: Beispiel auf echten Routen mit Szenario-Grundgeschwindigkeit.
 - `../shared/walking-model-vectors.json`: 18 Modellreferenzen für 10 m und 22,36 m; keine beschlossene Engine-Umstellung.
 - `npm test`: Kern-, Track-Adapter-, Offline-Prüfskript- und Referenzvektortests mit Node-Testläufer, ohne neue Abhängigkeiten.
+- Seit 15.11.2026 (Nachmittag):
+  - Rückkehr-Stufen nur noch als Band entlang der gezeigten Route (`src/corridor.js`): jede Zelle bis 70 m neben der Route in Grün, Gelb oder Rot nach Regel B, zur Seite hin ausgeblendet. Keine Fläche über das ganze Raster mehr. Auf dem Tablet nur in der Karte „Plain“; das HUD zeigt die Stufe weiter am Ring.
+  - Die 60-Minuten-Linie umrandet keine gesperrten Hangstücke mehr (`contour(..., { reachableOnly: true })`).
+  - Das Habitat ist eine feste Fläche von 10 × 10 m: seine Zelle im Konsolen-Raster (`habitatBox()` in `src/model.js`), maßstäblich auf Basiskarte, Tablet und HUD.
+  - Zwei A*-Routen je Station (`routes.json`: `out`/`ret` meiden die Schutzzonen, `fastest` darf sie queren). In der Planung wählbar unter „Route“; die andere Variante erscheint blass zum Vergleich. Stationen, bei denen beide gleich sind, zeigen „Fastest“ ausgegraut.
+  - Bewertung nach PRODUCT.md: Nur die vier Regeln sagen NO-GO. Eine Route durch die Schutzmaske ist „GO with constraints“ (blau, protokolliert). Die Funkregel liest `radio_check.json` je Station und Variante, Grenze `radio_gap_max_min` aus `scenario.json`.

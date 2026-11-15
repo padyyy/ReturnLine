@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "generator": "pipeline/map_layers.py",
+  "created_utc": "2026-11-15T10:06:41.305800+00:00",
+  "image": "names.png",
+  "image_path": "data/layers/names.png",
+  "numeric_file": "layers/names.f32",
+  "grid_file": "../grid.json",
+  "grid_id": "mars-eqc-76ee605d6394f17a713f",
+  "grid": {
+    "grid_id": "mars-eqc-76ee605d6394f17a713f",
+    "projection": "mars_eqc",
+    "mars_radius_m": 3396190.0,
+    "lat_ts": 0,
+    "lon_0": 0,
+    "origin_m": {
+      "x": 8140783.492786024,
+      "y": -282731.075189438
+    },
+    "cell_m": 10.0,
+    "nx": 475,
+    "ny": 476,
+    "row_order": "north_to_south",
+    "bounds": [
+      [
+        -4.8501483297557,
+        137.33994154226008
+      ],
+      [
+        -4.769844250631072,
+        137.42007691533613
+      ]
+    ],
+    "coordinate_order": "lon,lat",
+    "bounds_order": "[[south,west],[north,east]]",
+    "index_formula": "row * nx + column",
+    "sample_position": "cell_center",
+    "binary_order": "row-major",
+    "byte_order": "little-endian",
+    "nodata_json": null,
+    "files": {
+      "ttb_penalized": "ttb_penalized.f32",
+      "ttb_allowed": "ttb_allowed.f32",
+      "ptr_penalized": "ptr_penalized.i32",
+      "ptr_allowed": "ptr_allowed.i32",
+      "elev": "elev_10m.f32",
+      "slope": "slope_10m.f32"
+    },
+    "source": {
+      "mapped_by": "GeoMapper (backend/geoMapper)",
+      "sources": [
+        {
+          "source": "data/gale_dem_1000x1000_current.csv",
+          "label": "Gale DEM CSV, 1 m points (branch newData)",
+          "cells": 10201,
+          "method": "GeoMapper csv_to_matrices, nearest point",
+          "resolution_m": 1.0
+        },
+        {
+          "source": "data/raw/gale_dem_4m.tif",
+          "label": "USGS Gale DEM mosaic, 4 m level (pipeline/fetch_sources.py)",
+          "cells": 215899,
+          "method": "GeoMapper raster_to_matrix, nearest pixel",
+          "resolution_m": 4.0
+        }
+      ],
+      "level_m": 1.0,
+      "reused_from": "elev_10m.f32 of the previous full run"
+    },
+    "placeholder": false,
+    "placeholder_inputs": []
+  },
+  "bounds": [
+    [
+      -4.814382647456497,
+      137.3790813455309
+    ],
+    [
+      -4.802910636152978,
+      137.38481735118265
+    ]
+  ],
+  "window": {
+    "col0": 232,
+    "row0": 196,
+    "cols": 34,
+    "rows": 68
+  },
+  "width_px": 544,
+  "height_px": 1088,
+  "pixels_per_cell": 16,
+  "pixel_origin": "northwest",
+  "sample_position": "cell_center",
+  "sampling": "GeoMapper raster_to_matrix: nearest neighbour at the centre of every cell",
+  "smoothing": "none: GeoMapper sampled 16 x 16 sub-cells per console cell",
+  "nodata": "transparent where the map has no data",
+  "units": null,
+  "source": {
+    "path": "data\\layers\\names.tif",
+    "band": 1,
+    "column": null,
+    "crs": "PROJCS[\"unknown\",GEOGCS[\"unknown\",DATUM[\"unknown\",SPHEROID[\"unknown\",3396190,0]],PRIMEM[\"Reference meridian\",0],UNIT[\"degree\",0.0174532925199433,AUTHORITY[\"EPSG\",\"9122\"]]],PROJECTION[\"Equirectangular\"],PARAMETER[\"latitude_of_origin\",-4.8106],PARAMETER[\"central_meridian\",137.3807],PARAMETER[\"standard_parallel_1\",-4.8106],PARAMETER[\"false_easting\",0],PARAMETER[\"false_northing\",0],UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]],AXIS[\"Easting\",EAST],AXIS[\"Northing\",NORTH]]",
+    "resolution_m": 0.25,
+    "search_radius_m": null,
+    "note": "added in the console (boxwork_local_names_points_1000m_center137.3807_-4.8106.tif)"
+  },
+  "legend": [
+    {
+      "label": "15",
+      "rgba": [
+        237,
+        240,
+        230,
+        255
+      ]
+    },
+    {
+      "label": "255",
+      "rgba": [
+        43,
+        45,
+        47,
+        255
+      ]
+    }
+  ],
+  "value_range": [
+    15.0,
+    255.0
+  ],
+  "covered_cells": 78,
+  "missing_cells": 226022,
+  "covered_box_cells": {
+    "col": [
+      232,
+      265
+    ],
+    "row": [
+      196,
+      263
+    ]
+  },
+  "layer": {
+    "id": "names",
+    "name": "Names",
+    "priority": 20,
+    "opacity": 0.6,
+    "visible": false,
+    "role": null
+  },
+  "detail": null,
+  "use": "display only; read values from the .f32 grid, never from the picture"
+}

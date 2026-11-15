@@ -2,7 +2,8 @@
 // the forearm tablet's navigation map (canvas, heading up, crew arrow fixed) and the helmet HUD (SVG,
 // compass ring with a minimap). Everything comes from the engine's grid and tracks and from a view
 // object built by nav.js or rehearsal.js; nothing is searched here.
-import { M_PER_DEG, onTrack, distM } from './model.js';
+import { M_PER_DEG, onTrack, distM, habitatBox } from './model.js';
+import { corridorCanvas } from './corridor.js';
 import { contour } from './contour.js';
 import { LS, navView } from './layerstate.js';
 
@@ -35,24 +36,6 @@ export function trackBearing(track, tt) {
 // ---------- grid helpers: return stages (rule B) and contour lines, cached ----------
 const cellLL = (g, r, c) => ({ lon: (g.header.origin_m.x + (c + 0.5) * g.header.cell_m) / M_PER_DEG, lat: (g.header.origin_m.y - (r + 0.5) * g.header.cell_m) / M_PER_DEG });
 const gridBox = (g) => { const h = g.header; return { w: h.origin_m.x / M_PER_DEG, n: h.origin_m.y / M_PER_DEG, e: (h.origin_m.x + h.nx * h.cell_m) / M_PER_DEG, s: (h.origin_m.y - h.ny * h.cell_m) / M_PER_DEG }; };
-let stageMemo = { key: '', cv: null };
-function stageCanvas(model, L, f, which, caution) {
-  const g = model.grid;
-  const key = `${L.toFixed(1)}|${f}|${which}`;
-  if (stageMemo.key === key) return stageMemo.cv;
-  const { nx, ny } = g.header;
-  const T = which === 'allowed' ? g.ttbAllowed : g.ttbPenalized;
-  const cv = stageMemo.cv || document.createElement('canvas');
-  cv.width = nx; cv.height = ny;
-  const ctx = cv.getContext('2d'), img = ctx.createImageData(nx, ny);
-  for (let i = 0; i < nx * ny; i++) {
-    const spare = L - T[i] * f;
-    img.data.set(!(spare >= 0) ? STAGE.red.px : spare < caution ? STAGE.yellow.px : STAGE.green.px, i * 4);
-  }
-  ctx.putImageData(img, 0, 0);
-  stageMemo = { key, cv };
-  return cv;
-}
 const lineMemo = new Map();
 export function gridLines(model, which, level, f = 1) {   // contour lines of a time grid, in lon/lat
   const g = model.grid;
@@ -60,7 +43,7 @@ export function gridLines(model, which, level, f = 1) {   // contour lines of a 
   const key = `${which}|${level.toFixed(2)}|${f}`;
   if (!lineMemo.has(key)) {
     const T = which === 'allowed' ? g.ttbAllowed : g.ttbPenalized;
-    lineMemo.set(key, contour(T, g.header.nx, g.header.ny, level, f).map((ln) => ln.map(([r, c]) => cellLL(g, r, c))));
+    lineMemo.set(key, contour(T, g.header.nx, g.header.ny, level, f, { reachableOnly: true }).map((ln) => ln.map(([r, c]) => cellLL(g, r, c))));
     if (lineMemo.size > 40) lineMemo.delete(lineMemo.keys().next().value);
   }
   return lineMemo.get(key);
@@ -117,19 +100,16 @@ export function drawNavMap(canvas, model, v, o, onReady) {
       if (im) { ctx.globalAlpha = LS.opacity[part.id] ?? part.meta.layer?.opacity ?? 0.6; ctx.drawImage(im, ...rect(box(part.meta.bounds))); ctx.globalAlpha = 1; }
     }
   }
-  // return stages (rule B): green = 15+ min spare, yellow = under 15 min, red = cannot get home in time
+  // return stages (rule B) along the route, fading away from it; on the Plain map only (the others show
+  // the ground). green = 15+ min spare, yellow = under 15 min, red = cannot get home in time
   ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   const g = model.grid;
-  if (g && !v.home) {
-    if (v.allRed) { ctx.fillStyle = STAGE.red.tint; ctx.fillRect(-1e4, -1e4, 2e4, 2e4); }
-    else {
-      ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(stageCanvas(model, v.L, v.f, v.which, v.caution), ...rect(gridBox(g)));
-      const stroke = (lines, wpx, col, halo) => lines.forEach((ln) => { const P = path(ln); if (halo) { ctx.lineWidth = (wpx + 3) / s; ctx.strokeStyle = 'rgba(237,240,230,.85)'; ctx.stroke(P); } ctx.lineWidth = wpx / s; ctx.strokeStyle = col; ctx.stroke(P); });
-      ctx.setLineDash([7 / s, 5 / s]); stroke(gridLines(model, 'penalized', 60, 1), 1.6, 'rgba(43,45,47,.7)'); ctx.setLineDash([]);
-      stroke(gridLines(model, v.which, v.L, v.f), 3, STAGE.red.c, true);
-      if (v.L > v.caution) stroke(gridLines(model, v.which, v.L - v.caution, v.f), 2.4, STAGE.green.c, true);
-    }
+  if (g && !v.home && navView(model, o.base).id === 'plain') {
+    const cv = corridorCanvas(model, v.corridor || [v.track, v.outFaded], { L: v.allRed ? -1 : v.L, f: v.f, which: v.which, caution: v.caution });
+    if (cv) { ctx.imageSmoothingEnabled = true; ctx.drawImage(cv, ...rect(gridBox(g))); }
+    ctx.setLineDash([7 / s, 5 / s]);
+    for (const ln of gridLines(model, 'penalized', 60, 1)) { ctx.lineWidth = 1.6 / s; ctx.strokeStyle = 'rgba(43,45,47,.7)'; ctx.stroke(path(ln)); }
+    ctx.setLineDash([]);
   }
   // protected zones
   const pat = hatch(ctx);
@@ -156,6 +136,10 @@ export function drawNavMap(canvas, model, v, o, onReady) {
       line([...vs.filter((q) => q.t_min <= v.tt), p], '#80878B', 5, false);
     }
   }
+  const hb = habitatBox(model), hside = Math.max(6 / s, (hb.e - hb.w) * M_PER_DEG * Math.cos(model.habitat.lat * Math.PI / 180));
+  const hc = F.xy({ lon: (hb.w + hb.e) / 2, lat: (hb.n + hb.s) / 2 });
+  ctx.fillStyle = '#2B2D2F'; ctx.strokeStyle = '#EDF0E6'; ctx.lineWidth = 2 / s;
+  ctx.fillRect(hc[0] - hside / 2, hc[1] - hside / 2, hside, hside); ctx.strokeRect(hc[0] - hside / 2, hc[1] - hside / 2, hside, hside);
   ctx.restore();
   // markers and labels, upright in screen space
   ctx.font = '700 13px "Atkinson Hyperlegible Next", sans-serif'; ctx.lineJoin = 'round';
@@ -168,9 +152,7 @@ export function drawNavMap(canvas, model, v, o, onReady) {
     if (!clash) text(`${z.name} · protected`, q[0], ly, '#2459A8', 'center');
   }
   const hq = scr(model.habitat);
-  ctx.fillStyle = '#2B2D2F'; ctx.strokeStyle = '#EDF0E6'; ctx.lineWidth = 2;
-  ctx.fillRect(hq[0] - 9, hq[1] - 9, 18, 18); ctx.strokeRect(hq[0] - 9, hq[1] - 9, 18, 18);
-  text('Habitat', hq[0] + 15, hq[1] + 5, '#2B2D2F');
+  text('Habitat', hq[0] + Math.max(10, 7 * s) + 6, hq[1] + 5, '#2B2D2F');
   for (const sn of model.stations) {
     const q = scr(sn), on = v.targetN === sn.n, r = on ? 14 : 10;
     ctx.beginPath(); ctx.arc(q[0], q[1], r, 0, Math.PI * 2);
@@ -229,7 +211,7 @@ export function hudSvg(model, v, words) {
     const vv = rel(q), inside = Math.hypot(vv[0], vv[1]) < r - 16;
     const pt = inside ? [c + vv[0], c + vv[1]] : polar(bearing(p, q) - b, r);
     const [x, y] = pt.map(f1);
-    if (kind === 'base') return `<rect x="${f1(pt[0] - 9)}" y="${f1(pt[1] - 9)}" width="18" height="18" fill="#2B2D2F" stroke="#EDF0E6" stroke-width="2"/><text x="${x}" y="${f1(pt[1] + 4.5)}" text-anchor="middle" font-size="11" font-weight="800" fill="#EDF0E6">H</text>`;
+    if (kind === 'base') { const hs = inside ? Math.max(8, 10 * k) : 12; return `<rect x="${f1(pt[0] - hs / 2)}" y="${f1(pt[1] - hs / 2)}" width="${f1(hs)}" height="${f1(hs)}" fill="#2B2D2F" stroke="#EDF0E6" stroke-width="2" transform="rotate(${(-b * 180 / Math.PI).toFixed(1)} ${x} ${y})"/>`; }
     return `<circle cx="${x}" cy="${y}" r="11" fill="#2459A8" stroke="#EDF0E6" stroke-width="2"/><text x="${x}" y="${f1(pt[1] + 4.5)}" text-anchor="middle" font-size="12" font-weight="800" fill="#EDF0E6">${lbl}</text>`;
   };
   if (!v.home && v.target.kind === 'stn') o.push(marker(v.target, 'stn', v.target.n));

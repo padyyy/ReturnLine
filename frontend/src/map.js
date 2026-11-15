@@ -1,6 +1,7 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { gridBounds, M_PER_DEG } from './model.js';
+import { gridBounds, habitatBox, M_PER_DEG } from './model.js';
+import { corridorCanvas } from './corridor.js';
 import { contour } from './contour.js';
 
 const MARS_RADIUS_M = 3396190;
@@ -108,8 +109,10 @@ export function createMap(el, data, model, { onStation } = {}) {
     poly.bindTooltip(`${z.name} · protected`, { permanent: true, direction: left ? 'left' : 'right', className: 'map-lbl zone-lbl', offset: [left ? -10 : 10, 0] });
   });
 
-  const habIcon = L.divIcon({ className: 'mk', html: '<span class="mk-hab"></span><span class="mk-lbl">Habitat</span>', iconSize: [16, 16], iconAnchor: [8, 8] });
-  L.marker(ll(model.habitat), { icon: habIcon, keyboard: false }).addTo(layers.markers);
+  // the habitat: a fixed 10 x 10 m footprint (its grid cell), drawn to scale, with its name beside it
+  const hb = habitatBox(model);
+  L.rectangle([[hb.s, hb.w], [hb.n, hb.e]], { color: '#EDF0E6', weight: 1.6, fillColor: '#2B2D2F', fillOpacity: 1, renderer: svg, interactive: false, className: 'hab-box' }).addTo(layers.markers);
+  L.tooltip({ permanent: true, direction: 'right', className: 'map-lbl hab-lbl', offset: [6, 0], interactive: false }).setLatLng([(hb.s + hb.n) / 2, hb.e]).setContent('Habitat · 10 × 10 m').addTo(layers.markers);
 
   const stationMarkers = new Map();
   function stationIcon(s, state) {
@@ -129,19 +132,18 @@ export function createMap(el, data, model, { onStation } = {}) {
   // the point a new target is being picked at (Add data panel)
   let pickMarker = null;
 
-  // ---------- return area from the time-to-base grid (rule B) ----------
+  // ---------- return stages along the route (rule B), fading away from it (corridor.js) ----------
   const g = model.grid;
-  let areaImg = null, areaKey = '', areaLines = null;
-  const canvas = g ? Object.assign(document.createElement('canvas'), { width: g.header.nx, height: g.header.ny }) : null;
+  let areaImg = null, areaKey = '';
   const toLatLng = ([r, c]) => {
     const h = g.header;
     return L.latLng((h.origin_m.y - (r + 0.5) * h.cell_m) / M_PER_DEG, (h.origin_m.x + (c + 0.5) * h.cell_m) / M_PER_DEG);
   };
   const lineLayer = (lines, style) => L.polyline(lines.map((ln) => ln.map(toLatLng)), { renderer: svg, interactive: false, ...style });
   const eastmost = (lines) => { let best = null; for (const ln of lines) if (ln.length > 20) for (const q of ln) if (!best || q[1] > best[1]) best = q; return best; };
-  let sixtyLbl = null, areaLbl = null;
+  let sixtyLbl = null;
   if (g) { // the fixed 60-minute line (normal walking speed, zones avoided)
-    const sixty = contour(g.ttbPenalized, g.header.nx, g.header.ny, 60);
+    const sixty = contour(g.ttbPenalized, g.header.nx, g.header.ny, 60, 1, { reachableOnly: true });
     L.layerGroup([
       lineLayer(sixty, { color: '#EDF0E6', weight: 5, opacity: 0.85 }),
       lineLayer(sixty, { color: '#2B2D2F', weight: 2, dashArray: '7 5' }),
@@ -149,37 +151,20 @@ export function createMap(el, data, model, { onStation } = {}) {
     const e = eastmost(sixty);
     if (e) sixtyLbl = L.tooltip({ permanent: true, direction: 'right', className: 'map-lbl', offset: [8, 0], interactive: false }).setLatLng(toLatLng(e)).setContent('60-minute line').addTo(layers.area);
   }
-  function setArea({ L: lim, f = 1, which = 'penalized' }) {
+  // tracks: the ways shown (out, back, ABORT, reroute); no tracks, no stages
+  function setArea({ L: lim, f = 1, which = 'penalized', tracks = [] }) {
     if (!g) return;
-    const key = `${lim.toFixed(1)}|${f}|${which}`;
+    const o = { L: lim, f, which, caution: model.sc.caution_margin_min ?? 15 };
+    const cv = corridorCanvas(model, tracks, o);
+    const key = cv ? canvasKey(tracks, o) : '';
     if (key === areaKey) return;
     areaKey = key;
-    const { nx, ny } = g.header;
-    const T = which === 'allowed' ? g.ttbAllowed : g.ttbPenalized;
-    const ctx = canvas.getContext('2d');
-    const img = ctx.createImageData(nx, ny);
-    for (let i = 0; i < nx * ny; i++) {
-      const v = T[i] * f, o = i * 4;
-      if (v <= lim) { img.data[o] = 31; img.data[o + 1] = 107; img.data[o + 2] = 69; img.data[o + 3] = 46; }   // green: home in time
-      else if (T[i] <= 60) { img.data[o] = 237; img.data[o + 1] = 240; img.data[o + 2] = 230; img.data[o + 3] = 105; } // pale: lost to life support or injury
-    }
-    ctx.putImageData(img, 0, 0);
-    const url = canvas.toDataURL();
+    if (!cv) { if (areaImg) { layers.area.removeLayer(areaImg); areaImg = null; } return; }
+    const url = cv.toDataURL();
     if (areaImg) areaImg.setUrl(url);
     else areaImg = L.imageOverlay(url, gridBounds(g), { pane: 'area', interactive: false, className: 'area-img' }).addTo(layers.area);
-    if (areaLines) layers.area.removeLayer(areaLines);
-    const edge = contour(T, nx, ny, lim, f);
-    const halo = lineLayer(edge, { color: '#EDF0E6', weight: 5.5, opacity: 0.85 });
-    const line = lineLayer(edge, { color: '#1F6B45', weight: 2.6 });
-    areaLines = L.layerGroup([halo, line]).addTo(layers.area);
-    // label the return area where it leaves the 60-minute line; when both coincide, say so once
-    const same = lim >= 60 && f === 1 && which === 'penalized';
-    if (sixtyLbl) sixtyLbl.setContent(same ? 'Return area = 60-minute line' : '60-minute line');
-    if (areaLbl) { layers.area.removeLayer(areaLbl); areaLbl = null; }
-    const e = same ? null : eastmost(edge);
-    if (e) areaLbl = L.tooltip({ permanent: true, direction: 'right', className: 'map-lbl area-lbl', offset: [8, 14], interactive: false }).setLatLng(toLatLng(e)).setContent(`Return area · ${Math.round(lim)} min${f > 1 ? ', injured' : ''}`).addTo(layers.area);
-    if (map.hasLayer(line)) { line.bringToBack(); halo.bringToBack(); } // under routes, zones and the 60-minute line
   }
+  const canvasKey = (tracks, o) => `${tracks.filter(Boolean).map((t) => `${t.vertices.length}:${t.minutes.toFixed(2)}:${t.vertices[0].lat.toFixed(6)}`).join('|')}|${o.L.toFixed(1)}|${o.f}|${o.which}`;
 
   // ---------- 100 m survey grid (switch in the header) ----------
   // Lines at whole 100 m of the projected Mars grid (eqc, as the DEM), so they fall on the edges of
@@ -244,13 +229,14 @@ export function createMap(el, data, model, { onStation } = {}) {
     setArea,
     setGrid,
     invalidate() { map.invalidateSize({ pan: false }); },
-    showRoutes(route, { ret = false, preview = false, faded = false, abort = null, drift = null, reroute = null, rerouteLabel = null, ring = null, rings = [], candidates = [], callouts = [], label = null } = {}) {
+    showRoutes(route, { ret = false, preview = false, faded = false, abort = null, drift = null, reroute = null, rerouteLabel = null, ring = null, rings = [], candidates = [], callouts = [], label = null, alt = null, altLabel = null } = {}) {
       const all = ring ? [ring, ...rings] : rings;
-      const key = route ? [route.station, ret, preview, faded, abort?.minutes.toFixed(3), drift?.vertices.length, reroute?.minutes.toFixed(3), rerouteLabel, all.map((q) => q.lat.toFixed(6)).join(','), candidates.map((c) => c.label).join(','), callouts.map((c) => c.text).join(','), label].join('|') : '';
+      const key = route ? [route.station, route.out.minutes.toFixed(3), ret, preview, faded, abort?.minutes.toFixed(3), drift?.vertices.length, reroute?.minutes.toFixed(3), rerouteLabel, all.map((q) => q.lat.toFixed(6)).join(','), candidates.map((c) => c.label).join(','), callouts.map((c) => c.text).join(','), label, altLabel].join('|') : '';
       if (key === routeKey) return;
       routeKey = key;
       layers.routes.clearLayers();
       if (!route) return;
+      if (alt) { drawTrack(alt, 'faded'); if (altLabel) { const v = alt.vertices; pill(ll(v[Math.round(v.length * 0.35)]), altLabel, 'ink', 'left'); } }
       drawTrack(route.out, preview ? 'preview' : faded ? 'dim' : 'plan');
       if (label) { const v = route.out.vertices; pill(ll(v[Math.round(v.length * 0.55)]), label, 'ink'); }
       if (ret) drawTrack(route.ret, faded ? 'dim' : reroute ? 'faded' : 'plan');

@@ -116,7 +116,7 @@ function renderUi(model, v, o) {
   const views = navViews(model), nv = navView(model, o.base), k = views.findIndex((c) => c.id === nv.id);
   $('#nv-mapname').innerHTML = `<b>Map ${k + 1}/${views.length} · ${esc(nv.label)}</b>${nv.parts.length > 1 ? `<small>${esc(nv.detail)}</small>` : ''}`;
   $('#nv-mapname').title = `${nv.label} · ${nv.detail}. Key 4 switches the map; the Layers menu sets which maps and their order.`;
-  $('#nv-legend').innerHTML = '<b>Home in time from there, now?</b>' +
+  $('#nv-legend').innerHTML = '<b>Home in time from there, now?</b><span class="cap">Along the route, fading away from it; on the Plain map (key 4)</span>' +
     `<div><i style="background:${STAGE.green.tint};border-color:${STAGE.green.c}"></i>Yes, ${v.caution}+ min to spare</div>` +
     `<div><i style="background:${STAGE.yellow.tint};border-color:${STAGE.yellow.c}"></i>Yes, under ${v.caution} min to spare</div>` +
     `<div><i style="background:${STAGE.red.tint};border-color:${STAGE.red.c}"></i>No: ABORT if the crew is here</div>` +

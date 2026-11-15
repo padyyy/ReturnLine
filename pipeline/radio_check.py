@@ -155,6 +155,9 @@ def main() -> None:
         for leg in ("out", "ret"):
             entry[leg] = check_leg(ter, hab, s[leg], args.habitat_antenna, args.crew_antenna)
             overall = max(overall, entry[leg]["longest_gap_min"])
+        if s.get("fastest"):   # the fastest variant (may cross protected zones), checked the same way
+            entry["fastest"] = {leg: check_leg(ter, hab, s["fastest"][leg], args.habitat_antenna, args.crew_antenna) for leg in ("out", "ret")}
+            overall = max(overall, *(entry["fastest"][leg]["longest_gap_min"] for leg in ("out", "ret")))
         stations.append(entry)
 
     out = {
@@ -165,7 +168,7 @@ def main() -> None:
         "habitat": list(hab),
         "habitat_antenna_m": args.habitat_antenna, "crew_antenna_m": args.crew_antenna,
         "assumptions": ["habitat_antenna_m", "crew_antenna_m"],
-        "limits": "10 m terrain averaged from the 4 m DEM level smooths 1-2 m ridges away, so the check can be optimistic; "
+        "limits": "10 m terrain (one GeoMapper sample per cell) smooths 1-2 m ridges away, so the check can be optimistic; "
                   "only the planned routes are checked, not the scripted drift or the ABORT way; no relays",
         "longest_gap_min": round(overall, 2),
         "stations": stations,

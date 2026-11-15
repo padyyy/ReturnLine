@@ -62,7 +62,7 @@ function navView() {
   const s = P.station;
   return {
     t, pos, hd: NAV.hd, track, tt, homeward: ph === 'ret' || home, home, at,
-    outFaded: ph === 'ret' ? P.out : null,
+    outFaded: ph === 'ret' ? P.out : null, corridor: [P.out, P.ret],
     target: ph === 'ret' || home ? { kind: 'base', n: 'H', name: 'Habitat', ...model.habitat } : { kind: 'stn', n: s.n, name: s.name, lon: s.lon, lat: s.lat },
     targetN: s.n, stage: home ? 'green' : stageOf(spare, caution), spare, caution,
     L: lim.L, f: 1, which: 'penalized', lim, ttb: T,

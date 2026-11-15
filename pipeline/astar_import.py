@@ -46,6 +46,10 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "frontend" / "public" / "data"
 ROUTES = ROOT / "backend" / "routes" / "science_routes"
+# Michael's two A* variants per target (backend/protected_routes.py): the best route that avoids the
+# protected zones (boxwork protection mask) and the fastest one that may cross them
+VARIANTS = ROOT / "backend" / "routes" / "protected_comparison"
+VARIANT_DIRS = {"safe": "avoid_protected", "fastest": "allow_protected"}
 POINTS = ROOT / "data" / "points" / "points.json"
 sys.path.insert(0, str(ROOT / "pipeline"))
 sys.path.insert(0, str(ROOT))
@@ -182,13 +186,33 @@ def main(argv: list[str] | None = None) -> int:
     routes = [r for r in summary["routes"] if r["summary"].get("status") == "found"]
     skipped = [r["id"] for r in summary["routes"] if r["summary"].get("status") != "found"]
 
-    paths = {}
-    for r in routes:
-        xy = json.loads((ROUTES / r["id"] / "path_xy.json").read_text(encoding="utf-8"))
+    def to_lonlat(xy, r):
         pts = [(lon360(lo), la) for lo, la in (grid.lonlat_center(int(x), int(y)) for x, y in xy)]
         pts[0] = (base["lon"], base["lat"])                               # exactly the base and the target
         pts[-1] = tuple(r["summary"]["goal_lonlat"])
-        paths[r["id"]] = pts
+        return pts
+
+    paths, variants = {}, {}
+    for r in routes:
+        paths[r["id"]] = to_lonlat(json.loads((ROUTES / r["id"] / "path_xy.json").read_text(encoding="utf-8")), r)
+        vdir = VARIANTS / r["id"]
+        if not all((vdir / d / "path_xy.json").exists() for d in VARIANT_DIRS.values()):
+            continue
+        vg = json.loads((vdir / "grid.json").read_text(encoding="utf-8"))
+        if any(abs(vg[k] - gdef[k]) > 1e-9 for k in ("reference_latitude", "reference_longitude", "cell_size_m")) or \
+                (vg["columns"], vg["rows"]) != (gdef["columns"], gdef["rows"]):
+            print(f"{r['id']}: protected_comparison uses another grid; variants skipped", file=sys.stderr)
+            continue
+        variants[r["id"]] = {}
+        for key, d in VARIANT_DIRS.items():
+            s = json.loads((vdir / d / "summary.json").read_text(encoding="utf-8"))
+            if s.get("status") != "found":
+                continue
+            variants[r["id"]][key] = {"pts": to_lonlat(json.loads((vdir / d / "path_xy.json").read_text(encoding="utf-8")), r),
+                                      "protected_m": s.get("protected_distance_m"), "a_star_m": s.get("length_m"),
+                                      "xy": json.loads((vdir / d / "path_xy.json").read_text(encoding="utf-8"))}
+        if "safe" in variants[r["id"]]:
+            paths[r["id"]] = variants[r["id"]]["safe"]["pts"]               # the plan's route: zones avoided
 
     # 0. placeholder drill sites clear of the plan
     if a.place_zones:
@@ -317,23 +341,44 @@ def main(argv: list[str] | None = None) -> int:
         out_routes.append({"station": n, "point_id": q["id"], "router": "backend/astar.py on the console grid", "out": out_t, "ret": ret_t})
         report.append(f"station {n} {q.get('name', q['id'])} (added): GeoMapper cell {cxy}, {out_t['length_m']:.0f} m, "
                       f"out {out_t['minutes']:.1f} min, back {ret_t['minutes']:.1f} min, in zones {out_t['zone_m']:.0f} m")
-    for r in routes:
-        pts = paths[r["id"]]
+    def thin(pts):
         keep, acc = [pts[0]], 0.0                                          # about every 5 m, ends kept
         for k in range(1, len(pts) - 1):
             acc += dist_m(pts[k - 1], pts[k])
             if acc >= 5.0:
                 keep.append(pts[k]); acc = 0.0
         keep.append(pts[-1])
-        out_t, ret_t = track(keep), track(keep[::-1])
-        out_routes.append({"station": n_of[r["id"]], "astar_id": r["id"], "out": out_t, "ret": ret_t})
+        return keep
+
+    def legs(pts, protected_m):
+        keep = thin(pts)
+        o, b = track(keep), track(keep[::-1])
+        for leg in (o, b):
+            leg["protected_m"] = None if protected_m is None else round(float(protected_m), 1)
+        return o, b
+
+    for r in routes:
+        v = variants.get(r["id"], {})
+        out_t, ret_t = legs(paths[r["id"]], v.get("safe", {}).get("protected_m"))
+        entry = {"station": n_of[r["id"]], "astar_id": r["id"], "variant": "safe" if v else "single", "out": out_t, "ret": ret_t}
+        if "fastest" in v:
+            fo, fr = legs(v["fastest"]["pts"], v["fastest"]["protected_m"])
+            entry["fastest"] = {"out": fo, "ret": fr, "same_as_safe": v["fastest"]["xy"] == v.get("safe", {}).get("xy")}
+        out_routes.append(entry)
         report.append(f"station {n_of[r['id']]} {r['name']}: {out_t['length_m']:.0f} m (A* {r['summary']['length_m']:.0f} m), "
                       f"out {out_t['minutes']:.1f} min, back {ret_t['minutes']:.1f} min, max slope {out_t['max_slope_deg']} deg, "
-                      f"max time to base {out_t['max_ttb_min']} min, in zones {out_t['zone_m']:.0f} m")
+                      f"max time to base {out_t['max_ttb_min']} min, protected {out_t['protected_m']} m")
+        if "fastest" in entry:
+            f = entry["fastest"]
+            report.append(f"   fastest{' (same path)' if f['same_as_safe'] else ''}: {f['out']['length_m']:.0f} m, out {f['out']['minutes']:.1f} min, "
+                          f"back {f['ret']['minutes']:.1f} min, max slope {f['out']['max_slope_deg']} deg, protected {f['out']['protected_m']} m")
     write_json(DATA / "routes.json", {
-        "note": "Routes of the A* routing (backend/science_routes.py) on GeoMapper's local metric grid, converted to lon/lat "
-                "with LocalMetricGrid; walking times from the Tobler model on the 10 m grid (A* costs are demo units)",
-        "generator": "pipeline/astar_import.py", "source": "backend/routes/science_routes", "date": date.today().isoformat(),
+        "note": "Routes of the A* routing on GeoMapper's local metric grid, converted to lon/lat with LocalMetricGrid; walking "
+                "times from the Tobler model on the 10 m grid (A* costs are demo units). out/ret: the route that avoids the "
+                "protected zones (backend/protected_routes.py, avoid_protected); fastest: the one that may cross them "
+                "(allow_protected). protected_m: metres inside the boxwork protection mask, from the A* summary.",
+        "generator": "pipeline/astar_import.py", "source": "backend/routes/protected_comparison (else backend/routes/science_routes)",
+        "date": date.today().isoformat(),
         "stations": sorted(out_routes, key=lambda x: x["station"])})
     print("\n".join(report))
     if skipped:

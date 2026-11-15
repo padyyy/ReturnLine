@@ -8,13 +8,16 @@ const CASES = {
   8: [['L', 'T']], 9: [['T', 'B']], 11: [['T', 'R']], 12: [['L', 'R']], 13: [['B', 'R']], 14: [['L', 'B']],
 };
 
-export function contour(values, nx, ny, level, scale = 1) {
-  const val = (r, c) => { const v = values[r * nx + c] * scale; return Number.isFinite(v) ? v : 1e9; };
+// reachableOnly: squares touching a cell without a finite value (blocked ground) get no line, so the
+// line marks the real limit instead of outlining every blocked patch
+export function contour(values, nx, ny, level, scale = 1, { reachableOnly = false } = {}) {
+  const val = (r, c) => { const v = values[r * nx + c] * scale; return Number.isFinite(v) ? v : reachableOnly ? NaN : 1e9; };
   const t = (p, q) => (q === p ? 0.5 : (level - p) / (q - p));
   const segs = [];
   for (let r = 0; r < ny - 1; r++) {
     for (let c = 0; c < nx - 1; c++) {
       const a = val(r, c), b = val(r, c + 1), cc = val(r + 1, c + 1), d = val(r + 1, c);
+      if (reachableOnly && !(a === a && b === b && cc === cc && d === d)) continue;   // NaN: blocked corner
       const idx = (a > level ? 8 : 0) | (b > level ? 4 : 0) | (cc > level ? 2 : 0) | (d > level ? 1 : 0);
       if (idx === 0 || idx === 15) continue;
       const P = {

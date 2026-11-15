@@ -20,10 +20,14 @@ let mapApi;
 
 // ---------- planning: the base map and the panels ----------
 function renderPlanMap() {
-  mapApi.setArea({ L: limitsAt(model, PLAN.t0).L, f: 1, which: 'penalized' });
   const P = PLAN.n == null ? null : planOf(model, PLAN.n);
   const has = P && !P.noRoute;
-  mapApi.showRoutes(has ? P.route : null, { preview: true, label: has ? `Route to ${P.station.name} · ${R(P.walk)} min out, ${R(P.back)} back` : null });
+  mapApi.setArea({ L: limitsAt(model, PLAN.t0).L, f: 1, which: 'penalized', tracks: has ? [P.out, P.ret] : [] });
+  const alt = has ? P.other : null;   // the other route variant, faded, for comparison
+  mapApi.showRoutes(has ? P.route : null, {
+    preview: true, label: has ? `${P.variantName} · ${R(P.walk)} min out, ${R(P.back)} back` : null,
+    alt: alt?.out ?? null, altLabel: alt ? `${alt.name} · ${R(alt.out.minutes)} min out` : null,
+  });
   mapApi.setCrew(null);
   model.stations.forEach((s) => mapApi.setStation(s.n, s.n === PLAN.n ? 'target' : ''));
 }
@@ -171,6 +175,7 @@ function wire() {
   $('#navpick-list').addEventListener('click', (e) => { const b = e.target.closest('.np-row'); if (b) pick(+b.dataset.n); });
   $('#np-stay').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; PLAN.stay = +b.dataset.stay; renderPlan(); });
   $('#np-t0').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; PLAN.t0 = +b.dataset.t0; renderPlan(); });
+  $('#np-variant').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || b.disabled) return; PLAN.variant = b.dataset.variant; renderPlan(); });
   $('#btn-start').addEventListener('click', startRoute);
   $('#btn-sim').addEventListener('click', startSim);
   $('#tg-side').addEventListener('click', () => { applyPanel('side', !st.side); relayout(); });

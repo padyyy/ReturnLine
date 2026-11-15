@@ -78,7 +78,8 @@ function walked(track, tt) {
 }
 function renderMap() {
   const model = SIM.model, api = SIM.mapApi, r = route(model), F = SIM.F, b = st.beat;
-  api.setArea({ L: limits(model).L, f: walkFactor(), which: st.abortAt != null ? 'allowed' : 'penalized' });
+  api.setArea({ L: limits(model).L, f: walkFactor(), which: st.abortAt != null ? 'allowed' : 'penalized',
+    tracks: [r?.out, r?.ret, abortTrack(model), st.rerouted ? rerouteTrack(model) : null] });
   const sp = st.drift ? script(model) : null, det = detourMin(model);
   const cand = [], callouts = [], rings = [];
   if (b >= 5 && !st.abort && F.protTrack) {   // the two ways home after the injury, as habitat control weighs them
@@ -120,6 +121,7 @@ function simView() {
   const v = {
     t, pos: c.pos, hd: SIM.hd, track: leg.track, tt: leg.tt, homeward, home, at,
     outFaded: homeward && leg.kind !== 'out' ? r.out : null,
+    corridor: [r.out, r.ret, abortTrack(model), st.rerouted ? rerouteTrack(model) : null].filter(Boolean),
     target: homeward ? { kind: 'base', n: 'H', name: 'Habitat', ...model.habitat } : { kind: 'stn', n: s.n, name: s.name, lon: s.lon, lat: s.lat },
     targetN: s.n, stage: home ? 'green' : !sg ? 'green' : sg.name === 'amber' ? 'yellow' : sg.name, spare: sg?.spare ?? null, caution,
     L: lim.L, f, which, lim, ttb: Number.isFinite(T) ? T * f : null, abort: leg.kind === 'abort', abortRoute: st.abortAt != null,
@@ -153,7 +155,7 @@ let uiT = 0;
 function astro(forceUi) {
   const v = simView(), now = performance.now(), ui = forceUi || now - uiT > 200;
   if (ui) uiT = now;
-  renderViews(SIM.model, v, { map: SIM.view === 'nav', hud: SIM.view === 'hud', ui, zoomI: 1, base: SIM.model.ortho ? 'ortho' : 'plain', small: false, onReady: () => astro(true) });
+  renderViews(SIM.model, v, { map: SIM.view === 'nav', hud: SIM.view === 'hud', ui, zoomI: 1, base: 'plain', small: false, onReady: () => astro(true) });
 }
 
 // ---------- story strip, habitat control's decision, time budget, log, summary ----------
