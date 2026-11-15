@@ -91,7 +91,7 @@ Preserve the evidence.
    - Liefert das Datenteam bis dahin, sind seine Daten gemergt und die Geschichte ist neu geprüft (`frontend/scripts/find-scenario.mjs`).
    - GitHub Pages zeigt den aktuellen Stand.
    - Solange Platzhalterdaten im Spiel sind, steht oben „Placeholder data“. Das bleibt im Bild; wir verstecken es nicht.
-2. **Browser:** Chrome, Vollbild (F11), Zoom 100 %, Fenster 1920 × 1080 oder größer. https://padyyy.github.io/ReturnLine/ öffnen und warten, bis Karte und Rückkehrbereich geladen sind. Den Mauszeiger an den Bildrand schieben.
+2. **Browser:** Chrome, Vollbild (F11), Zoom 100 %, Fenster 1920 × 1080 oder größer. https://padyyy.github.io/ReturnLine/ öffnen und warten, bis Karte und Rückkehrbereich geladen sind. Den Mauszeiger an den Bildrand schieben. Den Untertitelstreifen ausgeklappt lassen (Knopf ganz rechts im Streifen), sonst verschieben sich die Ausschnitte.
 3. **Aufnahme:** mit OBS Studio (Bildschirmaufnahme, 30 fps) oder mit Win + Alt + R (Xbox Game Bar, nimmt das aktive Fenster auf).
 4. **Lauf:** In der Zielliste die Station mit dem Hinweis „Plays the six beats“ wählen (derzeit Station 1), dann **Start**. Danach nichts mehr anklicken; die Demo klickt die Knöpfe von habitat control selbst. Zwei vollständige Läufe aufnehmen. Neu laden setzt die Demo zurück.
 5. **Sprechertext:** getrennt aufnehmen, mit Headset in einem ruhigen Raum. Gut geht das direkt in Clipchamp oder mit dem Handy. Sprecher: ⟨wer⟩.
