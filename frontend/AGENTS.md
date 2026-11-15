@@ -50,7 +50,7 @@
 - `npm install`, dann `npm run dev` (Entwicklung), `npm run build` (nach `dist/`), `npm run preview` (Build ansehen, Port 4173), `npm run data:placeholder` (Platzhalterdaten neu schreiben).
 - Echte Dateien kommen nach `public/data/` (gleiche Namen wie im Datenvertrag) und haben Vorrang vor den Platzhaltern. Der Platzhalter-Ordner bleibt, bis alle Dateien echt sind.
 - Das Orthofoto liegt im Repo (`public/maps/ortho_gale_1m.jpg` und `.json`, Entscheidung vom 14.11.2026). Neu erzeugen nur bei geändertem Ausschnitt mit `../pipeline/ortho_overlay.py` (siehe `../pipeline/README.md`). Fehlt es, zeigt die Karte einen Hinweis statt eines Fehlers.
-- Deployment: Jeder Push auf `main` baut und veröffentlicht die App auf GitHub Pages (`../.github/workflows/deploy-pages.yml`, Node 22, `npm ci`, `npm run build`).
+- Deployment: Jeder Push auf den Deploy-Branch `navigation-view-/-hud` (Teamentscheidung 15.11.2026) oder auf `main` baut und veröffentlicht die App auf GitHub Pages; der letzte Push gewinnt (`../.github/workflows/deploy-pages.yml`, Node 22, `npm ci`, `npm run build`).
 
 ## Umsetzung
 - Lies vor der Implementierung `../docs/architecture.md` und `../shared/data-contract.md`.
