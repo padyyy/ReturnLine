@@ -1,5 +1,7 @@
 # Mission scenario
 
+> **Note (2026-11-15, evening):** this document describes the rehearsal as first built, now kept in the branch `alternative-gui` (drift, reroute, ABORT through a protected site, override logged). The console on `main` follows the same six steps on its own data without drift and without an override; see `docs/project-page.md` and `frontend/AGENTS.md`.
+
 What ReturnLine shows and how the demo runs. Agreed by the team on 2026-11-13 (concept merge and council verdict). Full background: `docs/preparation/preparations.md` and the German decision papers `docs/preparation/konzeptabgleich-returnline.md` and `docs/preparation/council-urteil-prototyp.md` (also as PDFs).
 
 **ReturnLine** – "Explore Mars. Return Safely. Preserve the Evidence."
@@ -59,7 +61,7 @@ Read-only inset in the console, five values: next target, time to base, reserve 
 **Team decisions of 2026-11-14:**
 - Every action is controlled from the habitat only. Starting a route, rerouting, starting the return and every GO, TERMINATE or ABORT is a click of habitat control; the crew displays stay read-only.
 - The forearm cuff skin is a fixed feature, no longer after feature freeze.
-- Built as well: a navigation view (the forearm tablet: heading-up map, data sheet with the elevation profile, four hardware keys) and a helmet HUD (compass with base and target at their bearing, return-stage colour and word, EVA time, time to sunset, dose, life support, up to three warnings). Draft: `design/navigation-hud-sketch.html` (Alex, branch `navigation-view-/-hud`).
+- Built as well: a navigation view (the forearm tablet: heading-up map, data sheet with the elevation profile, four hardware keys) and a helmet HUD (compass with base and target at their bearing, return-stage colour and word, EVA time, time to sunset, dose, life support, up to three warnings). Draft: `design/navigation-hud-sketch.html` (Alex). Built on `main` since 2026-11-15.
 - The amber return stage (`#D9A300`, under 15 min to spare) stays for now, although DESIGN.md keeps yellow out of status colours. Revisit if time allows.
 - The cuff's hardware keys (data, zoom, base map) only change the crew's own view.
 - The demo starts only after habitat control picks a target in the picker and presses Start (as in the navigation sketch); the EVA goes habitat → target station → habitat. Where navigation view and HUD appear per beat: `demo-script.md`.

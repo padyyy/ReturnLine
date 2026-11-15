@@ -1,5 +1,7 @@
 # Demo script: six beats, one rehearsed EVA
 
+> **Note (2026-11-15, evening):** this document describes the rehearsal as first built, now kept in the branch `alternative-gui` (drift, reroute, ABORT through a protected site, override logged). The console on `main` follows the same six steps on its own data without drift and without an override; see `docs/project-page.md` and `frontend/AGENTS.md`.
+
 Draft of 2026-11-14 for Alex and Patrick to check; Paul derives the Kanban issues from it. Story and rules: `mission-scenario.md`. Look, wording and every state on screen: `design/habitat-console-sketch.html` (console) and `design/navigation-hud-sketch.html` (target picker, cuff tablet, helmet HUD). Both use synthetic numbers, so none of them may be reused here. What the frontend reads: `../shared/data-contract.md`.
 
 **Team decisions of 2026-11-14:**

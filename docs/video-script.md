@@ -1,5 +1,7 @@
 # Videoskript: 30-Sekunden-Demo
 
+> **Hinweis (15.11.2026, abends):** Dieses Skript beschreibt die Konsole im Branch `alternative-gui`. Die Konsole auf `main` erzählt die sechs Schritte auf eigenen Daten, ohne Abdrift und ohne Override; siehe `docs/project-page.md`.
+
 Für die Aufnahme am Sonntag, 15.11.2026, bis 13:00 Uhr. Verantwortlich: Alex (Präsentation, siehe `docs/roles.md`). Sprechertext und Untertitel sind Englisch, alles andere ist Deutsch. Die Untertitel liegen auch als Datei bei: `docs/video/returnline-30s.en.srt`.
 
 ## Regeln aus dem Project Submission Guide 2026

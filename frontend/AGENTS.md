@@ -4,7 +4,7 @@
 - Statische Web-App mit Vite 7.3.7 und Leaflet 1.9.4, kein UI-Framework, GitHub Pages. Sprache: JavaScript (Entscheidung des Tech Leads am 14.11.2026).
 - Eine Seite: die Habitat-Konsole mit eingebettetem, schreibgeschütztem Crew-Display. Inhalt und Demo-Drehbuch: `../docs/mission-scenario.md` und `../docs/demo-script.md`, Datenformate: `../shared/data-contract.md`, Design: `../DESIGN.md` und `../docs/preparation/design-brief.md`.
 - Design-Sketch (14.11.2026, alle sechs Beats, synthetische Daten): `../docs/design/habitat-console-sketch.html`. Vorlage für Layout, Zustände und Wortlaut. Markup und CSS wurden übernommen, der synthetische Datengenerator und die Routensuche im Browser nicht.
-- Stand 15.11.2026: Aussehen und Abläufe 1:1 nach Alex' Navigations-Sketch `../docs/design/navigation-hud-sketch.html` (Branch `navigation-view-/-hud`), auf den echten Dateien. Drei Modi auf einer Seite:
+- Stand 15.11.2026: Aussehen und Abläufe 1:1 nach Alex' Navigations-Sketch `../docs/design/navigation-hud-sketch.html` (früher Branch `navigation-view-/-hud`, seit 15.11.2026 abends `main`), auf den echten Dateien. Die frühere Konsole (Feldbuch-Design, Sechs-Beat-Demo mit Override auf Platzhalter-Layout) liegt im Branch `alternative-gui`. Drei Modi auf einer Seite:
   - **Planung:** Karte mit Rückkehrbereich, Zielwahl (Liste oder Klick auf die Station), geplanter Aufenthalt (0:15 bis Max), Test-Startstunde, GO/NO-GO, vier Regeln, Infozeilen, Stationsdetails mit Orthofoto-Ausschnitt, Planbalken. Griffe am Kartenrand klappen Seitenpanel und Zeitleiste weg (nur Karte).
   - **Navigation** („Start route“, jede Station): Unterarm-Tablet mit Navigationskarte (Gehrichtung oben, vier Hardware-Tasten, Tasten 1–4 und Leertaste), Helm-HUD oben rechts, Datenblatt unten rechts (Taste 1 tauscht). Die Crew hält den Plan: Hinweg, geplanter Aufenthalt, dann Rückweg von selbst.
   - **Notfallprobe** („Simulate emergency“): die sechs Beats für die Szenario-Station als Story-Streifen unter der Karte, Schritt für Schritt („Next step“, „Back“, Auto-play); rechts die Crew-Ansicht des Schritts (HUD, Navigator, Datenblatt), das Logbuch und am Ende die Zusammenfassung.
@@ -52,7 +52,7 @@
 - `npm install`, dann `npm run dev` (Entwicklung), `npm run build` (nach `dist/`), `npm run preview` (Build ansehen, Port 4173), `npm run data:placeholder` (Platzhalterdaten neu schreiben).
 - Echte Dateien kommen nach `public/data/` (gleiche Namen wie im Datenvertrag) und haben Vorrang vor den Platzhaltern. Der Platzhalter-Ordner bleibt, bis alle Dateien echt sind.
 - Das Orthofoto liegt im Repo (`public/maps/ortho_gale_1m.jpg` und `.json`, Entscheidung vom 14.11.2026). Neu erzeugen nur bei geändertem Ausschnitt mit `../pipeline/ortho_overlay.py` (siehe `../pipeline/README.md`). Fehlt es, zeigt die Karte einen Hinweis statt eines Fehlers.
-- Deployment: Jeder Push auf den Deploy-Branch `navigation-view-/-hud` (Teamentscheidung 15.11.2026) oder auf `main` baut und veröffentlicht die App auf GitHub Pages; der letzte Push gewinnt (`../.github/workflows/deploy-pages.yml`, Node 22, `npm ci`, `npm run build`).
+- Deployment: Jeder Push auf `main` baut und veröffentlicht die App auf GitHub Pages; `alternative-gui` wird nicht veröffentlicht (`../.github/workflows/deploy-pages.yml`, Node 22, `npm ci`, `npm run build`).
 
 ## Umsetzung
 - Lies vor der Implementierung `../docs/architecture.md` und `../shared/data-contract.md`.

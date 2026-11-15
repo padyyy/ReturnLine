@@ -2,9 +2,13 @@
 
 **Explore Mars. Return Safely. Preserve the Evidence.**
 
-ReturnLine plans and rehearses one crewed EVA (Marswalk) to the boxwork ridges at Mount Sharp in Gale crater on Mars. For every 10 m of the site it shows whether the crew can still get home in time, under four hard safety rules, protected zones for planetary protection and 4–5 science stops along Curiosity's traverse.
+ReturnLine plans and rehearses one crewed EVA (Marswalk) to the boxwork ridges at Mount Sharp in Gale crater on Mars. For every 10 m of the site it shows whether the crew can still get home in time, under four safety rules (three can say NO-GO, a long radio gap warns), a protected zone for planetary protection and four science stations along Curiosity's traverse.
 
 Team "Houston, we have a map" · NASA Space Apps Challenge 2026, challenge "Interplanetary Survival Guide: Martian Map" · Local event Heilbronn.
+
+## Alternative GUI
+
+This branch, `main`, holds the submitted console (the mission-control design with the navigation view and the step-by-step rehearsal). An alternative GUI is kept in the branch [`alternative-gui`](https://github.com/padyyy/ReturnLine/tree/alternative-gui): the earlier field-book console (yellow header band, crew display inside the map, six-beat demo with subtitles). It plays the full override story (drift, reroute, injury, ABORT through a protected site, override logged), but on a placeholder layout of stations and zones, and it has the REMS air temperature row, Curiosity's drill holes and the radio-gap rings on the map. To run it: `git checkout alternative-gui`, then `cd frontend && npm install && npm run dev`. It is not deployed.
 
 ## Repository
 
@@ -94,4 +98,4 @@ Details: `pipeline/README.md` and `frontend/AGENTS.md`.
 
 ## Deployment
 
-Every push to the deploy branch `navigation-view-/-hud` (team decision 2026-11-15) or to `main` builds `frontend/` and publishes it to GitHub Pages (`.github/workflows/deploy-pages.yml`), at https://padyyy.github.io/ReturnLine/. The last push wins. One-time repo setting: Settings > Pages > Build and deployment > Source: GitHub Actions. The workflow can also be started by hand under Actions.
+Every push to `main` builds `frontend/` and publishes it to GitHub Pages (`.github/workflows/deploy-pages.yml`), at https://padyyy.github.io/ReturnLine/. The branch `alternative-gui` is not deployed. One-time repo setting: Settings > Pages > Build and deployment > Source: GitHub Actions. The workflow can also be started by hand under Actions.

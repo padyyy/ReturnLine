@@ -22,6 +22,7 @@ Explore Mars. Return Safely. Preserve the Evidence.
 
 - Live demo, runs in the browser without installing anything: https://padyyy.github.io/ReturnLine/
 - Source code, data pipeline and documentation: https://github.com/padyyy/ReturnLine
+- Alternative GUI, not deployed: the earlier console in the branch `alternative-gui` (https://github.com/padyyy/ReturnLine/tree/alternative-gui). It plays the full override story on a placeholder layout of stations and zones.
 
 ## Detailed Project Description
 
@@ -196,8 +197,8 @@ Yes. We used AI tools as follows:
 - **Der Punkt „Plan review before the event“ (LLM-Council) bleibt drin.** Das Council-Urteil liegt öffentlich im Repo (`docs/preparation/council-urteil-prototyp.md`, `docs/preparation/preparations.md`), und die Antwort muss dazu passen.
 
 **Zahlen.** Nur aus den committeten Dateien in `frontend/public/data/` übernehmen.
-- Stand 15.11.2026, 14:50: Seite auf Alex' Konsole (Branch `navigation-view-/-hud`) umgestellt. Die Demo-Zahlen stammen aus deren Daten: Station 3 Valle de la Luna / Nevado Sajama, 54 m in der Schutzmaske (geplant, geloggt), Rückweg ab 14:00, Verletzung 5:06 (14:06), Heimweg 6 min bei halbem Tempo, 54 min Lebenserhaltung übrig, zu Hause 14:12 mit 48 min. Kein Override: Auf diesem Raster sind `ttb_penalized` und `ttb_allowed` in jeder Zelle gleich.
-- Das Video zeigt die alte Konsole von main (Override durch Protected site B). Video und Demo-Link müssen dasselbe zeigen, sonst neu aufnehmen.
+- Stand 15.11.2026, 14:50: Seite auf Alex' Konsole umgestellt (damals Branch `navigation-view-/-hud`, seit dem Abend `main`; die alte Konsole liegt in `alternative-gui`). Die Demo-Zahlen stammen aus deren Daten: Station 3 Valle de la Luna / Nevado Sajama, 54 m in der Schutzmaske (geplant, geloggt), Rückweg ab 14:00, Verletzung 5:06 (14:06), Heimweg 6 min bei halbem Tempo, 54 min Lebenserhaltung übrig, zu Hause 14:12 mit 48 min. Kein Override: Auf diesem Raster sind `ttb_penalized` und `ttb_allowed` in jeder Zelle gleich.
+- Das Video liegt im Repo unter `video/ReturnLine-Demo.mp4`. Für das Formular braucht es einen öffentlichen Link (z. B. YouTube), höchstens 30 s.
 - Offen: wie die Boxwork-Schutzmaske entstanden ist (Quelle eintragen).
 
 **Checkliste vor „Submit for Judging“** (Heilbronn: Checkpoint So 14:30, Abgabe So 15:45):

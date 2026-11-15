@@ -1,12 +1,11 @@
-# Builds frontend/ with Vite and publishes it to GitHub Pages on every push to the deploy branch
-# navigation-view-/-hud (team decision 2026-11-15) and to main. The last push wins, so push only
-# the branch that should be live.
+# Builds frontend/ with Vite and publishes it to GitHub Pages on every push to main.
+# The branch alternative-gui (the earlier console) is not deployed.
 # One-time repo setting: Settings > Pages > Build and deployment > Source: "GitHub Actions".
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main, 'navigation-view-/-hud']
+    branches: [main]
   workflow_dispatch:
 
 permissions:
