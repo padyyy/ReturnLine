@@ -2,7 +2,7 @@
 // subtitles, banner, summary and the assumptions panel. They read the model and the sim state only.
 import { hm, R, icon, numCell, srcChip, esc, setHTML } from './format.js';
 import { lmst, pickerRows, doseAt, zoneAt, zoneHits } from './model.js';
-import { st, route, station, crewState, limits, homeTime, scenarioStation, isScripted, zoneEvents, zoneNow, proximity, script, detourMin, rerouteTrack, warnM, injuryOptions } from './sim.js';
+import { st, route, station, crewState, limits, homeTime, scenarioStation, isScripted, zoneEvents, zoneNow, proximity, script, detourMin, rerouteTrack, warnM, injuryOptions, ruleChecks, firstViolated, radioLimit } from './sim.js';
 import { BEATS } from './beats.js';
 
 const $ = (s) => document.querySelector(s);
@@ -16,8 +16,19 @@ const SRC = {
   TOBLER: ['Tobler', 'Tobler 1993, NCGIA Technical Report 93-1: hiking speed against slope, normalised so level ground gives the base speed; uphill and downhill differ. A terrestrial function, not validated for suited crews on Mars.'],
   EWT: ['EWT', 'About 2 km/h in NASA lunar planning (xEVA); 1.5 km/h on Mars is a labeled slowdown after Norcross et al., NASA TP-2009-214796.'],
   PP: ['COSPAR', 'COSPAR policy for human missions to Mars and NASA NID 8715.129 (2020): the reason for protected zones. Still to be checked against the primary texts.'],
+  RADIO: ['assum.', 'Our planning threshold, not a NASA number. Reason: after a radio loss, NASA\'s first step is to walk back into line of sight of the habitat (xEVA §9.5), so no part of the route should be far from it.'],
 };
-const src = (k) => srcChip(SRC[k][0], SRC[k][1], k === 'ASSUME');
+const src = (k) => srcChip(SRC[k][0], SRC[k][1], k === 'ASSUME' || k === 'RADIO');
+
+// A rule's value and limit in words, for the rules panel, the verdict and beat 1
+const RULE_SRC = { shelter: 'xEVA', slope: 'xEVA', radio: 'RADIO', daylight: 'REMS' };
+function ruleValue(model, x) {
+  if (x.v == null) return null;
+  return { shelter: `${R(x.v)} min`, slope: `${x.v.toFixed(1)}°`, radio: `${x.v.toFixed(1)} min`, daylight: `home ${lmst(model, x.v)}` }[x.id];
+}
+function ruleLimit(model, x) {
+  return { shelter: 'limit 60 min', slope: `limit ${x.lim}°`, radio: `limit ${x.lim} min`, daylight: `sunset ${model.sc.sunset_lmst}` }[x.id];
+}
 
 export function renderHeader(model) {
   $('#hdr-eva').textContent = `EVA ${String(model.sc.eva_number ?? '').padStart(2, '0')}`;
@@ -43,15 +54,20 @@ export function renderPicker(model) {
     const crossed = rt ? [...zoneHits(model, rt.out), ...zoneHits(model, rt.ret)].map((h) => h.zone.name) : [];
     if (inside) stay += ` · <b class="red">inside ${esc(inside.name)}</b>`;
     else if (crossed.length) stay += ` · <b class="red">route enters ${esc([...new Set(crossed)].join(', '))}</b>`;
+    // the planner's verdict before Start: a station whose route breaks a rule is a NO-GO
+    const fail = firstViolated(model, r.n);
+    if (fail) stay += ` · <b class="red">NO-GO: ${esc(fail.l)}</b>`;
     return `<li><button type="button" class="pick-row${on ? ' is-on' : ''}" data-n="${r.n}" aria-pressed="${on}">` +
       `<span class="badge${on ? ' done' : ''}">${r.n}</span>` +
       `<span class="pick-l">${esc(r.name)}${r.n === scen ? ' <span class="pick-tag">six-beat scenario</span>' : ''}<span class="cap">back to base ${R(r.back)} min · ${stay}</span></span>` +
       `<span class="pick-v">${numCell(r.km?.toFixed(2), 'km', `${R(r.walk)} min walk`)}</span></button></li>`;
   }).join('');
   $('#btn-start').disabled = st.target == null;
-  $('#pick-note').textContent = st.target == null ? 'Choose a station first'
+  const pickFail = st.target == null ? null : firstViolated(model, st.target);
+  $('#pick-note').textContent = (st.target == null ? 'Choose a station first'
     : isScripted(model) ? `Plays the six beats · EVA clock starts at ${model.sc.eva_start_lmst} LMST`
-    : 'Navigation only: out and back, no scripted events';
+    : 'Navigation only: out and back, no scripted events') +
+    (pickFail ? ` · Planner: NO-GO, ${pickFail.l} fails; habitat control decides` : '');
 }
 
 function word(w, cls, count) {
@@ -107,14 +123,25 @@ export function renderVerdict(model) {
       const dTxt = near ? R(near.d) : R(warnM(model));
       strips.push(`<div class="constraint warn"><span class="trig">Crew ${dTxt} m from ${esc(warnZone.name)}</span>${icon('arrow')}<span class="act">${st.rerouted ? `Rerouted: +${Math.max(0, R(det ?? 0))} min` : 'Reroute around the zone'}</span></div>`);
     }
-    o += word('GO', 'go', strips.length ? `${strips.length} constraint${strips.length > 1 ? 's' : ''}` : '') +
-      `<p class="v-sub">${st.retStart == null ? `Target: ${esc(s?.name ?? '–')}. The route avoids every protected zone.` : near && !st.rerouted ? 'The crew is drifting toward a protected zone.' : 'Heading home.'}</p>` +
-      strips.join('');
+    // a rule that fires makes the planner say NO-GO with the first violated rule; the decision stays
+    // with habitat control, so a started EVA keeps running
+    const fail = firstViolated(model, st.target);
+    if (fail) {
+      o += word('NO-GO', 'nogo', esc(fail.l)) +
+        `<p class="v-sub">First rule that fails: ${esc(fail.l)}, ${ruleValue(model, fail)} against ${ruleLimit(model, fail)}. The planner recommends not to go; habitat control decides.</p>` +
+        strips.join('');
+    } else {
+      o += word('GO', 'go', strips.length ? `${strips.length} constraint${strips.length > 1 ? 's' : ''}` : '') +
+        `<p class="v-sub">${st.retStart == null ? `Target: ${esc(s?.name ?? '–')}. The route avoids every protected zone.` : near && !st.rerouted ? 'The crew is drifting toward a protected zone.' : 'Heading home.'}</p>` +
+        strips.join('');
+    }
     if (st.retStart == null && c.where === 'station') o += `<div class="v-actions"><button class="btn btn-dark" id="act-return">${icon('arrow')}Start return</button></div>`;
     if (near && !st.rerouted) o += `<div class="v-actions"><button class="btn btn-dark" id="act-reroute">${icon('arrow')}Reroute around the zone</button></div>`;
     if (st.rerouted && st.injuredAt == null) {
       const rt = rerouteTrack(model);
       o += `<div class="v-status ok">${icon('check')}Reroute sent ${lmst(model, st.rerouteAt)}${rt ? ` · home ${lmst(model, st.rerouteAt + rt.minutes)}` : ''}</div>`;
+    } else if (fail) {
+      o += `<div class="v-status red">${icon('warn')}Started by habitat control against the NO-GO · ${model.sc.eva_start_lmst} LMST</div>`;
     } else {
       o += `<div class="v-status ok">${icon('check')}GO confirmed at Start · ${model.sc.eva_start_lmst} LMST</div>`;
     }
@@ -123,24 +150,27 @@ export function renderVerdict(model) {
 }
 
 export function renderRules(model) {
-  const r = route(model) || model.routes.get(model.stations[0]?.n);
-  const home = homeTime(model);
-  const rows = [
-    { l: 'Time to shelter', c: 'max on the route · limit 60 min', v: r?.out.max_ttb_min, u: 'min', s: 'xEVA' },
-    // "ridge crossings: 0" is only true once the routing blocks ridges (ridge mask from the 1 m DEM)
-    { l: 'Slope, 10 m baseline', c: model.grid?.header?.files?.ridge ? 'limit 20° · ridge crossings: 0' : 'limit 20° · ridge mask pending', v: r?.out.max_slope_deg, u: '°', s: 'xEVA' },
-    { l: 'Radio gap', c: 'longest on the route · limit 5 min', v: model.radio?.longest_gap_min, u: 'min', s: 'xEVA' },
-    { l: 'Daylight', c: `home before sunset ${model.sc.sunset_lmst}`, v: home == null ? null : lmst(model, home), u: '', s: 'REMS', ok: home == null ? null : home <= model.sunsetEva },
-  ];
-  let known = 0;
-  $('#rules').innerHTML = rows.map((x) => {
-    const has = x.v != null;
-    if (has) known++;
-    const stat = has ? `<span class="stat pass">${icon('check')}<span class="w">pass</span></span>` : `<span class="stat info">${icon('info')}<span class="w">open</span></span>`;
-    return `<li class="row4"><span class="a">${stat}</span><span class="l">${x.l}<span class="cap">${x.c}</span></span>` +
-      `<span class="v">${numCell(has ? (typeof x.v === 'number' ? x.v.toFixed(x.u === 'min' ? 0 : 1) : x.v) : null, x.u, has ? '' : 'from data')}</span><span class="s">${src(x.s)}</span></li>`;
-  }).join('');
-  $('#rules-count').textContent = `${known} of 4 with data`;
+  const rc = ruleChecks(model);
+  // "ridge crossings: 0" is only true once the routing blocks ridges (ridge mask from the 1 m DEM)
+  const ridge = model.grid?.header?.files?.ridge;
+  const cap = (x) => ({
+    shelter: 'max on the route · limit 60 min',
+    slope: `limit ${x.lim}° · ${ridge ? 'ridge crossings: 0' : 'ridge mask pending'}`,
+    radio: `${x.scope === 'all' ? 'longest on any route' : x.scope === 'route' ? 'longest on this route' : 'longest on the route'} · limit ${x.lim} min`,
+    daylight: `home before sunset ${model.sc.sunset_lmst}`,
+  }[x.id]);
+  const cell = (x) => {
+    if (x.v == null) return numCell(null, '', 'from data');
+    if (x.id === 'daylight') return numCell(lmst(model, x.v));
+    return numCell(x.v.toFixed(x.id === 'shelter' ? 0 : 1), x.id === 'slope' ? '°' : 'min');
+  };
+  const stat = (x) => (x.ok === true ? `<span class="stat pass">${icon('check')}<span class="w">pass</span></span>`
+    : x.ok === false ? `<span class="stat fail">${icon('cross')}<span class="w">fails</span></span>`
+      : `<span class="stat info">${icon('info')}<span class="w">open</span></span>`);
+  $('#rules').innerHTML = rc.map((x) => `<li class="row4${x.ok === false ? ' is-fail' : ''}"><span class="a">${stat(x)}</span><span class="l">${x.l}<span class="cap">${cap(x)}</span></span>` +
+    `<span class="v">${cell(x)}</span><span class="s">${src(RULE_SRC[x.id])}</span></li>`).join('');
+  const known = rc.filter((x) => x.ok != null).length, fails = rc.filter((x) => x.ok === false).length;
+  $('#rules-count').textContent = `${known} of 4 with data${fails ? ` · ${fails} ${fails > 1 ? 'fail' : 'fails'}` : ''}`;
 }
 
 export function renderInfo(model) {
@@ -220,11 +250,20 @@ export function renderBudget(model) {
   document.querySelectorAll('.clock .seg button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.x === st.speedX)));
 }
 
+// Beat 1 claims that the safety rules pass: say so only for the rules that have data
+function beat1Sub(model, text) {
+  const rc = ruleChecks(model);
+  const fail = rc.find((x) => x.ok === false);
+  if (fail) return `Habitat control picks the target and plans the Marswalk. The planner says NO-GO: ${fail.l} fails.`;
+  if (rc.some((x) => x.ok == null)) return 'Habitat control picks the target and plans the Marswalk. The route avoids every protected drill site, and every safety rule with data passes.';
+  return text;
+}
+
 export function renderSubs(model) {
   const b = BEATS[st.beat - 1];
   const nav = !b && st.phase !== 'plan' && !isScripted(model);
   setHTML($('#subs-beat'), b ? `<span>Beat ${b.n}/6</span> · ${b.title}` : nav ? `<span>Navigation</span> · ${esc(station(model)?.name ?? '')}` : '<span>Planning</span>');
-  const subText = b ? b.sub
+  const subText = b ? (b.n === 1 ? beat1Sub(model, b.sub) : b.sub)
     : nav ? 'The crew walks out and back along the planned route. The scripted beats belong to the scenario station.'
     : 'Habitat control picks a target. Start begins the rehearsed Marswalk.';
   if ($('#subs-text').textContent !== subText) $('#subs-text').textContent = subText;
@@ -265,6 +304,7 @@ export function renderAssume(model) {
     { l: 'Walking speed, level ground', v: `${sc.walk_speed_kmh} km/h`, s: ['EWT'], note: 'Sets the return area and the 60-minute line (routing engine).', f: 'walk_speed_kmh' },
     { l: 'Slope penalty on walking speed', v: slope, s: ['TOBLER', 'ASSUME'], note: 'Tobler hiking function, normalised to the level-ground speed; fastest slightly downhill. Applying it to suited crews is an assumption (team decision 2026-11-14).', f: 'slope_penalty' },
     { l: 'Slope blocked above', v: `${sc.slope_block_deg}°`, s: ['xEVA'], note: `Suit design limit. Comfortable walking up to ${sc.slope_comfort_deg ?? 10}°.`, f: 'slope_block_deg' },
+    { l: 'Longest radio gap allowed', v: `${radioLimit(model)} min`, s: ['RADIO', 'xEVA'], note: 'Our planning threshold. NASA gives the procedure after a radio loss (walk back into line of sight first), not a number.', f: 'radio_gap_max_min' },
     { l: 'Walking speed when injured', v: `×${Number(sc.injury_factor).toFixed(2)}`, s: ['ASSUME'], note: 'From beat 5 on, every time home is divided by this factor.', f: 'injury_factor' },
     { l: 'Protected-zone buffer radius', v: `${sc.zone_buffer_m} m`, s: ['ASSUME', 'PP'], note: 'Zones follow planetary protection policy; the radius itself is ours.', f: 'zone_buffer_m' },
     { l: 'Planning clearance around zones', v: sc.zone_clearance_m != null ? `${sc.zone_clearance_m} m` : 'open', s: ['ASSUME'], note: 'Routes keep this distance outside the buffer where they can (soft penalty in the routing engine).', f: 'zone_clearance_m' },
@@ -275,7 +315,7 @@ export function renderAssume(model) {
     { l: 'Radiation dose rate', v: `${sc.dose_rate_msv_per_day} mSv/day`, s: ['RAD'], note: 'Information only, never a gate.', f: 'dose_rate_msv_per_day' },
   ];
   $('#assume-body').innerHTML = rows.map((a) => {
-    const kind = a.s[0] === 'ASSUME' ? 'Labeled assumption' : 'Sourced value';
+    const kind = a.s[0] === 'ASSUME' || a.s[0] === 'RADIO' ? 'Labeled assumption' : 'Sourced value';
     const cap = `${kind}${ph.has(a.f) ? ' · placeholder value for now' : ''} · ${a.note}`;
     return `<div class="as"><div class="as-top"><span class="as-l">${a.l}</span><output>${esc(a.v)}</output></div>` +
       `<div class="as-src">${a.s.map(src).join('')}<span class="cap">${esc(cap)}</span></div></div>`;
