@@ -217,7 +217,7 @@ function wire() {
   $('#btn-assume').addEventListener('click', () => { ap.hidden = !ap.hidden; $('#btn-assume').setAttribute('aria-expanded', String(!ap.hidden)); });
   $('#assume-close').addEventListener('click', () => { ap.hidden = true; $('#btn-assume').setAttribute('aria-expanded', 'false'); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { lp.hidden = true; ap.hidden = true; } });
-  // source cards: the chip label in orange, then why the value was chosen
+  // source cards: the chip label in the accent colour, then why the value was chosen
   const tip = $('#tip');
   const show = (b) => {
     tip.replaceChildren();

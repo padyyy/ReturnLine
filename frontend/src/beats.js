@@ -14,7 +14,7 @@ export function storySteps(F) {
       crew: 'The plan in numbers, as the crew walks out.' },
     { n: 2, nav: 'Time jump', title: `Time jump to EVA hour ${hm(F.jump)}`, view: 'hud',
       text: `The quiet hours are skipped. The crew works at ${F.station}. The return area still equals the fixed 60-minute line.`,
-      watch: 'On the map: the crew marker at the station. The orange line on the time bar shows the skipped hours.',
+      watch: 'On the map: the crew marker at the station. The dashed line on the time bar shows the skipped hours.',
       crew: 'The helmet HUD at the station. The ring is green: home in time.' },
     { n: 3, nav: 'The area shrinks', title: 'The return area pulls away', view: 'nav',
       text: 'The crew heads home. Less than an hour of life support is left, so life support now sets the limit: the green area shrinks.',

@@ -3,7 +3,8 @@
    Design only: no element, button or behaviour changes. Loaded after console.css and app.css.
    The crew displays keep their own light scheme where they draw on imagery or show the crew's values:
    the Leaflet map stage, the tablet map and the data sheet (light variables restored below).
-   Palette: change the block "palette" only. The logo keeps its own orange in every palette. */
+   Palette: change the block "palette" only. Orange is the warning colour only (--warn); everything that
+   was orange and is not a warning (logo, tablet arrow, compass pointer, time-jump line) takes the accent. */
 
 :root {
   --f-head: "Bahnschrift SemiCondensed", "Bahnschrift", "DIN Alternate", "Barlow Semi Condensed", "Arial Narrow", var(--f-text);
@@ -28,7 +29,8 @@
      --line-2 #3D3D3D · --ink #EDE6DC (237,230,220) · --graphite-2 #A39C92 · --graphite-3 #6E6963 · --acc #E8622C ·
      --acc-hover #F07440 · --on-acc #140A05 · --acc-tint rgba(232,98,44,.16) · --blue #7FA8F0 */
   /* ---- end of palette ---- */
-  --amber: #E8B400;
+  --warn: #F28C38;         /* orange: warnings only (radio gap, notes to check) */
+  --amber: #E8B400;        /* the yellow return stage and the crew HUD's "head home soon" */
   /* the console's own variables, dark */
   --paper: var(--panel);
   --paper-2: var(--panel-2);
@@ -40,22 +42,23 @@
   --green: #4CC27E;
   --red-tint: rgba(255, 106, 74, .12);
   --green-tint: rgba(76, 194, 126, .12);
+  --cover: var(--acc);     /* the console's former orange accent */
   --cover-tint: var(--acc-tint);
 }
 
 /* light again where the crew displays draw on imagery or show the crew's values */
-.stage, .nvmap, .nvdata {
+.stage, .nvmap {
   --paper: #FCF9F5; --paper-2: #F2EBE3; --paper-3: #E6DCD1;
   --graphite: #2B2D2F; --graphite-2: #51575B; --graphite-3: #80878B;
   --rule: rgba(43, 45, 47, .15); --rule-2: rgba(43, 45, 47, .32);
   --red: #C8361F; --blue: #2459A8; --green: #1F6B45;
   --red-tint: rgba(200, 54, 31, .09); --blue-tint: rgba(36, 89, 168, .09); --green-tint: rgba(31, 107, 69, .10);
-  --cover-tint: rgba(232, 98, 44, .10);
+  --cover-tint: var(--acc-tint);
   color: var(--graphite);   /* text inherits the light scheme's ink, not the dark page's */
 }
 
 body { background: var(--bg); color: var(--ink); }
-::selection { background: var(--acc); color: #111; }
+::selection { background: var(--acc); color: var(--on-acc); }
 :focus-visible { outline-color: var(--acc); }
 * { scrollbar-color: rgba(var(--ink-rgb), .25) transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(var(--ink-rgb), .22); }
@@ -160,8 +163,8 @@ body { background: var(--bg); color: var(--ink); }
 .verdict .v-word.nogo, .verdict .v-word.abort { background: #D23A1F; color: #FFF3EC; }
 .v-cons { color: var(--acc); font-family: var(--f-head); letter-spacing: .08em; margin: 8px 0 2px; }
 .v-sub { color: var(--ink); }
-.v-status.amber, .amber-t { color: var(--amber); }
-.stat.warn { color: var(--amber); }
+.v-status.amber, .amber-t { color: var(--warn); }
+.stat.warn { color: var(--warn); }
 .hud-warn li.amber { color: var(--amber); background: rgba(232, 180, 0, .12); border-color: var(--amber); }
 .constraint { border-color: var(--line-2); }
 
@@ -189,7 +192,7 @@ body { background: var(--bg); color: var(--ink); }
 .pic-box { background: var(--panel); color: var(--ink); border: 1px solid var(--line-2); border-radius: 0; }
 .pic-box::backdrop { background: rgba(var(--bg-rgb), .75); }
 .pic-fig { border-radius: 0; background: #000; }
-.pic-note { color: var(--amber); }
+.pic-note { color: var(--warn); }
 
 /* ---------- navigation mode: the tablet and the crew panels ---------- */
 .tablet { background: var(--bg); border: 1px solid var(--line-2); border-radius: 26px; }
@@ -222,3 +225,42 @@ body { background: var(--bg); color: var(--ink); }
 .switch input:checked + .track { background: var(--acc-tint); border-color: var(--acc); }
 .switch input:checked + .track::after { background: var(--acc); }
 .tip b { color: var(--acc); }
+
+/* ---------- data sheet (crew display): dark like the console; the stage colours stay ---------- */
+.nvdata { background: var(--panel); color: var(--ink); }
+.dt { background: var(--panel-2); border: 1px solid var(--line); border-radius: 0; }
+.dt-l, .dt-s { color: var(--graphite-2); }
+.dv-hero .dt { background: var(--bg); color: var(--ink); border-color: var(--line-2); }
+.dv-hero .dt-l, .dv-hero .dt-s, .dv-hero .src { color: var(--graphite-2); }
+.dv-stage { border-radius: 0; }
+.dv-prof { background: var(--panel-2); border: 1px solid var(--line); border-radius: 0; }
+.dv-prof-h .num { color: var(--ink); }
+.dv-prof-box text { fill: var(--graphite-2); }
+.dv-prof-box path[stroke="#2B2D2F"], .dv-prof-box path[stroke="rgba(43,45,47,.4)"] { stroke: var(--acc); }
+.dv-prof-box path[fill="rgba(43,45,47,.10)"] { fill: rgba(var(--ink-rgb), .06); }
+.dv-prof-box path[fill="rgba(43,45,47,.14)"] { fill: var(--acc-tint); }
+.dv-prof-box circle { fill: var(--acc); stroke: var(--bg); }
+
+/* ---------- rehearsal navigator: its own keys, like the tablet's ---------- */
+.sv-navkeys { position: absolute; top: 112px; left: 14px; z-index: 3; display: flex; flex-direction: column; gap: 6px; }
+.key-s { display: flex; align-items: center; gap: 7px; min-width: 74px; height: 34px; padding: 0 10px 0 7px; background: rgba(var(--panel-rgb), .94); color: var(--ink);
+  border: 1px solid var(--line-2); border-radius: 0; font: 700 12.5px/1 var(--f-head); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.key-s:hover { background: var(--panel-3); }
+.key-s.is-pressed { background: var(--acc); color: var(--on-acc); }
+.key-s .kn { display: grid; place-items: center; width: 18px; height: 18px; border: 1px solid currentColor; border-radius: 50%; font: 700 10px/1 var(--f-num); }
+
+/* ---------- former orange, now the accent (orange stays for warnings) ---------- */
+.wordmark .wm-b { color: var(--acc); }
+#rl-grad stop:nth-child(1) { stop-color: #9FD6FF; }
+#rl-grad stop:nth-child(2) { stop-color: var(--acc); }
+#rl-grad stop:nth-child(3) { stop-color: #22487a; }
+#rl-mark path[fill="#E8622C"] { fill: var(--acc); }
+#rl-mark path[stroke="#E8622C"] { stroke: var(--acc); }
+#rl-mark path[stroke="#FBD9BE"] { stroke: #D6EEFF; }
+#rl-mark path[stroke="#7A2A0E"] { stroke: #14183d; }
+#rl-mark path[stroke="#2B2D2F"] { stroke: var(--ink); }
+.nv-turn path[fill="#E8622C"], .nv-north path[fill="#E8622C"] { fill: var(--acc); }
+.nv-turn .big small, .nv-turn > svg.i { color: var(--acc); }
+.budget-bar path[stroke="#E8622C"] { stroke: var(--acc); }
+.leaflet-interactive[stroke="#E8622C"] { stroke: var(--acc); }
+#ad-pick[aria-pressed="true"] { background: var(--acc-tint); border-color: var(--acc); }

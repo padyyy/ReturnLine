@@ -240,12 +240,15 @@ def main(argv: list[str] | None = None) -> int:
         sc.pop("drift_zone", None)
         sc["placeholder_fields"] = [f for f in sc.get("placeholder_fields", []) if f != "drift_zone"]
     write_json(DATA / "scenario.json", sc)
+    # the console shows the English names (backend/config/science_targets.json "name_en"), else the A* run's name
+    targets_cfg = ROOT / "backend" / "config" / "science_targets.json"
+    name_en = {t["id"]: t.get("name_en") for t in json.loads(targets_cfg.read_text(encoding="utf-8")).get("targets", [])} if targets_cfg.exists() else {}
     stations = {"type": "FeatureCollection", "note": "Science sites of the A* routing (backend/config/science_targets.json)",
                 "generator": "pipeline/astar_import.py", "features": []}
     for r in routes:
         g = r["summary"]["goal_lonlat"]
         stations["features"].append({"type": "Feature", "geometry": {"type": "Point", "coordinates": [g[0], g[1]]},
-                                     "properties": {"n": n_of[r["id"]], "name": r["name"], "sol": r.get("sol"),
+                                     "properties": {"n": n_of[r["id"]], "name": name_en.get(r["id"]) or r["name"], "sol": r.get("sol"),
                                                     "reason": f"Curiosity site, sol {r.get('sol')} · A* target {r['id']}",
                                                     "image": None, "elev_m": None, "astar_id": r["id"]}})
     points = load_points()

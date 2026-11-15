@@ -164,7 +164,7 @@ export function renderViews(model, v, o) {
     const out = drawNavMap($('#nav-cv'), model, v, o, o.onReady);
     $('#nv-scale .bar').style.width = `${out.scalePx.toFixed(1)}px`;
     $('#nv-scale span').textContent = `${out.scaleM} m`;
-    // compass: upright N in the middle, an orange pointer on the rim shows where north is
+    // compass: upright N in the middle, a pointer on the rim (accent colour, theme.css) shows where north is
     $('#nv-north').innerHTML = '<text x="22" y="26.5" text-anchor="middle" font-size="13" font-weight="800" fill="#2B2D2F" font-family="Atkinson Hyperlegible Next, sans-serif">N</text>' +
       `<g transform="rotate(${(out.north * 180 / Math.PI).toFixed(1)} 22 22)"><path d="M22 2.5L26.5 9.5H17.5Z" fill="#E8622C"/></g>`;
   }

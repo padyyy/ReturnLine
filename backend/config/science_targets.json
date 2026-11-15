@@ -10,28 +10,32 @@
       "name": "Früher Boxwork-Aufschluss",
       "sol": 4612,
       "lat": -4.804945,
-      "lon": 137.379296
+      "lon": 137.379296,
+      "name_en": "Early boxwork outcrop"
     },
     {
       "id": "sol_4671",
       "name": "Laguna Escondida / Laguna Socompa",
       "sol": 4671,
       "lat": -4.808271,
-      "lon": 137.38127
+      "lon": 137.38127,
+      "name_en": "Laguna Escondida / Laguna Socompa"
     },
     {
       "id": "sol_4709",
       "name": "Valle de la Luna / Nevado Sajama",
       "sol": 4709,
       "lat": -4.807999,
-      "lon": 137.38105
+      "lon": 137.38105,
+      "name_en": "Valle de la Luna / Nevado Sajama"
     },
     {
       "id": "sol_4818",
       "name": "Östlicher Boxwork-Bereich",
       "sol": 4818,
       "lat": -4.807904,
-      "lon": 137.382562
+      "lon": 137.382562,
+      "name_en": "Eastern boxwork area"
     }
   ]
 }

@@ -9,6 +9,8 @@ import { st, route, station, crewState, resetRun, scenarioStation, limits, walkF
 import { storySteps } from './beats.js';
 import { renderViews, tile } from './crew.js';
 import { placeValues } from './nav.js';
+import { navViews, navView } from './layerstate.js';
+import { ZOOMS } from './crewviz.js';
 import { trackBearing, angNorm, angDiff } from './crewviz.js';
 import { rulesOf, planOf, PLAN } from './ui.js';
 
@@ -17,7 +19,8 @@ const $$ = (s) => Array.from(document.querySelectorAll(s));
 const JUMP = 285, TURN = 300;                // time jump to EVA 4:45; planned turnaround at EVA 5:00 (docs/demo-script.md)
 const PAUSE_MS = 4500;                       // reading time between steps with auto-play
 
-export const SIM = { on: false, model: null, mapApi: null, F: null, steps: [], playing: false, autoplay: false, speedX: 60, view: 'data', follow: true, hd: null, onEnd: null };
+export const SIM = { on: false, model: null, mapApi: null, F: null, steps: [], playing: false, autoplay: false, speedX: 60, view: 'data', follow: true, hd: null, onEnd: null,
+  base: 'plain', zoomI: 1 };   // the navigator's map and zoom, switched like the tablet's keys 4, 2 and 3
 
 // Without a drift the story times follow the way home, so a short route does not end before the injury
 const noDrift = (r) => ({ t3: TURN + Math.min(12, r.ret.minutes * 0.4), d4: Math.min(2, r.ret.minutes * 0.1), d5: Math.min(1.5, r.ret.minutes * 0.1) });
@@ -156,7 +159,7 @@ let uiT = 0;
 function astro(forceUi) {
   const v = simView(), now = performance.now(), ui = forceUi || now - uiT > 200;
   if (ui) uiT = now;
-  renderViews(SIM.model, v, { map: SIM.view === 'nav', hud: SIM.view === 'hud', ui, zoomI: 1, base: 'plain', small: false, onReady: () => astro(true) });
+  renderViews(SIM.model, v, { map: SIM.view === 'nav', hud: SIM.view === 'hud', ui, zoomI: SIM.zoomI, base: SIM.base, small: false, onReady: () => astro(true) });
 }
 
 // ---------- story strip, habitat control's decision, time budget, log, summary ----------
@@ -421,5 +424,19 @@ export function simWire() {
     SIM.follow = false; $('#sv-auto').checked = false; setView(b.dataset.v);
   });
   $('#sv-auto').addEventListener('change', (e) => { SIM.follow = e.target.checked; autoView(); astro(true); renderStory(); });
+  // the navigator's own keys: next map (as key 4 on the tablet), zoom in and out (keys 2 and 3)
+  const navKey = (k) => {
+    if (k === 'map') { const ids = navViews(SIM.model).map((c) => c.id); SIM.base = ids[(ids.indexOf(navView(SIM.model, SIM.base).id) + 1) % ids.length]; }
+    if (k === 'zin') SIM.zoomI = Math.min(ZOOMS.length - 1, SIM.zoomI + 1);
+    if (k === 'zout') SIM.zoomI = Math.max(0, SIM.zoomI - 1);
+    const b = $(`#sv-nav-${k}`); b.classList.add('is-pressed'); setTimeout(() => b.classList.remove('is-pressed'), 140);
+    astro(true);
+  };
+  $('#sv-navkeys').addEventListener('click', (e) => { const b = e.target.closest('[data-k]'); if (b && SIM.on) navKey(b.dataset.k); });
+  document.addEventListener('keydown', (e) => {
+    if (!SIM.on || SIM.view !== 'nav' || (e.target.closest && e.target.closest('input, select, textarea'))) return;
+    const k = { 4: 'map', 2: 'zin', 3: 'zout' }[e.key];
+    if (k) { e.preventDefault(); navKey(k); }
+  });
   addEventListener('resize', () => { if (SIM.on) { renderBar(); astro(true); } });
 }

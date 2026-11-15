@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "generator": "pipeline/map_layers.py",
+  "created_utc": "2026-11-15T12:10:58.223307+00:00",
+  "image": "radio_gaps.png",
+  "image_path": "data/layers/radio_gaps.png",
+  "numeric_file": "layers/radio_gaps.f32",
+  "grid_file": "../grid.json",
+  "grid_id": "mars-eqc-76ee605d6394f17a713f",
+  "grid": {
+    "grid_id": "mars-eqc-76ee605d6394f17a713f",
+    "projection": "mars_eqc",
+    "mars_radius_m": 3396190.0,
+    "lat_ts": 0,
+    "lon_0": 0,
+    "origin_m": {
+      "x": 8140783.492786024,
+      "y": -282731.075189438
+    },
+    "cell_m": 10.0,
+    "nx": 475,
+    "ny": 476,
+    "row_order": "north_to_south",
+    "bounds": [
+      [
+        -4.8501483297557,
+        137.33994154226008
+      ],
+      [
+        -4.769844250631072,
+        137.42007691533613
+      ]
+    ],
+    "coordinate_order": "lon,lat",
+    "bounds_order": "[[south,west],[north,east]]",
+    "index_formula": "row * nx + column",
+    "sample_position": "cell_center",
+    "binary_order": "row-major",
+    "byte_order": "little-endian",
+    "nodata_json": null,
+    "files": {
+      "ttb_penalized": "ttb_penalized.f32",
+      "ttb_allowed": "ttb_allowed.f32",
+      "ptr_penalized": "ptr_penalized.i32",
+      "ptr_allowed": "ptr_allowed.i32",
+      "elev": "elev_10m.f32",
+      "slope": "slope_10m.f32"
+    },
+    "source": {
+      "mapped_by": "GeoMapper (backend/geoMapper)",
+      "sources": [
+        {
+          "source": "data/gale_dem_1000x1000_current.csv",
+          "label": "Gale DEM CSV, 1 m points (branch newData)",
+          "cells": 10201,
+          "method": "GeoMapper csv_to_matrices, nearest point",
+          "resolution_m": 1.0
+        },
+        {
+          "source": "data/raw/gale_dem_4m.tif",
+          "label": "USGS Gale DEM mosaic, 4 m level (pipeline/fetch_sources.py)",
+          "cells": 215899,
+          "method": "GeoMapper raster_to_matrix, nearest pixel",
+          "resolution_m": 4.0
+        }
+      ],
+      "level_m": 1.0,
+      "reused_from": "elev_10m.f32 of the previous full run"
+    },
+    "placeholder": false,
+    "placeholder_inputs": []
+  },
+  "bounds": [
+    [
+      -4.819106416816768,
+      137.37216439753908
+    ],
+    [
+      -4.802235811958653,
+      137.38920370844576
+    ]
+  ],
+  "window": {
+    "col0": 191,
+    "row0": 192,
+    "cols": 101,
+    "rows": 100
+  },
+  "width_px": 1010,
+  "height_px": 1000,
+  "pixels_per_cell": 10,
+  "pixel_origin": "northwest",
+  "sample_position": "cell_center",
+  "sampling": "GeoMapper raster_to_matrix: nearest neighbour at the centre of every cell",
+  "smoothing": "none: GeoMapper sampled 10 x 10 sub-cells per console cell",
+  "nodata": "transparent where the map has no data",
+  "units": null,
+  "source": {
+    "path": "data\\layers\\radio_gaps.tif",
+    "band": 1,
+    "column": null,
+    "crs": "ESRI:104971",
+    "resolution_m": 1.004,
+    "search_radius_m": null,
+    "note": "added in the console (radio_shadow_sticker.tif)"
+  },
+  "legend": [
+    {
+      "label": "220 everywhere it is mapped",
+      "rgba": [
+        63,
+        169,
+        245,
+        255
+      ]
+    }
+  ],
+  "value_range": [
+    220.0,
+    220.0
+  ],
+  "covered_cells": 5346,
+  "missing_cells": 220754,
+  "covered_box_cells": {
+    "col": [
+      191,
+      291
+    ],
+    "row": [
+      192,
+      291
+    ]
+  },
+  "layer": {
+    "id": "radio_gaps",
+    "name": "Radio gaps",
+    "priority": 20,
+    "opacity": 0.6,
+    "visible": false,
+    "role": null
+  },
+  "detail": null,
+  "use": "display only; read values from the .f32 grid, never from the picture"
+}

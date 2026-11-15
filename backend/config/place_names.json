@@ -10,7 +10,7 @@
     { "id": "tapiche", "name": "Tapiche", "lon": 137.381667, "lat": -4.80735 },
     { "id": "valle_de_la_luna_monte_grande", "name": "Valle de la Luna / Monte Grande", "lon": 137.381037, "lat": -4.80784 },
     { "id": "nevado_sajama", "name": "Nevado Sajama", "lon": 137.381003, "lat": -4.808008, "label": "left" },
-    { "id": "antofagasta", "name": "Antofagasta (Kraterrand)", "lon": 137.381003, "lat": -4.813791 },
+    { "id": "antofagasta", "name": "Antofagasta (crater rim)", "lon": 137.381003, "lat": -4.813791 },
     { "id": "atacama", "name": "Atacama", "lon": 137.381705, "lat": -4.814267 }
   ]
 }

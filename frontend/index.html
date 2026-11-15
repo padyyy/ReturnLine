@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ReturnLine</title>
 <meta name="description" content="ReturnLine habitat console: plan a Marswalk at the Gale crater boxwork, follow it on the forearm tablet and the helmet HUD, and rehearse an emergency.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 48'%3E%3Ccircle cx='22' cy='27' r='15' fill='%23E5602A'/%3E%3Cpath d='M-1 27A23 7 0 0 0 45 27' transform='rotate(-18 22 27)' fill='none' stroke='%232B2D2F' stroke-width='3.4' stroke-linecap='round'/%3E%3Cpath d='M43.9 19.9s-5.3-5.6-5.3-9.4a5.3 5.3 0 0 1 10.6 0c0 3.8-5.3 9.4-5.3 9.4z' fill='%23E8622C'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 48'%3E%3Ccircle cx='22' cy='27' r='15' fill='%233fa9f5'/%3E%3Cpath d='M-1 27A23 7 0 0 0 45 27' transform='rotate(-18 22 27)' fill='none' stroke='%232B2D2F' stroke-width='3.4' stroke-linecap='round'/%3E%3Cpath d='M43.9 19.9s-5.3-5.6-5.3-9.4a5.3 5.3 0 0 1 10.6 0c0 3.8-5.3 9.4-5.3 9.4z' fill='%233fa9f5'/%3E%3C/svg%3E">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -47,7 +47,6 @@
     <span class="meta-item site">Gale crater · boxwork, Mount Sharp</span>
     <span class="meta-item" id="hdr-sol">Sol –</span>
     <span class="meta-item num" id="hdr-clock">–:– LMST</span>
-    <span class="tag-sketch" id="tag-data">Loading data</span>
   </div>
   <div class="controls" id="nav-controls" hidden>
     <div class="seg" role="group" aria-label="Navigation time compression">
@@ -180,7 +179,13 @@
       </div>
       <div class="sv-body">
         <div class="sv-slot sv-hud" data-v="hud" hidden></div>
-        <div class="sv-slot" data-v="nav" hidden></div>
+        <div class="sv-slot" data-v="nav" hidden>
+          <div class="sv-navkeys" id="sv-navkeys" role="group" aria-label="Navigator keys">
+            <button type="button" class="key-s" id="sv-nav-map" data-k="map" title="Next map (key 4)"><span class="kn">4</span>Map</button>
+            <button type="button" class="key-s" id="sv-nav-zin" data-k="zin" title="Zoom in (key 2)" aria-label="Zoom in"><span class="kn">2</span>+</button>
+            <button type="button" class="key-s" id="sv-nav-zout" data-k="zout" title="Zoom out (key 3)" aria-label="Zoom out"><span class="kn">3</span>−</button>
+          </div>
+        </div>
         <div class="sv-slot" data-v="data"></div>
         <div class="sv-slot sv-log" data-v="log" hidden><ol class="sv-loglist" id="sv-log"></ol></div>
         <div class="sv-slot sv-sum" data-v="sum" hidden><div class="summary" id="summary"></div></div>

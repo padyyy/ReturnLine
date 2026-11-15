@@ -68,11 +68,7 @@ export function renderHeader(model, t) {
   $('#hdr-eva').textContent = `EVA ${String(model.sc.eva_number ?? '').padStart(2, '0')}`;
   $('#hdr-sol').textContent = `Sol ${model.sc.sol}`;
   $('#hdr-clock').textContent = `${lmst(model, t)} LMST`;
-  const ph = model.placeholders.size > 0, tag = $('#tag-data');
-  tag.textContent = ph ? 'Placeholder data' : 'Engine data';
-  tag.classList.toggle('is-ph', ph);
-  tag.title = ph ? `Placeholder files: ${[...model.placeholders].join(', ')}. Missing: ${[...model.missing].join(', ') || 'none'}.`
-    : `All files from the pipeline and the routing engine. Missing: ${[...model.missing].join(', ') || 'none'}.`;
+  // the data tag (placeholder or engine data) was removed from the header on 2026-11-15
 }
 
 export function renderVerdict(model) {
