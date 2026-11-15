@@ -280,6 +280,8 @@ export function renderSubs(model) {
     : `On the map: pick a station to see its route. Hatched circles are protected sites${model.drillHoles?.length ? "; diamonds mark Curiosity's real drill holes" : ''}.`;
   if ($('#subs-watch').textContent !== watch) $('#subs-watch').textContent = watch;
   document.querySelectorAll('#tp-dots button').forEach((x, i) => (i + 1 === st.beat ? x.setAttribute('aria-current', 'step') : x.removeAttribute('aria-current')));
+  // the six beats belong to the scenario station: their buttons appear only once it is picked
+  document.querySelector('#subs .transport').style.display = isScripted(model) ? '' : 'none';
 }
 
 export function renderBanner(model) {

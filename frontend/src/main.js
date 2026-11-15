@@ -278,6 +278,20 @@ function wire() {
   $('#ly-slope-row').hidden = !model.hasSlopeLayer;
   $('#ly-slope').addEventListener('change', (e) => { mapApi.setLayer('slope', e.target.checked); $('#ly-slope-key').hidden = !e.target.checked; });
   wireMapLayers();
+  // collapsible subtitle strip; the choice is a per-viewer convenience, so browser storage is fine
+  const subs = $('#subs'), stg = $('#subs-toggle');
+  const setSubs = (open) => {
+    subs.classList.toggle('is-collapsed', !open);
+    const t = open ? 'Hide subtitles' : 'Show subtitles';
+    stg.setAttribute('aria-expanded', String(open)); stg.setAttribute('aria-label', t); stg.title = t;
+    mapApi.map.invalidateSize(); // the map gains or loses the strip's height
+  };
+  try { if (localStorage.getItem('rl.subs') === 'collapsed') setSubs(false); } catch { /* storage blocked */ }
+  stg.addEventListener('click', () => {
+    const open = subs.classList.contains('is-collapsed');
+    setSubs(open);
+    try { localStorage.setItem('rl.subs', open ? 'open' : 'collapsed'); } catch { /* storage blocked */ }
+  });
   // collapsible map key; the choice is a per-viewer convenience, so browser storage is fine
   const lgd = $('#legend'), lgt = $('#legend-toggle');
   const setLegend = (open) => { lgd.classList.toggle('is-collapsed', !open); lgt.setAttribute('aria-expanded', String(open)); };

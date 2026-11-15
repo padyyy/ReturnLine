@@ -83,8 +83,9 @@
 .hud-word { font-size: 14px; font-weight: 800; letter-spacing: .03em; }
 .hud-lbl { font: 400 12px var(--f-text); fill: var(--graphite-2); }
 .hud-val { font-size: 21px; font-weight: 700; fill: var(--graphite); }
-.hud-line { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; }
-.hud-line span { padding: 5px 9px; background: var(--paper-2); border: 1px solid var(--rule-2); border-radius: 2px; font: 700 13.5px/1.2 var(--f-num); white-space: nowrap; }
+/* the two readouts under the HUD ring wrap instead of running out of the panel */
+.hud-line { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; margin-top: 6px; }
+.hud-line span { padding: 5px 8px; background: var(--paper-2); border: 1px solid var(--rule-2); border-radius: 2px; font: 700 12.5px/1.2 var(--f-num); white-space: nowrap; }
 .hud-warn { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
 .hud-warn li { display: flex; align-items: center; gap: 8px; padding: 6px 9px; font-weight: 700; font-size: 13px; border: 1.5px solid currentColor; border-radius: 2px; }
 .hud-warn li .i { width: 16px; height: 16px; flex: none; }
@@ -163,3 +164,11 @@ button.cuff-key:focus-visible { outline: 2px solid var(--cover); outline-offset:
 .popover .ly-op input[type="range"] { height: auto; }
 /* the slope image is already smooth (interpolated before classifying); let the browser scale it smoothly too */
 .slope-img { image-rendering: auto; }
+
+/* subtitle strip: collapsible to a slim bar with the beat name (per-viewer choice) */
+.subs-toggle { width: 34px; height: 34px; display: grid; place-items: center; border: 1.5px solid rgba(237,240,230,.55); background: transparent; color: var(--paper); cursor: pointer; }
+.subs-toggle:hover, .subs-toggle:focus-visible { border-color: var(--paper); background: rgba(237,240,230,.08); }
+.subs.is-collapsed { min-height: 0; padding-top: 6px; padding-bottom: 6px; grid-template-columns: minmax(0, 1fr) auto; }
+.subs.is-collapsed .subs-main, .subs.is-collapsed .transport { display: none; }
+.subs.is-collapsed .subs-toggle { width: 30px; height: 30px; }
+.subs.is-collapsed .subs-toggle .chev { transform: rotate(180deg); }
