@@ -4,8 +4,8 @@
 // sees at that step (helmet HUD, navigator, data sheet), plus the log and, at the end, the summary.
 // The movement and the decisions come from sim.js (engine routes and return pointers); nothing is searched.
 import { hm, R, icon, esc, setHTML } from './format.js';
-import { lmst, doseAt, ttbAt, pointerTrack, zoneHits } from './model.js';
-import { st, route, station, crewState, resetRun, scenarioStation, limits, walkFactor, abortTrack, script, rerouteTrack, detourMin, activeLeg, stage, homeTime, zoneEvents, proximity, warnM } from './sim.js';
+import { lmst, doseAt, ttbAt, zoneHits } from './model.js';
+import { st, route, station, crewState, resetRun, scenarioStation, limits, walkFactor, injure, injuryOptions, abortTrack, script, rerouteTrack, detourMin, activeLeg, stage, homeTime, zoneEvents, proximity, warnM } from './sim.js';
 import { storySteps } from './beats.js';
 import { renderViews, tile } from './crew.js';
 import { placeValues } from './nav.js';
@@ -35,7 +35,7 @@ function endState(model, n) {
     if (sp) { st.drift = true; st.driftAt = sp.tD; st.rerouted = true; st.rerouteAt = sp.tD + 0.5; st.t = st.rerouteAt; }
     else st.t += noDrift(r).d4;
   }
-  if (n >= 5) { st.t += sp ? 1.5 : noDrift(r).d5; st.injuredAt = st.t; }
+  if (n >= 5) { st.t += sp ? 1.5 : noDrift(r).d5; injure(model); }
   if (n >= 6) { st.abort = true; st.abortAt = st.t; st.t += crewState(model).backMin ?? 0; st.done = true; st.phase = 'done'; }
   st.beat = n;
 }
@@ -54,12 +54,12 @@ function collectFacts(model) {
   const sp = script(model);
   F.drift = !!sp; F.zone = sp?.zone.name ?? null; F.detour = detourMin(model) ?? 0;
   endState(model, 5);
-  const c = crewState(model), lim = limits(model).L;
-  const tp = ttbAt(model, c.pos, 'penalized'), ta = ttbAt(model, c.pos, 'allowed');
-  F.tInj = st.t; F.limInj = lim; F.lsInj = model.ls - st.t;
-  F.prot = Number.isFinite(tp) ? tp * 2 : null; F.abrt = Number.isFinite(ta) ? ta * 2 : null;
-  F.protFits = F.prot == null ? null : F.prot <= lim; F.abrtFits = F.abrt == null ? null : F.abrt <= lim;
-  F.protTrack = pointerTrack(model, c.pos, 'penalized');
+  const c = crewState(model), opt = injuryOptions(model);
+  const pw = opt?.protectedWay, tw = opt?.throughWay;
+  F.tInj = st.t; F.limInj = opt?.lim.L ?? limits(model).L; F.lsInj = model.ls - st.t;
+  F.prot = pw ? pw.min : null; F.abrt = tw ? tw.min : null;
+  F.protFits = pw ? pw.ok : null; F.abrtFits = tw ? tw.ok : null;
+  F.protTrack = pw?.track ?? null; F.abrtTrack = tw?.track ?? null;
   F.injPos = c.pos;
   endState(model, 6);
   const over = zoneEvents(model).filter((e) => e.override);
@@ -83,7 +83,7 @@ function renderMap() {
   const cand = [], callouts = [], rings = [];
   if (b >= 5 && !st.abort && F.protTrack) {   // the two ways home after the injury, as habitat control weighs them
     cand.push({ track: F.protTrack, kind: 'cand-prot', label: `Protected route · ${R(F.prot)} min · ${F.protFits ? 'fits' : 'too long'}`, tone: 'ink', at: 0.6 });
-    const at = pointerTrack(model, F.injPos, 'allowed');
+    const at = F.abrtTrack;
     if (at) cand.push({ track: at, kind: 'cand-abort', label: `Through the zone · ${R(F.abrt)} min · ${F.abrtFits ? 'fits' : 'too long'}`, tone: 'red', at: 0.4 });
   }
   if (sp && st.driftAt != null && st.t >= st.driftAt) rings.push(sp.D);
@@ -340,7 +340,7 @@ async function beatScript(n, k) {             // what moves in a step; habitat c
     } else await clock(st.t + noDrift(r).d4, k);
     await sleep(200, k);
   }
-  if (n === 5) { await clock(st.t + (script(model) ? 1.5 : noDrift(r).d5), k); st.injuredAt = st.t; renderAll(); await sleep(500, k); }
+  if (n === 5) { await clock(st.t + (script(model) ? 1.5 : noDrift(r).d5), k); injure(model); renderAll(); await sleep(500, k); }
   if (n === 6) {
     await sleep(1400, k); press('#act-abort'); await sleep(380, k);
     st.abort = true; st.abortAt = st.t; renderAll();
