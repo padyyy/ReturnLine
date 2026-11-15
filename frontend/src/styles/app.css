@@ -26,6 +26,9 @@
   text-shadow: 0 0 2px var(--paper), 0 0 2px var(--paper), 0 0 3px var(--paper), 0 0 3px var(--paper); }
 .leaflet-tooltip.map-lbl::before { display: none; }
 .leaflet-tooltip.zone-lbl { color: var(--blue); }
+.leaflet-tooltip.map-lbl.opt { display: inline-flex; align-items: center; gap: 3px; }
+.leaflet-tooltip.map-lbl.opt-zone { color: var(--red); }
+.leaflet-tooltip.map-lbl.opt svg.i { width: 14px; height: 14px; stroke-width: 2.4; filter: drop-shadow(0 0 1.5px var(--paper)); }
 
 /* crew panel sits bottom left; the map foot and the scale are on the right */
 .crew { z-index: 800; }

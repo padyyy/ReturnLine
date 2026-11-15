@@ -1,8 +1,8 @@
 // Console renderers: header, target picker, verdict, rules, info rows, station log, time budget,
 // subtitles, banner, summary and the assumptions panel. They read the model and the sim state only.
 import { hm, R, icon, numCell, srcChip, esc } from './format.js';
-import { lmst, pickerRows, doseAt, zoneAt, zoneHits, ttbAt } from './model.js';
-import { st, route, station, crewState, limits, homeTime, scenarioStation, isScripted, zoneEvents, zoneNow, proximity, script, detourMin, rerouteTrack, warnM } from './sim.js';
+import { lmst, pickerRows, doseAt, zoneAt, zoneHits } from './model.js';
+import { st, route, station, crewState, limits, homeTime, scenarioStation, isScripted, zoneEvents, zoneNow, proximity, script, detourMin, rerouteTrack, warnM, injuryOptions } from './sim.js';
 import { BEATS } from './beats.js';
 
 const $ = (s) => document.querySelector(s);
@@ -76,17 +76,19 @@ export function renderVerdict(model) {
       o += `<div class="v-status red">${icon('check')}Override logged · ${what} · reason: ABORT</div>`;
     }
   } else if (st.injuredAt != null && !st.abort) {
-    // the two ways home from the crew's cell, at injured speed, against the return limit
-    const lim = limits(model).L, c = crewState(model);
-    const tp = ttbAt(model, c.pos, 'penalized'), ta = ttbAt(model, c.pos, 'allowed');
-    const fact = (label, T) => {
-      if (T == null) return `<li class="bad">${icon('cross')}<span>${label}</span><span class="num">needs grid</span></li>`;
-      const ok = T * 2 <= lim;
-      return `<li class="${ok ? 'good' : 'bad'}">${icon(ok ? 'check' : 'cross')}<span>${label}</span><span class="num">${R(T * 2)} min</span></li>`;
+    // the two ways home from where the injury happened, at injured speed, against the return limit
+    // (the same numbers the map labels show)
+    const io = injuryOptions(model), lim = limits(model, st.injuredAt);
+    const broken = { 'life support': 'runs past life support', sunset: 'ends after sunset', '60-minute rule': 'breaks the 60-minute rule' }[lim.by];
+    const fact = (w, label) => {
+      if (!w) return `<li class="bad">${icon('cross')}<span>${label}</span><span class="num">needs grid</span></li>`;
+      const why = w.ok ? `fits, ${R(w.lsLeft)} min life support left on arrival` : `too long, ${broken}`;
+      return `<li class="${w.ok ? 'good' : 'bad'}">${icon(w.ok ? 'check' : 'cross')}<span>${label}: ${why}</span><span class="num">${R(w.min)} min</span></li>`;
     };
-    o += word('ABORT', 'abort') + `<p class="v-sub">Return to shelter now. A crew member is injured; walking speed is halved. Limit now ${R(lim)} min.</p>` +
-      `<ul class="v-facts">${fact('Protected route home, injured', tp)}${fact('Route through the protected zone, injured', ta)}</ul>` +
-      `<div class="v-actions"><button class="btn btn-abort" id="act-abort">${icon('check')}Confirm ABORT</button></div>`;
+    const zone = io?.throughWay?.zones[0];
+    o += word('ABORT', 'abort') + `<p class="v-sub">Return to shelter now. A crew member is injured; walking speed ×${esc(model.sc.injury_factor)} (assumption). Limit now ${R(lim.L)} min (${lim.by}).</p>` +
+      `<ul class="v-facts">${fact(io?.protectedWay, 'Protected route home')}${fact(io?.throughWay, zone ? `Through ${esc(zone.name)}` : 'Route through the protected zone')}</ul>` +
+      `<div class="v-actions"><button class="btn btn-abort" id="act-abort">${icon('check')}Confirm ABORT${zone ? ` through ${esc(zone.name)}` : ''}</button></div>`;
   } else if (st.abort) {
     o += word('ABORT', 'abort') + '<p class="v-sub">Override confirmed. The crew returns to the habitat.</p>' +
       `<div class="v-status red">${icon('check')}Override logged · reason: ABORT</div>`;
@@ -170,7 +172,7 @@ export function renderLog(model) {
       const det = detourMin(model);
       add(st.rerouteAt ?? st.t, `Reroute around ${sp ? sp.zone.name : 'the zone'}`, `Habitat control${det != null ? ` · +${Math.max(0, R(det))} min detour` : ''}`, 'decision');
     }
-    if (st.injuredAt != null) add(st.injuredAt, 'Crew member injured', 'Walking speed ×0.5 (assumption)', 'finding');
+    if (st.injuredAt != null) add(st.injuredAt, 'Crew member injured', `Walking speed ×${esc(model.sc.injury_factor)} (assumption)`, 'finding');
     if (st.abort) add(st.abortAt ?? st.injuredAt, 'ABORT confirmed · override', 'Habitat control', 'decision');
     if (st.done) add(st.t, 'Crew home', 'Both crew members inside the habitat');
   }
@@ -261,7 +263,7 @@ export function renderAssume(model) {
     { l: 'Walking speed, level ground', v: `${sc.walk_speed_kmh} km/h`, s: ['EWT'], note: 'Sets the return area and the 60-minute line (routing engine).', f: 'walk_speed_kmh' },
     { l: 'Slope penalty on walking speed', v: slope, s: ['TOBLER', 'ASSUME'], note: 'Tobler hiking function, normalised to the level-ground speed; fastest slightly downhill. Applying it to suited crews is an assumption (team decision 2026-11-14).', f: 'slope_penalty' },
     { l: 'Slope blocked above', v: `${sc.slope_block_deg}°`, s: ['xEVA'], note: `Suit design limit. Comfortable walking up to ${sc.slope_comfort_deg ?? 10}°.`, f: 'slope_block_deg' },
-    { l: 'Walking speed when injured', v: `×${Number(sc.injury_factor).toFixed(2)}`, s: ['ASSUME'], note: 'Halves the speed in beat 5 and doubles every time home.', f: 'injury_factor' },
+    { l: 'Walking speed when injured', v: `×${Number(sc.injury_factor).toFixed(2)}`, s: ['ASSUME'], note: 'From beat 5 on, every time home is divided by this factor.', f: 'injury_factor' },
     { l: 'Protected-zone buffer radius', v: `${sc.zone_buffer_m} m`, s: ['ASSUME', 'PP'], note: 'Zones follow planetary protection policy; the radius itself is ours.', f: 'zone_buffer_m' },
     { l: 'Planning clearance around zones', v: sc.zone_clearance_m != null ? `${sc.zone_clearance_m} m` : 'open', s: ['ASSUME'], note: 'Routes keep this distance outside the buffer where they can (soft penalty in the routing engine).', f: 'zone_clearance_m' },
     { l: 'Warning distance to a zone', v: `${warnM(model)} m`, s: ['ASSUME'], note: 'Closer than this, the console warns and habitat control can reroute (beat 4).', f: 'zone_warn_m' },
