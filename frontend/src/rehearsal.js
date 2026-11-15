@@ -54,7 +54,14 @@ function collectFacts(model) {
     rulesPass: rules.filter((x) => x.st === 'pass' || x.st === 'warn').length, rulesOpen: rules.filter((x) => x.st === 'open').length,
     rulesWarn: rules.filter((x) => x.st === 'warn').map((x) => x.l.toLowerCase()),
     zonesAvoided: P && !P.noRoute && !P.crossed.length && !P.inside };
+  // the planned route through the boxwork protection mask (A* summary), as the planning panel says it
+  const rt = model.routes.get(s.n);
+  F.protM = rt?.out?.protected_m ?? 0;
+  F.lmstTurn = lmst(model, TURN); F.caution = model.sc.caution_margin_min ?? 15;
+  endState(model, 3);   // on the way home: life support sets the limit
+  F.L3 = limits(model).L; F.back3 = crewState(model).backMin ?? 0; F.spare3 = F.L3 - F.back3;
   endState(model, 4);
+  F.ls4 = model.ls - st.t;
   const sp = script(model);
   F.drift = !!sp; F.zone = sp?.zone.name ?? null; F.detour = detourMin(model) ?? 0;
   endState(model, 5);
@@ -172,7 +179,7 @@ function renderHc() {
   const action = (id, cls, ic, txt) => `<div class="v-actions"><span class="btn ${cls} hc-act" id="${id}">${icon(ic)}${txt}</span></div>`;
   const status = (cls, ic, txt) => `<div class="v-status${cls ? ` ${cls}` : ''}">${icon(ic)}<span>${txt}</span></div>`;
   const fact = (ok, txt, num) => `<li class="${ok ? 'good' : 'bad'}">${icon(ok ? 'check' : 'cross')}<span>${txt}</span><span class="num">${num}</span></li>`;
-  const logged = F.zoneM > 0 ? `Override logged · ${F.zoneM} m in ${esc(F.abortZone)} · reason: ABORT` : 'ABORT logged · no protected zone entered';
+  const logged = F.zoneM > 0 ? `Override logged · ${F.zoneM} m in ${esc(F.abortZone)} · reason: ABORT` : 'ABORT logged · no override needed';
   if (b === 1) {
     const ok = F.rulesPass + F.rulesOpen === 4 && F.zonesAvoided;
     o += word(ok ? 'GO' : 'NO-GO', ok ? 'go' : 'nogo') + note(`${F.rulesPass} of 4 rules pass${F.rulesOpen ? `, ${F.rulesOpen} open` : ''} · turnaround ${lmst(model, TURN)}`);
@@ -187,18 +194,19 @@ function renderHc() {
       o += constraint(`Crew ${F.warnM} m from ${esc(Z)}`, st.rerouted ? `Rerouted, +${R(Math.max(0, F.detour))} min` : 'Reroute', true);
       o += st.rerouted ? status('', 'check', `New route sent ${lmst(model, st.rerouteAt)} · home ${lmst(model, homeTime(model))} LMST`) : action('act-reroute', 'btn-dark', 'arrow', `Reroute around ${esc(Z)}`);
     } else {
-      o += constraint('Crew leaves the return area', 'ABORT: return to shelter now');
-      o += note(`Return started ${lmst(model, st.retStart ?? TURN)}. Life support sets the return area now.`);
+      const lim = limits(model), spare = lim.L - (crewState(model).backMin ?? 0);
+      o += note(`Return started ${lmst(model, st.retStart ?? TURN)}. Limit now ${R(lim.L)} min, set by ${lim.by === "life support" ? "" : "the "}${lim.by} · ${R(Math.max(0, spare))} min to spare.`);
+      o += constraint('If the spare time runs out', 'ABORT: return to shelter now');
     }
   } else if (b === 5 || !st.abort) {
-    o += word('ABORT', 'abort', `life support ${R(F.lsInj)} min`);
+    o += word('ABORT', 'abort', `life support ${R(F.lsInj)} min`) + note('Injury on the EVA: return to shelter now.');
     if (F.prot != null) o += `<ul class="v-facts">${F.nZones ? `${fact(F.protFits, `Protected route: ${F.protFits ? 'fits' : 'too long'}`, `${R(F.prot)} min`)}${fact(F.abrtFits, `Through the zone: ${F.abrtFits ? 'fits' : 'too long'}`, `${R(F.abrt)} min`)}` : fact(F.protFits, `Way home: ${F.protFits ? 'fits' : 'too long'}`, `${R(F.prot)} min`)}</ul>`;
     o += action('act-abort', 'btn-abort', 'check', 'Confirm ABORT');
   } else if (st.done) {
     o += word('HOME', 'go') + note(`Inside at ${lmst(model, st.t)} LMST · ${R(model.ls - st.t)} min of life support left`);
     o += status('red', 'check', logged);
   } else {
-    o += word('ABORT', 'abort') + note(`Override confirmed ${lmst(model, st.abortAt)}. The crew walks home on the ABORT route.`);
+    o += word('ABORT', 'abort') + note(`ABORT confirmed ${lmst(model, st.abortAt)}. The crew walks home on the ABORT route.`);
     o += status('red', 'check', logged);
   }
   setHTML($('#hc'), o);
@@ -233,17 +241,20 @@ function renderSummary() {
   $('#summary').innerHTML = !st.done ? '' :
     `<header><h2>Crew home at ${lmst(model, st.t)} LMST</h2><p>EVA rehearsal complete. Summary for the debrief.</p></header><dl>` +
     `<div><dt>Life support left<span class="cap">${hm(model.sc.backup_min)} backup untouched</span></dt><dd>${R(model.ls - st.t)} min</dd></div>` +
-    `<div><dt>Inside protected zones<span class="cap">every entry logged with its reason</span></dt><dd class="${F.zoneM > 0 ? 'red' : ''}">${F.zoneM} m</dd></div>` +
-    `<div><dt>Rules fired<span class="cap">slope, radio gap and daylight never fired</span></dt><dd class="txt">Time to shelter, ${lmst(model, F.tInj)}</dd></div>` +
+    (F.zoneM > 0
+      ? `<div><dt>Inside protected zones<span class="cap">ABORT override, logged with its reason</span></dt><dd class="red">${F.zoneM} m</dd></div>`
+      : `<div><dt>Inside the boxwork protection zone<span class="cap">${F.protM > 0 ? 'planned route; the station lies inside it · logged' : 'the route stays outside'}</span></dt><dd>${R(F.protM)} m</dd></div>`) +
+    `<div><dt>Decision<span class="cap">${F.protFits === false ? 'the time-to-shelter rule fired' : 'no safety rule fired; the injury alone means ABORT'}</span></dt><dd class="txt">ABORT, ${lmst(model, F.tInj)}</dd></div>` +
     `<div><dt>Science station<span class="cap">reached before the injury</span></dt><dd class="txt">${esc(F.station)}</dd></div>` +
     `<div><dt>Radiation dose<span class="cap">information only</span></dt><dd>${doseAt(model, st.t).toFixed(2)} mSv</dd></div></dl>` +
-    `<p class="slogan">Explore Mars. Return Safely. Preserve the Evidence.<span>${model.placeholders.size ? 'Rehearsal on placeholder inputs.' : 'Rehearsal on the engine\'s data.'} Every number carries its source.</span></p>`;
+    `<p class="slogan">Explore Mars. Return Safely. Preserve the Evidence.<span>Rehearsal on the console's data. Every number carries its source.</span></p>`;
 }
 function renderLog() {
   const model = SIM.model, s = station(model), r = route(model), E = [];
   const add = (t, title, text, cls = '') => E.push({ t, title, text, cls });
   if (s && r && st.beat >= 1) {
     add(0, `Target: ${s.name}`, `GO · ${((r.out.length_m_astar ?? r.out.length_m) / 1000).toFixed(2)} km · ${R(r.out.minutes)} min walk`, 'decision');
+    if (SIM.F?.protM > 0) add(0.01, 'Planned entry: boxwork protection zone', `${R(SIM.F.protM)} m on the way out · the station lies inside it · logged`, 'finding');
     if (st.t >= r.out.minutes) add(r.out.minutes, `Arrived at ${s.name}`, s.reason ?? '');
     if (st.beat >= 2) add(JUMP, `Time jump to EVA hour ${hm(JUMP)}`, 'Rehearsal skips the quiet hours; the clock shows it');
     if (st.retStart != null) add(st.retStart, 'Return started', 'Habitat control', 'decision');
@@ -252,7 +263,7 @@ function renderLog() {
     for (const e of zoneEvents(model)) add(e.t, `Entered ${e.zone.name}`, e.override ? `ABORT override · ${R(e.m)} m inside · logged` : `Protected zone · ${R(e.m)} m inside · logged`, 'finding');
     if (st.rerouted && st.rerouteAt != null && st.t >= st.rerouteAt) add(st.rerouteAt, `Reroute around ${sp ? sp.zone.name : 'the zone'}`, `Habitat control · +${Math.max(0, R(detourMin(model) ?? 0))} min detour`, 'decision');
     if (st.injuredAt != null) add(st.injuredAt, 'Crew member injured', `Walking speed ×${model.sc.injury_factor} (assumption)`, 'finding');
-    if (st.abort) add(st.abortAt, 'ABORT confirmed · override', 'Habitat control', 'decision');
+    if (st.abort) add(st.abortAt, SIM.F?.zoneM > 0 ? 'ABORT confirmed · override' : 'ABORT confirmed', 'Habitat control · return to shelter now', 'decision');
     if (st.done) add(st.t, 'Crew home', 'Both crew members inside the habitat');
   }
   $('#sv-log').innerHTML = E.length ? E.sort((a, b) => a.t - b.t).map((e) => `<li class="row4 lg ${e.cls}"><span class="a">${lmst(model, e.t)}</span><span class="l">${esc(e.title)}<span class="cap">${esc(e.text)}</span></span><span class="v"></span><span class="s"></span></li>`).join('')

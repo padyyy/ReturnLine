@@ -78,7 +78,13 @@ function startSim() {
   st.savedBar = st.bar;
   requestAnimationFrame(() => {
     try {
-      simStart(model, mapApi, () => { applyPanel('side', st.sideBeforeSim ?? true); applyPanel('bar', st.savedBar); relayout(); renderPlan(); requestAnimationFrame(() => { mapApi.invalidate(); mapApi.fitPlan(); }); });
+      // the story talks about the return stages along the route: show them during the rehearsal, then restore
+      const areaBox = $('#ly-area'); st.areaBeforeSim = areaBox.checked;
+      areaBox.checked = true; mapApi.setLayer('area', true);
+      simStart(model, mapApi, () => {
+        areaBox.checked = st.areaBeforeSim; mapApi.setLayer('area', st.areaBeforeSim);
+        applyPanel('side', st.sideBeforeSim ?? true); applyPanel('bar', st.savedBar); relayout(); renderPlan(); requestAnimationFrame(() => { mapApi.invalidate(); mapApi.fitPlan(); });
+      });
       st.sideBeforeSim = st.side;
       applyPanel('side', true);                        // the crew view lives in the side panel
       // the story strip takes room under the map; on a short window fold the time bar away

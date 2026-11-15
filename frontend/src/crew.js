@@ -121,7 +121,7 @@ function renderUi(model, v, o) {
     `<div><i style="background:${STAGE.yellow.tint};border-color:${STAGE.yellow.c}"></i>Yes, under ${v.caution} min to spare</div>` +
     `<div><i style="background:${STAGE.red.tint};border-color:${STAGE.red.c}"></i>No: ABORT if the crew is here</div>` +
     '<div><i style="border:0;border-top:2px dashed #2B2D2F;height:0;border-radius:0"></i>60 min from base, fixed</div>' +
-    `<span class="cap">Return limit now ${R(v.lim.L)} min, set by the ${v.lim.by}${v.f > 1 ? ' · injured: times doubled' : ''} · time-to-base grid (rule B)</span>`;
+    `<span class="cap">Return limit now ${R(v.lim.L)} min, set by ${v.lim.by === "life support" ? "" : "the "}${v.lim.by}${v.f > 1 ? ' · injured: times doubled' : ''} · time-to-base grid (rule B)</span>`;
   // data sheet: stage, two key tiles, elevation, nine values
   const ds = $('#dv-stage');
   ds.style.background = stg.bg; ds.style.color = stg.fg;
@@ -150,7 +150,7 @@ function renderUi(model, v, o) {
     tile('Life support', hm(Math.max(0, v.ls)), '', `assumption: ${hm(model.ls)} EVA`, 'ASSUME') +
     tile('Sunset in', hm(v.sun), '', `sunset ${model.sc.sunset_lmst} LMST`, 'REMS') +
     tile('Reserve', hm(v.reserve), '', 'at the planned arrival', 'ASSUME') +
-    tile('Return limit', R(v.lim.L), 'min', `set by the ${v.lim.by}`, 'xEVA') +
+    tile('Return limit', R(v.lim.L), 'min', `set by ${v.lim.by === "life support" ? "" : "the "}${v.lim.by}`, 'xEVA') +
     tile('Time to base', fx(v.ttb), v.ttb == null ? '' : 'min', v.ttb == null ? 'needs the grid' : 'from here, engine grid', 'GRID') +
     tile('Radiation', v.dose.toFixed(2), 'mSv', 'information only', 'RAD') +
     tile('Slope here', fx(v.slope, 1), v.slope == null ? '' : '°', `limit 20° · ${geo ? '10 m baseline' : '10 m grid'}`, geo ? 'GEOM' : 'DEM') +
