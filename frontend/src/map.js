@@ -58,6 +58,20 @@ export function createMap(el, data, model, { onStation } = {}) {
   // a view first: Leaflet adds layers (and creates the SVG container) only once the map has one
   const planBounds = () => L.latLngBounds([ll(model.habitat), ...model.stations.map(ll)]).pad(0.06);
   map.fitBounds(planBounds());
+  // the view never leaves the map: no zooming out past its edge and no panning beyond it. The edge is the
+  // orthophoto, which covers exactly the console grid; the smallest zoom keeps the whole view inside it.
+  const edge = data.ortho ? L.latLngBounds(data.ortho.bounds) : model.grid ? L.latLngBounds(gridBounds(model.grid)) : null;
+  if (edge) {
+    map.options.maxBoundsViscosity = 1;
+    map.setMaxBounds(edge);
+    const fitMin = () => {
+      const z = Math.ceil(map.getBoundsZoom(edge, true) / map.options.zoomSnap) * map.options.zoomSnap;
+      map.setMinZoom(z);
+      if (map.getZoom() < z) map.setZoom(z);
+    };
+    fitMin();
+    map.on('resize', fitMin);
+  }
 
   // SVG renderer with the blue-pencil hatch for protected zones
   const svg = L.svg({ padding: 0.5 }).addTo(map);
@@ -69,7 +83,6 @@ export function createMap(el, data, model, { onStation } = {}) {
 
   if (data.ortho) {
     L.imageOverlay(`${BASE}maps/${data.ortho.image}`, data.ortho.bounds, { pane: 'base', className: 'ortho' }).addTo(map);
-    map.setMaxBounds(L.latLngBounds(data.ortho.bounds).pad(0.1));
   }
 
   const layers = {
@@ -113,7 +126,7 @@ export function createMap(el, data, model, { onStation } = {}) {
   // the habitat: a fixed 10 x 10 m footprint (its grid cell), drawn to scale, with its name beside it
   const hb = habitatBox(model);
   L.rectangle([[hb.s, hb.w], [hb.n, hb.e]], { color: '#EDF0E6', weight: 1.6, fillColor: '#2B2D2F', fillOpacity: 1, renderer: svg, interactive: false, className: 'hab-box' }).addTo(layers.markers);
-  L.tooltip({ permanent: true, direction: 'right', className: 'map-lbl hab-lbl', offset: [6, 0], interactive: false }).setLatLng([(hb.s + hb.n) / 2, hb.e]).setContent('Habitat · 10 × 10 m').addTo(layers.markers);
+  L.tooltip({ permanent: true, direction: 'right', className: 'map-lbl hab-lbl', offset: [6, 0], interactive: false }).setLatLng([(hb.s + hb.n) / 2, hb.e]).setContent('Habitat').addTo(layers.markers);
 
   // place names: a small ring at the rover-visit position, the name beside it in graphite italics
   for (const q of model.names) {

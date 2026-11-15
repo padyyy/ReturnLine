@@ -52,8 +52,8 @@
   <div class="controls" id="nav-controls" hidden>
     <div class="seg" role="group" aria-label="Navigation time compression">
       <button type="button" data-nx="1" aria-pressed="false">×1</button>
+      <button type="button" data-nx="30" aria-pressed="false">×30</button>
       <button type="button" data-nx="60" aria-pressed="true">×60</button>
-      <button type="button" data-nx="240" aria-pressed="false">×240</button>
     </div>
     <button class="btn" id="nav-pause"><svg class="i"><use href="#i-pause"/></svg><span>Pause</span></button>
     <button class="btn btn-dark" id="nav-end"><svg class="i"><use href="#i-close"/></svg><span>End navigation</span></button>
@@ -61,8 +61,8 @@
   <div class="controls" id="sim-controls" hidden>
     <div class="seg" role="group" aria-label="Rehearsal time compression">
       <button type="button" data-sx="1" aria-pressed="false">×1</button>
+      <button type="button" data-sx="30" aria-pressed="false">×30</button>
       <button type="button" data-sx="60" aria-pressed="true">×60</button>
-      <button type="button" data-sx="240" aria-pressed="false">×240</button>
     </div>
     <button class="btn btn-dark" id="sim-end"><svg class="i"><use href="#i-close"/></svg><span>End simulation</span></button>
   </div>
@@ -82,7 +82,7 @@
         <h3>Tablet map <small>key 4 switches through the ticked maps</small></h3>
         <ol class="ly-nav" id="ly-nav"></ol>
         <span class="cap">“Like the base map” stacks the switched-on layers in the order above. Kept in this browser.</span>
-        <button type="button" class="btn ly-add" id="btn-add-data" aria-expanded="false" aria-controls="tools">+ Add data: targets and maps</button>
+        <button type="button" class="btn ly-add" id="btn-add-data" aria-expanded="false" aria-controls="tools">+ Add data: maps</button>
       </div>
     </div>
     <button class="btn" id="btn-assume" aria-expanded="false" aria-controls="assume"><svg class="i"><use href="#i-sliders"/></svg><span class="t">Assumptions</span></button>
@@ -190,6 +190,7 @@
       <div class="assume-h"><h2>Add data</h2><button class="btn" id="tools-close"><svg class="i"><use href="#i-close"/></svg>Close</button></div>
       <div class="assume-body">
         <p class="ad-mode" id="ad-mode"></p>
+        <!-- New target: switched off for now (2026-11-15). To bring it back, remove this comment; datatools.js wires it again.
         <section class="ad-sec" aria-label="New target">
           <h3>New target</h3>
           <p class="cap">A position becomes a station with a route home. GeoMapper places it on the console grid.</p>
@@ -205,6 +206,7 @@
           <h4>Added targets</h4>
           <ul class="ad-list" id="ad-points"></ul>
         </section>
+        -->
         <section class="ad-sec" aria-label="New map">
           <h3>New map</h3>
           <p class="cap">A GeoTIFF in any Mars CRS, or a CSV with latitude and longitude columns (also JMARS exports); each further number column of a CSV becomes its own layer. GeoMapper places it on the console grid; it then appears under Map layers, on the tablet (key 4) and in the readout.</p>
@@ -224,6 +226,16 @@
         <p class="ad-status" id="ad-status" role="status"></p>
       </div>
     </aside>
+    <dialog class="pic-box" id="pic-box" aria-labelledby="pic-title">
+      <div class="pic-h"><div><h2 id="pic-title"></h2><p class="cap" id="pic-meta"></p></div>
+        <button type="button" class="btn" id="pic-close"><svg class="i"><use href="#i-close"/></svg>Close</button></div>
+      <div class="pic-fig" id="pic-fig"><img id="pic-img" alt=""></div>
+      <p class="pic-desc" id="pic-desc"></p>
+      <p class="pic-note" id="pic-note" hidden></p>
+      <div class="pic-f"><button type="button" class="btn" id="pic-prev">Previous</button><button type="button" class="btn" id="pic-next">Next</button>
+        <a class="btn" id="pic-src" target="_blank" rel="noopener noreferrer">Source at NASA<svg class="i"><use href="#i-arrow"/></svg></a></div>
+      <p class="cap pic-c">Curiosity's own pictures from the rover mast or the ground cameras, not the crew's view.</p>
+    </dialog>
     <aside class="assume" id="assume" hidden aria-label="Assumptions">
       <div class="assume-h"><h2>Assumptions</h2><button class="btn" id="assume-close"><svg class="i"><use href="#i-close"/></svg>Close</button></div>
       <div class="assume-body" id="assume-body"></div>

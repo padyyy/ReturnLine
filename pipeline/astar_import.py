@@ -294,7 +294,9 @@ def main(argv: list[str] | None = None) -> int:
     def dist_m(p, q):
         return math.hypot((q[0] - p[0]) * tg.M_PER_DEG * cos_lat, (q[1] - p[1]) * tg.M_PER_DEG)
 
-    def track(pts):
+    def track(pts, keep_every_m=None):
+        """Walk the path point by point (Tobler times, distance); with keep_every_m only about one vertex
+        every that many metres is written, each still carrying the distance and time of the full path."""
         verts, d, t, zone_m = [], 0.0, 0.0, 0.0
         zs = [elev(*q) for q in pts]
         for k, q in enumerate(pts):
@@ -311,8 +313,15 @@ def main(argv: list[str] | None = None) -> int:
                           "elev_m": None if not math.isfinite(zs[k]) else round(zs[k], 1),
                           "slope_deg": None if ci < 0 else round(float(slope.ravel()[ci]), 1)})
         tt = [float(ttb[cell_i(*q)]) for q in pts if cell_i(*q) >= 0]
+        max_slope = round(max((v["slope_deg"] or 0) for v in verts), 1)
+        if keep_every_m:
+            kept = [verts[0]]
+            for v in verts[1:-1]:
+                if v["d_m"] - kept[-1]["d_m"] >= keep_every_m:
+                    kept.append(v)
+            verts = kept + [verts[-1]]
         return {"vertices": verts, "length_m": round(d, 1), "minutes": round(t, 2), "zone_m": round(zone_m, 1),
-                "max_slope_deg": round(max((v["slope_deg"] or 0) for v in verts), 1),
+                "max_slope_deg": max_slope,
                 "max_ttb_min": round(max((x for x in tt if math.isfinite(x)), default=math.nan), 1)}
 
     out_routes, report = [], []
@@ -341,36 +350,29 @@ def main(argv: list[str] | None = None) -> int:
         out_routes.append({"station": n, "point_id": q["id"], "router": "backend/astar.py on the console grid", "out": out_t, "ret": ret_t})
         report.append(f"station {n} {q.get('name', q['id'])} (added): GeoMapper cell {cxy}, {out_t['length_m']:.0f} m, "
                       f"out {out_t['minutes']:.1f} min, back {ret_t['minutes']:.1f} min, in zones {out_t['zone_m']:.0f} m")
-    def thin(pts):
-        keep, acc = [pts[0]], 0.0                                          # about every 5 m, ends kept
-        for k in range(1, len(pts) - 1):
-            acc += dist_m(pts[k - 1], pts[k])
-            if acc >= 5.0:
-                keep.append(pts[k]); acc = 0.0
-        keep.append(pts[-1])
-        return keep
-
-    def legs(pts, protected_m):
-        keep = thin(pts)
-        o, b = track(keep), track(keep[::-1])
+    def legs(pts, protected_m, astar_m):
+        # distance and walking time on the full A* path (every 1 m cell), so the length is the backend's;
+        # only the written vertices are thinned to about one every 5 m
+        o, b = track(pts, 5.0), track(pts[::-1], 5.0)
         for leg in (o, b):
             leg["protected_m"] = None if protected_m is None else round(float(protected_m), 1)
+            leg["length_m_astar"] = None if astar_m is None else round(float(astar_m), 1)   # from the A* summary.json
         return o, b
 
     for r in routes:
         v = variants.get(r["id"], {})
-        out_t, ret_t = legs(paths[r["id"]], v.get("safe", {}).get("protected_m"))
+        out_t, ret_t = legs(paths[r["id"]], v.get("safe", {}).get("protected_m"), v.get("safe", {}).get("a_star_m", r["summary"].get("length_m")))
         entry = {"station": n_of[r["id"]], "astar_id": r["id"], "variant": "safe" if v else "single", "out": out_t, "ret": ret_t}
         if "fastest" in v:
-            fo, fr = legs(v["fastest"]["pts"], v["fastest"]["protected_m"])
+            fo, fr = legs(v["fastest"]["pts"], v["fastest"]["protected_m"], v["fastest"]["a_star_m"])
             entry["fastest"] = {"out": fo, "ret": fr, "same_as_safe": v["fastest"]["xy"] == v.get("safe", {}).get("xy")}
         out_routes.append(entry)
-        report.append(f"station {n_of[r['id']]} {r['name']}: {out_t['length_m']:.0f} m (A* {r['summary']['length_m']:.0f} m), "
+        report.append(f"station {n_of[r['id']]} {r['name']}: {out_t['length_m']:.0f} m (A* {out_t['length_m_astar']:.0f} m), "
                       f"out {out_t['minutes']:.1f} min, back {ret_t['minutes']:.1f} min, max slope {out_t['max_slope_deg']} deg, "
                       f"max time to base {out_t['max_ttb_min']} min, protected {out_t['protected_m']} m")
         if "fastest" in entry:
             f = entry["fastest"]
-            report.append(f"   fastest{' (same path)' if f['same_as_safe'] else ''}: {f['out']['length_m']:.0f} m, out {f['out']['minutes']:.1f} min, "
+            report.append(f"   fastest{' (same path)' if f['same_as_safe'] else ''}: {f['out']['length_m']:.0f} m (A* {f['out']['length_m_astar']:.0f} m), out {f['out']['minutes']:.1f} min, "
                           f"back {f['ret']['minutes']:.1f} min, max slope {f['out']['max_slope_deg']} deg, protected {f['out']['protected_m']} m")
     write_json(DATA / "routes.json", {
         "note": "Routes of the A* routing on GeoMapper's local metric grid, converted to lon/lat with LocalMetricGrid; walking "

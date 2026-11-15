@@ -48,7 +48,8 @@ function collectFacts(model) {
   PLAN.t0 = saved;
   const rules = P && !P.noRoute ? rulesOf(model, { ...P, ok: true, tHome: Math.max(TURN, P.tArr) + P.back }) : [];
   const F = { station: s.name, n: s.n, nZones: model.zones.length, jump: JUMP, warnM: warnM(model),
-    rulesPass: rules.filter((x) => x.st === 'pass').length, rulesOpen: rules.filter((x) => x.st === 'open').length,
+    rulesPass: rules.filter((x) => x.st === 'pass' || x.st === 'warn').length, rulesOpen: rules.filter((x) => x.st === 'open').length,
+    rulesWarn: rules.filter((x) => x.st === 'warn').map((x) => x.l.toLowerCase()),
     zonesAvoided: P && !P.noRoute && !P.crossed.length && !P.inside };
   endState(model, 4);
   const sp = script(model);
@@ -239,7 +240,7 @@ function renderLog() {
   const model = SIM.model, s = station(model), r = route(model), E = [];
   const add = (t, title, text, cls = '') => E.push({ t, title, text, cls });
   if (s && r && st.beat >= 1) {
-    add(0, `Target: ${s.name}`, `GO · ${(r.out.length_m / 1000).toFixed(2)} km · ${R(r.out.minutes)} min walk`, 'decision');
+    add(0, `Target: ${s.name}`, `GO · ${((r.out.length_m_astar ?? r.out.length_m) / 1000).toFixed(2)} km · ${R(r.out.minutes)} min walk`, 'decision');
     if (st.t >= r.out.minutes) add(r.out.minutes, `Arrived at ${s.name}`, s.reason ?? '');
     if (st.beat >= 2) add(JUMP, `Time jump to EVA hour ${hm(JUMP)}`, 'Rehearsal skips the quiet hours; the clock shows it');
     if (st.retStart != null) add(st.retStart, 'Return started', 'Habitat control', 'decision');

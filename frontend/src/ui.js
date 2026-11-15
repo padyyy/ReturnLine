@@ -14,6 +14,8 @@ export const PLAN = { n: null, stay: 30, t0: 0, variant: 'safe' };
 // The two A* routes per station (routes.json): "safe" avoids the protected zones (out/ret), "fastest"
 // may cross them (fastest.out/ret). Stations without the second variant have the safe route only.
 export const VARIANT_NAME = { safe: 'Protected zones avoided', fastest: 'Fastest route' };
+// The route's length as the A* backend gives it (summary.json length_m), else the length along the track
+export const routeLen = (leg) => leg.length_m_astar ?? leg.length_m;
 const VARIANT_PHRASE = { safe: 'route that avoids the protected zones', fastest: 'fastest route' };
 function legsOf(r, variant) {
   const fast = r.fastest && !r.fastest.same_as_safe ? r.fastest : null;
@@ -56,7 +58,8 @@ export function rulesOf(model, P) {
   return [
     { st: ttb <= 60 ? 'pass' : 'fail', l: 'Time to shelter', c: 'longest on the route · limit 60 min', v: R(ttb), u: 'min', vc: 'max', s: 'xEVA' },
     { st: slope <= model.sc.slope_block_deg ? 'pass' : 'fail', l: 'Slope, 10 m baseline', c: model.grid?.header?.files?.ridge ? `limit ${model.sc.slope_block_deg}° · ridge crossings: 0` : `limit ${model.sc.slope_block_deg}° · ridge mask pending`, v: slope.toFixed(1), u: '°', vc: 'max', s: 'DEM' },
-    { st: radio == null ? 'open' : radio <= radioMax ? 'pass' : 'fail', l: 'Radio gap', c: `longest on the route · limit ${radioMax} min`, v: radio == null ? null : radio.toFixed(1), u: 'min', vc: radio == null ? 'from data' : 'max', s: 'RADIO' },
+    // team decision 2026-11-15: a radio gap over the limit is a warning, never a NO-GO
+    { st: radio == null ? 'open' : radio <= radioMax ? 'pass' : 'warn', l: 'Radio gap', c: `longest on the route · warning above ${radioMax} min`, v: radio == null ? null : radio.toFixed(1), u: 'min', vc: radio == null ? 'from data' : 'max', s: 'RADIO' },
     { st: home <= model.sunsetEva ? 'pass' : 'fail', l: 'Daylight', c: `home before sunset ${model.sc.sunset_lmst}`, v: lmst(model, home), u: '', vc: 'home', s: 'REMS' },
   ];
 }
@@ -83,12 +86,14 @@ export function renderVerdict(model) {
     const P = planOf(model, PLAN.n), s = P.station;
     const fail = P.noRoute ? [] : rulesOf(model, P).filter((r) => r.st === 'fail');
     const open = P.noRoute ? [] : rulesOf(model, P).filter((r) => r.st === 'open');
+    const warn = P.noRoute ? [] : rulesOf(model, P).filter((r) => r.st === 'warn');
     const zoneM = P.noRoute ? 0 : P.protM, zoneNames = P.noRoute ? [] : P.crossed;
     if (P.ok && !fail.length) {
-      const constrained = zoneM > 0 || zoneNames.length;
+      const constrained = zoneM > 0 || zoneNames.length || warn.length;
       o += word('GO', 'go') + (constrained ? '<div class="v-cons">with constraints</div>' : '') +
-        `<p class="v-sub">${esc(s.name)} on the ${VARIANT_PHRASE[P.variant]}: ${R(P.walk)} min out, ${hm(P.stay)} on station, home at ${lmst(model, P.tHome)} LMST with ${hm(P.reserve)} of life support left. ${open.length ? `${4 - open.length} of 4 rules pass; ${open.map((r) => r.l.toLowerCase()).join(', ')} still open.` : 'All four rules pass.'}</p>` +
-        (constrained ? `<div class="v-status blue">${icon('warn')}Constraint: the route runs ${zoneM > 0 ? `${R(zoneM)} m inside the boxwork protection zone` : `through ${esc(zoneNames.join(', '))}`}${P.variant === 'safe' && zoneM > 0 ? ' (the station lies inside it)' : ''} · every entry is logged</div>` : '');
+        `<p class="v-sub">${esc(s.name)} on the ${VARIANT_PHRASE[P.variant]}: ${R(P.walk)} min out, ${hm(P.stay)} on station, home at ${lmst(model, P.tHome)} LMST with ${hm(P.reserve)} of life support left. ${open.length || warn.length ? `${4 - open.length - warn.length} of 4 rules pass${warn.length ? `; ${warn.map((r) => r.l.toLowerCase()).join(', ')} warns` : ''}${open.length ? `; ${open.map((r) => r.l.toLowerCase()).join(', ')} still open` : ''}.` : 'All four rules pass.'}</p>` +
+        warn.map((r) => `<div class="v-status amber">${icon('warn')}Warning: ${r.l.toLowerCase()} ${r.v} ${r.u} on the ${VARIANT_PHRASE[P.variant]}, over the ${model.sc.radio_gap_max_min ?? 5}-minute planning limit · keep line of sight in mind</div>`).join('') +
+        (zoneM > 0 || zoneNames.length ? `<div class="v-status blue">${icon('warn')}Constraint: the route runs ${zoneM > 0 ? `${R(zoneM)} m inside the boxwork protection zone` : `through ${esc(zoneNames.join(', '))}`}${P.variant === 'safe' && zoneM > 0 ? ' (the station lies inside it)' : ''} · every entry is logged</div>` : '');
       el.className = 'verdict is-go';
     } else {
       const why = P.noRoute ? `No route to ${esc(s.name)} from the routing engine.`
@@ -112,13 +117,15 @@ export function renderPicker(model) {
       cap = `${R(P.walk)} min out · ${R(P.back)} back · ${P.ok ? `max stay ${hm(P.max)}` : P.inside ? `<b class="red">inside ${esc(P.inside.name)}</b>` : '<b class="red">cannot get home in time</b>'}`;
       const nogo = rulesOf(model, P).find((x) => x.st === 'fail');
       if (nogo) cap += ` · <b class="red">NO-GO: ${esc(nogo.l.toLowerCase())}</b>`;
+      const radioWarn = rulesOf(model, P).find((x) => x.st === 'warn');
+      if (radioWarn) cap += ` · <b class="amber-t">${esc(radioWarn.l.toLowerCase())} ${radioWarn.v} ${radioWarn.u}</b>`;
       if (P.protM > 0) cap += ` · <b class="blue">${R(P.protM)} m in protected zone</b>`;
       else if (P.crossed.length) cap += ` · <b class="blue">route enters ${esc(P.crossed.join(', '))}</b>`;
     }
     return `<li class="np-item"><button type="button" class="np-row${on ? ' is-on' : ''}" data-n="${s.n}" aria-pressed="${on}">` +
       `<span class="badge${on ? ' done' : ''}">${s.n}</span>` +
       `<span class="np-l">${esc(s.name)}<span class="cap">${cap}</span></span>` +
-      `<span class="np-v">${P.noRoute ? '–' : `${(P.out.length_m / 1000).toFixed(2)} km`}<small>route</small></span></button>` +
+      `<span class="np-v">${P.noRoute ? '–' : `${(routeLen(P.out) / 1000).toFixed(2)} km`}<small>route</small></span></button>` +
       `${HOOKS.canRemove(s) ? rmBtn(s, 'np-rm', '') : ''}</li>`;
   }).join('');
   $$('#np-t0 button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.t0 === PLAN.t0)));
@@ -132,7 +139,7 @@ export function renderPicker(model) {
   $('#np-variant-cap').textContent = !Pv || Pv.noRoute ? 'two A* routes per station'
     : Pv.sameRoute ? 'both are the same route here'
     : !Pv.hasFast ? 'one route only'
-    : Pv.variant === 'fastest' ? `${R(Pv.walk)} min out · ${R(Pv.protM)} m in protected zone` : `${R(Pv.walk)} min out · ${R(Pv.protM)} m in protected zone`;
+    : `${R(routeLen(Pv.out))} m · ${R(Pv.walk)} min out · ${R(Pv.protM)} m in protected zone`;
   $$('#np-stay button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.stay === PLAN.stay)));
   const P = PLAN.n == null ? null : planOf(model, PLAN.n);
   $('#btn-start').disabled = !P || !P.ok;
@@ -147,10 +154,10 @@ export function renderRules(model) {
     $('#rules').innerHTML = '<li class="rows-empty cap">Pick a station to check the route against the four rules.</li>';
   } else {
     const rows = rulesOf(model, planOf(model, PLAN.n));
-    const fails = rows.filter((r) => r.st === 'fail').length, open = rows.filter((r) => r.st === 'open').length;
-    $('#rules-count').textContent = fails ? `${fails} of 4 fail` : `${4 - open} of 4 pass${open ? `, ${open} open` : ''}`;
+    const fails = rows.filter((r) => r.st === 'fail').length, open = rows.filter((r) => r.st === 'open').length, warns = rows.filter((r) => r.st === 'warn').length;
+    $('#rules-count').textContent = fails ? `${fails} of 4 fail` : `${4 - open - warns} of 4 pass${warns ? `, ${warns} warning` : ''}${open ? `, ${open} open` : ''}`;
     $('#rules').innerHTML = rows.map((r) => {
-      const ic = r.st === 'pass' ? 'check' : r.st === 'fail' ? 'cross' : 'info', w = r.st === 'pass' ? 'pass' : r.st === 'fail' ? 'fails' : 'open';
+      const ic = r.st === 'pass' ? 'check' : r.st === 'fail' ? 'cross' : r.st === 'warn' ? 'warn' : 'info', w = r.st === 'pass' ? 'pass' : r.st === 'fail' ? 'fails' : r.st === 'warn' ? 'warning' : 'open';
       return `<li class="row4${r.st === 'fail' ? ' fail' : ''}"><span class="a"><span class="stat ${r.st === 'open' ? 'info' : r.st}">${icon(ic)}<span class="w">${w}</span></span></span>` +
         `<span class="l">${r.l}<span class="cap">${r.c}</span></span><span class="v">${numCell(r.v, r.u, r.vc)}</span><span class="s">${src(r.s)}</span></li>`;
     }).join('');
@@ -169,8 +176,11 @@ export function renderTarget(model, onImage) {
   const P = planOf(model, PLAN.n), s = P.station;
   $('#target-cap').textContent = `Stn ${s.n}`;
   const row = (l, cap, v, u, k) => `<li class="row4"><span class="a"></span><span class="l">${l}<span class="cap">${cap}</span></span><span class="v">${numCell(v, u)}</span><span class="s">${k ? src(k) : ''}</span></li>`;
-  const img = s.image?.path ? `<img src="${esc(import.meta.env.BASE_URL + s.image.path)}" alt="Ground image of ${esc(s.name)}">` : '<canvas width="168" height="108" id="tg-thumb" aria-hidden="true"></canvas>';
-  const imgCap = s.image?.path ? `${esc(s.image.instrument ?? 'Curiosity')} · sol ${esc(s.image.sol ?? s.sol ?? '–')}` : 'Ground image slot: orbital crop until the Curiosity image is in';
+  const pics = model.pictures.filter((b) => b.n === s.n);
+  const img = pics.length ? `<div class="pic-strip${pics.length > 1 ? ' is-multi' : ''}">${pics.map((b, k) => `<button type="button" class="pic-btn" data-pic="${k}" data-n="${s.n}" aria-label="Open the Curiosity picture ${esc(b.titel_en || b.titel)}"><img src="${esc(b.src)}" alt="${esc(b.titel_en || b.titel)}, ${esc(b.kamera_en || b.kamera)}" loading="lazy"><span>${esc(b.titel_en || b.titel)}</span></button>`).join('')}</div>`
+    : '<canvas width="168" height="108" id="tg-thumb" aria-hidden="true"></canvas>';
+  const imgCap = pics.length ? `Curiosity, ${pics.map((b) => `${esc(b.kamera_en || b.kamera)}${b.sol ? ` sol ${b.sol}` : ` ${esc(b.aufnahme_von)}`}`).join(' · ')} · ${esc(pics[0].bildnachweis)}${pics.some((b) => b.hinweis_en) ? ` · <b class="amber-t">${esc(pics.find((b) => b.hinweis_en).hinweis_en)}</b>` : ''} · click to enlarge`
+    : 'No Curiosity picture for this station yet: orbital crop';
   let rows = '';
   if (P.noRoute) rows = row('Route', 'not delivered by the routing engine', null, '', 'ROUTE');
   else {
@@ -180,7 +190,7 @@ export function renderTarget(model, onImage) {
     const T = ttbAt(model, s, 'penalized'), zd = zoneDistance(model, s);
     const ter = terrainAt(model, s), z = s.elev_m ?? ter.z ?? vs[vs.length - 1].elev_m;
     const geo = s.elev_m == null && ter.z != null && ter.src === 'geomapper';
-    rows = row('Route length', `habitat to the station · ${VARIANT_PHRASE[P.variant]}`, (P.out.length_m / 1000).toFixed(2), 'km', 'ROUTE') +
+    rows = row('Route length', `habitat to the station · ${VARIANT_PHRASE[P.variant]} · A* backend`, (routeLen(P.out) / 1000).toFixed(2), 'km', 'ROUTE') +
       row('Inside the protected zone', P.variant === 'fastest' ? 'fastest route: may cross the boxwork protection mask' : 'route that avoids it where it can (A*)', R(P.protM), 'm', 'PP') +
       row('Walk out · back', `at ${model.sc.walk_speed_kmh} km/h, Tobler slope penalty; uphill and downhill differ`, `${R(P.walk)}·${R(P.back)}`, 'min', 'TOBLER') +
       row('Climb on the way out', haveZ ? `descent ${R(dn)} m` : 'needs elevation on the route', haveZ ? `+${R(up)}` : null, 'm', 'DEM') +
@@ -190,7 +200,7 @@ export function renderTarget(model, onImage) {
       row('Elevation', geo ? esc(model.dem.name.replace(/^Elevation,\s*/i, '')) : 'from the DEM, 10 m grid', z != null ? R(z) : null, 'm', geo ? 'GEOM' : 'DEM');
   }
   el.innerHTML = `<div class="tg-head"><span class="badge done">${s.n}</span><div><b>${esc(s.name)}</b><div class="cap">${esc(s.reason ?? '')}</div></div>${HOOKS.canRemove(s) ? rmBtn(s, 'btn tg-rm', 'Remove target') : ''}</div>` +
-    `<div class="lg-media">${img}<div class="cap">${imgCap}</div></div><ul class="rows">${rows}</ul>`;
+    `<div class="lg-media${pics.length ? ' has-pics' : ''}">${img}<div class="cap">${imgCap}</div></div><ul class="rows">${rows}</ul>`;
   const c = $('#tg-thumb');
   const im = c && orthoImage(model, onImage);
   if (c && im) { // 120 m wide crop of the orthophoto around the station
@@ -203,6 +213,24 @@ export function renderTarget(model, onImage) {
     ctx.filter = 'none'; ctx.strokeStyle = 'rgba(36,89,168,.9)'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(84, 54, 9, 0, Math.PI * 2); ctx.stroke();
   }
+}
+
+// Big view of a Curiosity picture: title, camera, date, description, note and the source link
+export function openPicture(model, n, k) {
+  const pics = model.pictures.filter((b) => b.n === n), b = pics[k];
+  if (!b) return;
+  const box = $('#pic-box'), when = b.aufnahme_von === b.aufnahme_bis || !b.aufnahme_bis ? b.aufnahme_von : `${b.aufnahme_von} to ${b.aufnahme_bis}`;
+  $('#pic-title').textContent = b.titel_en || b.titel;
+  $('#pic-meta').textContent = `Station ${n} · Curiosity, ${b.kamera_en || b.kamera} · ${b.sol ? `sol ${b.sol}, ` : ''}${when} · ${b.bildnachweis}`;
+  const im = $('#pic-img');
+  im.src = b.big; im.alt = `${b.titel_en || b.titel}, ${b.kamera_en || b.kamera}`;
+  $('#pic-fig').classList.toggle('is-wide', (b.breite_px || 1) / (b.hoehe_px || 1) > 2);
+  $('#pic-desc').textContent = b.beschreibung_en || b.beschreibung;
+  const note = $('#pic-note'); note.hidden = !(b.hinweis_en || b.hinweis); note.textContent = b.hinweis_en || b.hinweis || '';
+  const a = $('#pic-src'); a.href = b.quelle_url; a.hidden = !b.quelle_url;
+  $('#pic-prev').hidden = $('#pic-next').hidden = pics.length < 2;
+  box.dataset.n = n; box.dataset.k = k;
+  if (!box.open) box.showModal();
 }
 
 export function renderPlanBar(model) {

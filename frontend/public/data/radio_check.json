@@ -12,65 +12,65 @@
   "crew_antenna_m"
  ],
  "limits": "10 m terrain (one GeoMapper sample per cell) smooths 1-2 m ridges away, so the check can be optimistic; only the planned routes are checked, not the scripted drift or the ABORT way; no relays",
- "longest_gap_min": 11.7,
+ "longest_gap_min": 12.13,
  "stations": [
   {
    "station": 1,
    "out": {
-    "longest_gap_min": 7.5,
+    "longest_gap_min": 8.68,
     "gaps": [
      {
-      "from_t_min": 10.83,
-      "to_t_min": 18.33,
-      "from_d_m": 245.9,
-      "to_d_m": 402.0
+      "from_t_min": 11.98,
+      "to_t_min": 20.66,
+      "from_d_m": 260.2,
+      "to_d_m": 434.4
      }
     ],
-    "points": 104,
-    "share_with_sight": 0.606,
+    "points": 92,
+    "share_with_sight": 0.609,
     "points_without_terrain": 0
    },
    "ret": {
-    "longest_gap_min": 9.14,
+    "longest_gap_min": 10.27,
     "gaps": [
      {
       "from_t_min": 0.0,
-      "to_t_min": 9.14,
+      "to_t_min": 10.27,
       "from_d_m": 0.0,
-      "to_d_m": 156.1
+      "to_d_m": 174.1
      }
     ],
-    "points": 104,
-    "share_with_sight": 0.606,
+    "points": 92,
+    "share_with_sight": 0.587,
     "points_without_terrain": 0
    },
    "fastest": {
     "out": {
-     "longest_gap_min": 10.0,
+     "longest_gap_min": 10.78,
      "gaps": [
       {
-       "from_t_min": 8.76,
-       "to_t_min": 18.76,
-       "from_d_m": 211.7,
-       "to_d_m": 416.2
+       "from_t_min": 9.3,
+       "to_t_min": 20.08,
+       "from_d_m": 219.1,
+       "to_d_m": 434.0
       }
      ],
-     "points": 105,
-     "share_with_sight": 0.524,
+     "points": 92,
+     "share_with_sight": 0.511,
      "points_without_terrain": 0
     },
     "ret": {
-     "longest_gap_min": 11.7,
+     "longest_gap_min": 12.13,
      "gaps": [
       {
        "from_t_min": 0.0,
-       "to_t_min": 11.7,
+       "to_t_min": 12.13,
        "from_d_m": 0.0,
-       "to_d_m": 204.5
+       "to_d_m": 213.0
       }
      ],
-     "points": 105,
-     "share_with_sight": 0.524,
+     "points": 89,
+     "share_with_sight": 0.506,
      "points_without_terrain": 0
     }
    }
@@ -80,14 +80,14 @@
    "out": {
     "longest_gap_min": 0.0,
     "gaps": [],
-    "points": 42,
+    "points": 39,
     "share_with_sight": 1.0,
     "points_without_terrain": 0
    },
    "ret": {
     "longest_gap_min": 0.0,
     "gaps": [],
-    "points": 43,
+    "points": 39,
     "share_with_sight": 1.0,
     "points_without_terrain": 0
    },
@@ -95,14 +95,14 @@
     "out": {
      "longest_gap_min": 0.0,
      "gaps": [],
-     "points": 43,
+     "points": 39,
      "share_with_sight": 1.0,
      "points_without_terrain": 0
     },
     "ret": {
      "longest_gap_min": 0.0,
      "gaps": [],
-     "points": 43,
+     "points": 39,
      "share_with_sight": 1.0,
      "points_without_terrain": 0
     }
@@ -113,14 +113,14 @@
    "out": {
     "longest_gap_min": 0.0,
     "gaps": [],
-    "points": 43,
+    "points": 39,
     "share_with_sight": 1.0,
     "points_without_terrain": 0
    },
    "ret": {
     "longest_gap_min": 0.0,
     "gaps": [],
-    "points": 44,
+    "points": 40,
     "share_with_sight": 1.0,
     "points_without_terrain": 0
    },
@@ -128,14 +128,14 @@
     "out": {
      "longest_gap_min": 0.0,
      "gaps": [],
-     "points": 45,
+     "points": 39,
      "share_with_sight": 1.0,
      "points_without_terrain": 0
     },
     "ret": {
      "longest_gap_min": 0.0,
      "gaps": [],
-     "points": 45,
+     "points": 40,
      "share_with_sight": 1.0,
      "points_without_terrain": 0
     }
@@ -146,14 +146,14 @@
    "out": {
     "longest_gap_min": 0.0,
     "gaps": [],
-    "points": 61,
+    "points": 59,
     "share_with_sight": 1.0,
     "points_without_terrain": 0
    },
    "ret": {
     "longest_gap_min": 0.0,
     "gaps": [],
-    "points": 62,
+    "points": 59,
     "share_with_sight": 1.0,
     "points_without_terrain": 0
    },
@@ -161,14 +161,14 @@
     "out": {
      "longest_gap_min": 0.0,
      "gaps": [],
-     "points": 61,
+     "points": 59,
      "share_with_sight": 1.0,
      "points_without_terrain": 0
     },
     "ret": {
      "longest_gap_min": 0.0,
      "gaps": [],
-     "points": 62,
+     "points": 59,
      "share_with_sight": 1.0,
      "points_without_terrain": 0
     }

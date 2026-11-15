@@ -22,19 +22,20 @@ export async function loadData() {
     return null;
   }
 
-  const [scenario, stations, zones, routes, traverse, radio, comparison, ortho, names] = await Promise.all([
+  const [scenario, stations, zones, routes, traverse, radio, comparison, ortho, names, pictures] = await Promise.all([
     load('scenario.json'), load('stations.geojson'), load('zones.geojson'), load('routes.json'),
     load('curiosity_traverse.geojson'), load('radio_check.json', { placeholder: false }),
     load('curiosity_comparison.json', { placeholder: false }),
     fetchJson('maps/ortho_gale_1m.json').catch(() => null),
     load('place_names.geojson', { placeholder: false }),   // backend/config/place_names.json via pipeline/place_names.py
+    fetchJson('images/curiosity/bilder.json').catch(() => null),   // Curiosity pictures per station (catalog of the team)
   ]);
   if (!scenario || !stations || !routes) throw new Error('scenario, stations and routes are required');
   const grid = await loadGrid(missing, placeholders);
   const layers = await loadLayers(grid);
   const slopeLayer = layers.find((l) => l.id === 'slope')?.meta || null;
   missing.delete('place_names.geojson');   // optional: no names, no labels
-  return { scenario, stations, zones, routes, traverse, radio, comparison, ortho, names, grid, layers, slopeLayer, placeholders, missing };
+  return { scenario, stations, zones, routes, traverse, radio, comparison, ortho, names, pictures, grid, layers, slopeLayer, placeholders, missing };
 }
 
 // Map layers anchored on the console grid by GeoMapper (pipeline/map_layers.py): layers/index.json lists

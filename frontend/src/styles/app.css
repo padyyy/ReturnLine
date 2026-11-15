@@ -170,3 +170,32 @@ b.blue { color: var(--blue); }
 /* place names (backend/config/place_names.json): quieter than the stations, graphite italics */
 .mk-name { display: block; width: 8px; height: 8px; border: 1.6px solid var(--graphite); border-radius: 50%; background: #EDF0E6; box-sizing: border-box; margin: 1px; }
 .mk-lbl.name { font-style: italic; font-weight: 600; color: var(--graphite-2); font-size: 12px; }
+
+/* Curiosity pictures in the station details and the big view */
+.lg-media.has-pics { flex-direction: column; align-items: stretch; }
+.pic-strip { display: grid; gap: 8px; grid-template-columns: 1fr; }
+.pic-strip.is-multi { grid-template-columns: 1fr 1fr; }
+.pic-btn { position: relative; padding: 0; border: 1px solid var(--rule-2); border-radius: 12px; overflow: hidden; background: var(--paper-3); cursor: zoom-in; display: block; }
+.pic-btn img { display: block; width: 100%; height: 132px; object-fit: cover; border: 0; border-radius: 0; }
+.pic-strip:not(.is-multi) .pic-btn img { height: 150px; }
+.pic-btn span { position: absolute; left: 8px; bottom: 8px; max-width: calc(100% - 16px); padding: 4px 9px; border-radius: 999px; background: rgba(43,45,47,.82); color: #EDF0E6; font: 600 12px/1.2 var(--f-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pic-btn:hover, .pic-btn:focus-visible { border-color: var(--graphite); }
+.amber-t { color: #5E4700; font-weight: 600; }
+.pic-box { width: min(1100px, calc(100vw - 48px)); max-height: calc(100vh - 48px); padding: 18px 20px 14px; border: 1.5px solid var(--graphite); border-radius: 18px; background: var(--paper); color: var(--graphite); }
+.pic-box::backdrop { background: rgba(43,45,47,.55); }
+.pic-h { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; }
+.pic-h h2 { margin: 0; font-size: 20px; }
+.pic-h .cap { margin: 4px 0 0; }
+.pic-fig { margin: 12px 0 10px; border-radius: 12px; overflow: auto; background: #2B2D2F; display: grid; place-items: center; max-height: calc(100vh - 290px); }
+.pic-fig img { display: block; max-width: 100%; max-height: calc(100vh - 290px); object-fit: contain; }
+.pic-fig.is-wide { place-items: start; }
+.pic-fig.is-wide img { max-width: none; height: min(520px, calc(100vh - 300px)); max-height: none; }
+.pic-desc { margin: 0 0 6px; font-size: 15px; line-height: 1.45; }
+.pic-note { margin: 0 0 6px; font-size: 13.5px; color: #5E4700; font-weight: 600; }
+.pic-f { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.pic-f a.btn { margin-left: auto; text-decoration: none; }
+.pic-c { margin: 8px 0 0; }
+
+/* a rule that warns (radio gap, team decision 2026-11-15): amber, never a NO-GO */
+.stat.warn { color: #8A6A00; }
+.v-status.amber { color: #5E4700; }

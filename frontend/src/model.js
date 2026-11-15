@@ -34,6 +34,12 @@ export function buildModel(d) {
     dem: (d.layers || []).find((l) => l.role === 'elevation' && (l.detail || l.values)) || null,
     comparison: d.comparison,
     // local place names of the Curiosity mission (labels only, approximate positions, not IAU names)
+    // Curiosity pictures, by station number (images/curiosity/bilder.json, "kartenpunkt"); paths made absolute
+    pictures: (d.pictures?.bilder || []).map((b) => ({
+      ...b, n: b.kartenpunkt,
+      src: `${import.meta.env.BASE_URL}images/curiosity/${b.bilddatei}`,
+      big: `${import.meta.env.BASE_URL}images/curiosity/${b.bilddatei_gross || b.bilddatei}`,
+    })),
     names: (d.names?.features || []).map((f) => ({ ...f.properties, lon: f.geometry.coordinates[0], lat: f.geometry.coordinates[1] })),
   };
 }
@@ -77,7 +83,7 @@ export function pickerRows(model, t0 = 0) {
     const r = model.routes.get(s.n);
     const walk = r ? r.out.minutes : null;
     const back = r ? r.ret.minutes : null;
-    return { ...s, km: r ? r.out.length_m / 1000 : null, walk, back, stay: walk == null ? null : maxStay(model, back, t0 + walk) };
+    return { ...s, km: r ? (r.out.length_m_astar ?? r.out.length_m) / 1000 : null, walk, back, stay: walk == null ? null : maxStay(model, back, t0 + walk) };
   });
 }
 

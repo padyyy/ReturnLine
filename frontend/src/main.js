@@ -181,6 +181,13 @@ function wire() {
   $('#btn-sim').addEventListener('click', startSim);
   $('#tg-side').addEventListener('click', () => { applyPanel('side', !st.side); relayout(); });
   $('#tg-bar').addEventListener('click', () => { applyPanel('bar', !st.bar); relayout(); });
+  // Curiosity pictures in the station details: click opens the big view
+  $('#target').addEventListener('click', (e) => { const b = e.target.closest('.pic-btn'); if (b) ui.openPicture(model, +b.dataset.n, +b.dataset.pic); });
+  const pb = $('#pic-box'), step = (d) => { const n = +pb.dataset.n, all = model.pictures.filter((x) => x.n === n); ui.openPicture(model, n, (+pb.dataset.k + d + all.length) % all.length); };
+  $('#pic-close').addEventListener('click', () => pb.close());
+  $('#pic-prev').addEventListener('click', () => step(-1));
+  $('#pic-next').addEventListener('click', () => step(1));
+  pb.addEventListener('click', (e) => { if (e.target === pb) pb.close(); });   // click on the backdrop
   infoBox('#btn-key', '#legend');
   infoBox('#nv-key', '#nv-legend');
   const lb = $('#btn-layers'), lp = $('#layers');
