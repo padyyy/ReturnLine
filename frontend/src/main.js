@@ -249,11 +249,20 @@ function wire() {
     renderAll();
   });
   $('#btn-start').addEventListener('click', () => { if (st.target != null && !st.playing) (isScripted(model) ? playDemo : playNav)(); });
+  // the summary card after HOME folds to its title line and opens again
+  $('#summary').addEventListener('click', (e) => {
+    const t = e.target.closest('#summary-toggle');
+    if (!t) return;
+    const sm = $('#summary'), open = sm.classList.toggle('is-collapsed') === false;
+    const label = open ? 'Hide summary' : 'Show summary';
+    t.setAttribute('aria-expanded', String(open)); t.setAttribute('aria-label', label); t.title = label;
+  });
   $('#verdict').addEventListener('click', (e) => {
     const b = e.target.closest('button');
     if (!b || st.playing) return;
     if (b.id === 'act-reset') { // after HOME: back to the target picker, nothing picked, the map on the whole plan
       stop();
+      $('#summary').classList.remove('is-collapsed'); // the next run's summary opens again
       resetRun(null);
       renderAll();
       mapApi.fitPlan();

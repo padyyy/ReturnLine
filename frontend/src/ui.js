@@ -293,7 +293,10 @@ export function renderBanner(model) {
   else el.hidden = true;
   const sm = $('#summary');
   if (st.done) {
-    sm.innerHTML = `<header><h2>Crew home at ${lmst(model, st.t)} LMST</h2><p>EVA rehearsal complete. Summary for the debrief.</p></header><dl>` +
+    // collapsible to its title line; the state lives on the card element, so a re-render keeps it
+    const open = !sm.classList.contains('is-collapsed');
+    const tog = `<button type="button" class="sum-toggle" id="summary-toggle" aria-expanded="${open}" aria-label="${open ? 'Hide summary' : 'Show summary'}" title="${open ? 'Hide summary' : 'Show summary'}"><svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+    sm.innerHTML = `<header><h2>Crew home at ${lmst(model, st.t)} LMST</h2><p>EVA rehearsal complete. Summary for the debrief.</p>${tog}</header><dl>` +
       `<div><dt>Life support left<span class="cap">1:00 backup untouched</span></dt><dd>${hm(model.ls - st.t)}</dd></div>` +
       `<div><dt>Inside protected zones<span class="cap">every entry logged</span></dt><dd>${R(zoneEvents(model).reduce((a, e) => a + e.m, 0))} m</dd></div>` +
       `<div><dt>Radiation dose<span class="cap">information only</span></dt><dd>${doseAt(model, st.t).toFixed(2)} mSv</dd></div></dl>` +
