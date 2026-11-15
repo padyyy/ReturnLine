@@ -110,7 +110,7 @@ Success for the hackathon: a submitted demo, video and project page by the Heilb
   - REMS weather with sunrise and sunset up to 2026-08-25
   - RAD data for the boxwork campaign at PDS PPI
 - **Radiation:** Hassler et al. 2014 report 0.64 ± 0.12 mSv per day dose equivalent at the surface in Gale, measured 2012–13 about 13 km from the boxwork. Use 0.64. The SwRI press release says 0.67. Dose is information only.
-- **EVA rules and parameters:** NASA's xEVA concept of operations, Apollo planning documents and suited walking tests give the 60-minute safe-haven rule, the 20° slope limit, walking speed, EVA duration and the 5-minute radio-gap rule. Citations are in `docs/preparation/preparations.md`.
+- **EVA rules and parameters:** NASA's xEVA concept of operations, Apollo planning documents and suited walking tests give the 60-minute safe-haven rule, the 20° slope limit, walking speed, EVA duration and the procedure after a radio loss (xEVA §9.5: regain line of sight first). The 5-minute limit on radio gaps is our own planning threshold; §9.5 gives no number (checked 2026-11-15). Citations are in `docs/preparation/preparations.md`.
 - **Planetary protection:** COSPAR guidelines for human missions to Mars and NASA NID 8715.129 (2020). Not yet checked against the primary texts.
 - **Absences:** There is no user testing with astronauts and no endorsement by NASA or anyone else. Future work must not invent either.
 
